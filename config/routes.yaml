@@ -4,4 +4,6 @@
 categories:
      type:     rest
      resource: App\Controller\CategoryController
-
+subcategories:
+     type:     rest
+     resource: App\Controller\SubCategoryController

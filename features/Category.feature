@@ -6,7 +6,7 @@ Feature: Provide a consistent standard JSON API endpoint
 
   Background:
     Given there are Categories with the following details:
-      | title      |
+      | label     |
       | Clothe    |
       | Sleeping  |
       | Accessory |
@@ -18,7 +18,8 @@ Feature: Provide a consistent standard JSON API endpoint
     """
     {
       "id": 1,
-      "title": "Clothe"
+      "label": "Clothe",
+      "sub_categories": []
     }
     """
 
@@ -30,15 +31,18 @@ Feature: Provide a consistent standard JSON API endpoint
     [
       {
         "id": 1,
-        "title": "Clothe"
+        "label": "Clothe",
+        "sub_categories": []
       },
       {
         "id": 2,
-        "title": "Sleeping"
+        "label": "Sleeping",
+        "sub_categories": []
       },
       {
         "id": 3,
-        "title": "Accessory"
+        "label": "Accessory",
+        "sub_categories": []
       }
     ]
     """
@@ -47,7 +51,8 @@ Feature: Provide a consistent standard JSON API endpoint
     Given the request body is:
       """
       {
-        "title": "Kitchen"
+        "label": "Kitchen",
+        "sub_categories": []
       }
       """
     When I request "/category" using HTTP POST
@@ -57,17 +62,30 @@ Feature: Provide a consistent standard JSON API endpoint
     Given the request body is:
       """
       {
-        "title": "Cooking"
+        "label": "Cooking",
+        "sub_categories": []
       }
       """
     When I request "/category/2" using HTTP PUT
     Then the response code is 204
 
+  Scenario: Cannot update an unknown Category - PUT
+    Given the request body is:
+      """
+      {
+        "label": "Cooking",
+        "sub_categories": []
+      }
+      """
+    When I request "category/4" using HTTP PUT
+    Then the response code is 404
+
   Scenario: Can update an existing Category - PATCH
     Given the request body is:
       """
       {
-        "title": "Sleep"
+        "label": "Sleep",
+        "sub_categories": []
       }
       """
     When I request "/category/2" using HTTP PATCH
@@ -85,18 +103,20 @@ Feature: Provide a consistent standard JSON API endpoint
     Given the request body is:
       """
       {
-        "title": ""
+        "label": "",
+        "sub_categories": []
       }
       """
     When I request "/category" using HTTP POST
-    Then the response code is 400
+    Then the response code is 422
     And the response body contains JSON:
     """
     {
         "status": "error",
+        "message": "Validation failed",
         "errors": [{
             "children": {
-                "title": {
+                "label": {
                     "errors": [
                         "This value should not be blank."
                     ]

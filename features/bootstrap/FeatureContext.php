@@ -47,7 +47,8 @@ class FeatureContext implements Context
         ];
         $pdo = new PDO($host, $user, $pass, $opt);
         $pdo->query('delete from category');
-        $pdo->query('delete from sqlite_sequence where name=\'category\';');
+        $pdo->query('delete from sub_category');
+        $pdo->query('delete from sqlite_sequence where name=\'category\' or name=\'sub_category\';');
     }
 
     /**
@@ -56,7 +57,6 @@ class FeatureContext implements Context
     public function thereAreCategoriesWithTheFollowingDetails(TableNode $categories)
     {
         foreach ($categories->getColumnsHash() as $category) {
-
             $this->apiContext->setRequestBody(
                 json_encode($category)
             );
@@ -83,4 +83,29 @@ class FeatureContext implements Context
     public function theResponseShouldBeReceived()
     {
     }
+
+    /**
+     * @Given there are SubCategories with the following details:
+     */
+    public function thereAreSubcategoriesWithTheFollowingDetails(TableNode $table)
+    {
+        foreach ($table->getColumnsHash() as $category) {
+
+            $this->apiContext->setRequestBody(
+                json_encode($category)
+            );
+
+            $this->apiContext->requestPath(
+                "/category/{$category['category']}/subcategory",
+                'POST'
+            );
+            $expectedResult = ["{",'    "status": "ok"',"}"];
+            $this->apiContext->assertResponseBodyIs(
+                new \Behat\Gherkin\Node\PyStringNode(
+                    $expectedResult,0
+                ));
+            echo 'ok passed.';
+        }
+    }
+
 }
