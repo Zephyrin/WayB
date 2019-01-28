@@ -7,3 +7,6 @@ categories:
 subcategories:
      type:     rest
      resource: App\Controller\SubCategoryController
+extrafielddef:
+     type:     rest
+     resource: App\Controller\ExtraFieldDefController

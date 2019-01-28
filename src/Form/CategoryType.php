@@ -13,7 +13,7 @@ class CategoryType extends AbstractType
                               array $options)
     {
         $builder
-            ->add('label')
+            ->add('name')
             ->add('subCategories')
             ;
     }

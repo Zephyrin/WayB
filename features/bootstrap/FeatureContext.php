@@ -48,7 +48,8 @@ class FeatureContext implements Context
         $pdo = new PDO($host, $user, $pass, $opt);
         $pdo->query('delete from category');
         $pdo->query('delete from sub_category');
-        $pdo->query('delete from sqlite_sequence where name=\'category\' or name=\'sub_category\';');
+        $pdo->query('delete from extra_field_def');
+        $pdo->query('delete from sqlite_sequence where name=\'category\' or name=\'sub_category\' or name=\'extra_field_def\';');
     }
 
     /**
@@ -107,5 +108,28 @@ class FeatureContext implements Context
             echo 'ok passed.';
         }
     }
+
+    /**
+     * @Given there are ExtraFieldDefs with the following details:
+     */
+    public function thereAreExtrafielddefsWithTheFollowingDetails(TableNode $table)
+    {
+        foreach ($table->getColumnsHash() as $category) {
+            $category['isPrice'] = $category['isPrice'] == 'true';
+            $category['isWeight'] = $category['isWeight'] == 'true';
+            $this->apiContext->setRequestBody(
+                json_encode($category)
+            );
+            $this->apiContext->requestPath(
+                "/category/{$category['category']}/subcategory/{$category['subcategory']}/extrafielddef",
+                'POST'
+            );
+            $expectedResult = ["{",'    "status": "ok"',"}"];
+            $this->apiContext->assertResponseBodyIs(
+                new \Behat\Gherkin\Node\PyStringNode(
+                    $expectedResult,0
+                ));
+            echo 'ok passed.';
+        }    }
 
 }

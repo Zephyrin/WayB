@@ -6,7 +6,7 @@ Feature: Provide a consistent standard JSON API endpoint
 
   Background:
     Given there are Categories with the following details:
-      | label     |
+      | name     |
       | Clothe    |
       | Sleeping  |
       | Accessory |
@@ -53,8 +53,8 @@ Feature: Provide a consistent standard JSON API endpoint
     """
     [{
       "id": 1,
-      "label": "Clothe",
-      "sub_categories": [
+      "name": "Clothe",
+      "subCategories": [
         {
           "id": 1,
           "name": "Pants"
@@ -67,8 +67,8 @@ Feature: Provide a consistent standard JSON API endpoint
     },
     {
       "id": 2,
-      "label": "Sleeping",
-      "sub_categories": [
+      "name": "Sleeping",
+      "subCategories": [
         {
           "id": 3,
           "name": "Sleeping Bag"
@@ -81,8 +81,8 @@ Feature: Provide a consistent standard JSON API endpoint
     },
     {
       "id": 3,
-      "label": "Accessory",
-      "sub_categories": [
+      "name": "Accessory",
+      "subCategories": [
         {
         "id": 5,
         "name": "Flash Light"
@@ -250,7 +250,7 @@ Feature: Provide a consistent standard JSON API endpoint
     Given the request body is:
       """
       {
-        "label": "Cooking"
+        "name": "Cooking"
       }
       """
     When I request "category/1" using HTTP PUT
@@ -261,7 +261,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
     {
       "id": 1,
-      "label": "Cooking",
-      "sub_categories": []
+      "name": "Cooking",
+      "subCategories": []
     }
     """

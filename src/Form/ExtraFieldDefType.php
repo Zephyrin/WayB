@@ -2,20 +2,28 @@
 
 namespace App\Form;
 
-use App\Entity\SubCategory;
+use App\Entity\ExtraFieldDef;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class SubCategoryType extends AbstractType
+class ExtraFieldDefType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder,
                               array $options)
     {
         $builder
+            ->add('type')
             ->add('name')
-            ->add('category')
-            ->add('extraFieldDefs')
+            ->add('isPrice')
+            ->add('isWeight')
+            ->add('linkTo'
+//                , ExtraFieldDefType::class,
+//                [ 'required' => false
+////                    , ''
+////                    , 'property_path' => 'id'
+//                ]
+                )
         ;
     }
 
@@ -23,9 +31,9 @@ class SubCategoryType extends AbstractType
     {
         $resolver->setDefaults(
             [
-                'data_class'         => SubCategory::class,
+                'data_class'         => ExtraFieldDef::class,
                 'allow_extra_fields' => true,
-                'csrf_protection'    => false,
+                'csrf_protection'    => false
             ]
         );
     }

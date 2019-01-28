@@ -2,10 +2,13 @@
 
 namespace App\Controller;
 
+namespace App\Controller;
+
 use App\Entity\Category;
+use App\Entity\ExtraFieldDef;
 use App\Entity\SubCategory;
-use App\Form\SubCategoryType;
-use App\Repository\SubCategoryRepository;
+use App\Form\ExtraFieldDefType;
+use App\Repository\ExtraFieldDefRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Serializer\FormErrorSerializer;
 use FOS\RestBundle\Controller\Annotations as Rest;
@@ -18,20 +21,20 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * @Rest\RouteResource(
- *     "Category/{CategoryId}/SubCategory",
+ *     "Category/{CategoryId}/SubCategory/{SubCategoryId}/ExtraFieldDef",
  *     pluralize=false
  * )
  */
-class SubCategoryController extends FOSRestController implements ClassResourceInterface
+class ExtraFieldDefController extends FOSRestController implements ClassResourceInterface
 {
     /**
      * @var EntityManagerInterface
      */
     private $entityManager;
     /**
-     * @var subCategoryRepository
+     * @var ExtraFieldDefRepository
      */
-    private $subCategoryRepository;
+    private $extraFieldDefRepository;
 
     /**
      * @var FormErrorSerializer
@@ -40,22 +43,24 @@ class SubCategoryController extends FOSRestController implements ClassResourceIn
 
     public function __construct(
         EntityManagerInterface $entityManager,
-        SubCategoryRepository $subCategoryRepository,
+        ExtraFieldDefRepository $extraFieldDefRepository,
         FormErrorSerializer $formErrorSerializer
     )
     {
         $this->entityManager = $entityManager;
-        $this->subCategoryRepository = $subCategoryRepository;
+        $this->extraFieldDefRepository = $extraFieldDefRepository;
         $this->formErrorSerializer = $formErrorSerializer;
     }
-
     public function postAction(Request $request)
     {
+
         $data = json_decode(
             $request->getContent(),
             true
         );
-        $form = $this->createForm(SubCategoryType::class, new SubCategory());
+        $form = $this->createForm(
+            ExtraFieldDefType::class,
+            new ExtraFieldDef());
         $form->submit(
             $data
         );
@@ -63,18 +68,18 @@ class SubCategoryController extends FOSRestController implements ClassResourceIn
             return new JsonResponse(
                 [
                     'status' => 'error',
-                    'Message' => 'Validation error',
+                    'message' => 'Validation error',
                     'errors' => $this->formErrorSerializer->normalize($form),
                 ],
                 JsonResponse::HTTP_UNPROCESSABLE_ENTITY
             );
         }
-        $subCat = $form->getData();
-        $category = $this->entityManager->find(
-            Category::class,
-            $request->attributes->get('categoryid'));
-        $subCat->setCategory($category);
-        $this->entityManager->persist($subCat);
+        $extraFieldDef = $form->getData();
+        $subCategory = $this->entityManager->find(
+            SubCategory::class,
+            $request->attributes->get('subcategoryid'));
+        $extraFieldDef->setSubCategory($subCategory);
+        $this->entityManager->persist($extraFieldDef);
         $this->entityManager->flush();
 
         return  $this->view([
@@ -86,25 +91,28 @@ class SubCategoryController extends FOSRestController implements ClassResourceIn
     public function getAction(string $id)
     {
         return $this->view(
-            $this->findSubCategoryById($id)
+            $this->findExtraFieldDefById($id)
         );
     }
 
     public function cgetAction()
     {
         return $this->view(
-            $this->subCategoryRepository->findAll()
+            $this->extraFieldDefRepository->findAll()
         );
     }
 
     public function putAction(Request $request, string $id)
     {
-        $existingSubCategory = $this->findSubCategoryById($id);
-        $form = $this->createForm(SubCategoryType::class, $existingSubCategory);
+        $existingExtraFieldDef = $this->findExtraFieldDefById($id);
         $data = json_decode($request->getContent(), true);
 
-        $data['category'] = $request->attributes->get('categoryid');
+        $form = $this->createForm(
+            ExtraFieldDefType::class,
+            $existingExtraFieldDef);
+
         $form->submit($data);
+
         if (false === $form->isValid()) {
             return new JsonResponse(
                 [
@@ -118,20 +126,20 @@ class SubCategoryController extends FOSRestController implements ClassResourceIn
 
         $this->entityManager->flush();
 
-        return $this->view(null, Response::HTTP_NO_CONTENT);
+        return $this->view(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
     public function patchAction(Request $request, string $id)
     {
-        $existingSubCategory = $this->findSubCategoryById($id);
-        $form = $this->createForm(SubCategoryType::class, $existingSubCategory);
-
-        $form->submit($request->request->all(), false);
+        $existingExtraFieldDef = $this->findExtraFieldDefById($id);
+        $form = $this->createForm(ExtraFieldDefType::class, $existingExtraFieldDef);
+        $data = json_decode($request->getContent(), true);
+        $form->submit($data, false);
         if (false === $form->isValid()) {
-            //return $this->view($form);
             return new JsonResponse(
                 [
                     'status' => 'error',
+                    'message' => 'Validation error',
                     'errors' => $this->formErrorSerializer->normalize($form),
                 ],
                 JsonResponse::HTTP_UNPROCESSABLE_ENTITY
@@ -139,15 +147,14 @@ class SubCategoryController extends FOSRestController implements ClassResourceIn
         }
 
         $this->entityManager->flush();
-
         return $this->view(null, Response::HTTP_NO_CONTENT);
     }
 
     public function deleteAction(string $id)
     {
-        $subCategory = $this->findSubCategoryById($id);
+        $extraFieldDef = $this->findExtraFieldDefById($id);
 
-        $this->entityManager->remove($subCategory);
+        $this->entityManager->remove($extraFieldDef);
         $this->entityManager->flush();
 
         return $this->view(null, Response::HTTP_NO_CONTENT);
@@ -159,12 +166,13 @@ class SubCategoryController extends FOSRestController implements ClassResourceIn
      * @return Category
      * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
      */
-    private function findSubCategoryById(string $id)
+    private function findExtraFieldDefById(string $id)
     {
-        $existingSubCategory = $this->subCategoryRepository->find($id);
-        if (null === $existingSubCategory) {
+        $existingExtraFieldDef = $this->extraFieldDefRepository->find($id);
+        if (null === $existingExtraFieldDef) {
             throw new NotFoundHttpException();
         }
-        return $existingSubCategory;
+        return $existingExtraFieldDef;
     }
+
 }

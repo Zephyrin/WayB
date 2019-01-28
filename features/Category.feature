@@ -6,7 +6,7 @@ Feature: Provide a consistent standard JSON API endpoint
 
   Background:
     Given there are Categories with the following details:
-      | label     |
+      | name     |
       | Clothe    |
       | Sleeping  |
       | Accessory |
@@ -18,8 +18,8 @@ Feature: Provide a consistent standard JSON API endpoint
     """
     {
       "id": 1,
-      "label": "Clothe",
-      "sub_categories": []
+      "name": "Clothe",
+      "subCategories": []
     }
     """
 
@@ -31,18 +31,18 @@ Feature: Provide a consistent standard JSON API endpoint
     [
       {
         "id": 1,
-        "label": "Clothe",
-        "sub_categories": []
+        "name": "Clothe",
+        "subCategories": []
       },
       {
         "id": 2,
-        "label": "Sleeping",
-        "sub_categories": []
+        "name": "Sleeping",
+        "subCategories": []
       },
       {
         "id": 3,
-        "label": "Accessory",
-        "sub_categories": []
+        "name": "Accessory",
+        "subCategories": []
       }
     ]
     """
@@ -51,8 +51,8 @@ Feature: Provide a consistent standard JSON API endpoint
     Given the request body is:
       """
       {
-        "label": "Kitchen",
-        "sub_categories": []
+        "name": "Kitchen",
+        "subCategories": []
       }
       """
     When I request "/category" using HTTP POST
@@ -62,8 +62,8 @@ Feature: Provide a consistent standard JSON API endpoint
     Given the request body is:
       """
       {
-        "label": "Cooking",
-        "sub_categories": []
+        "name": "Cooking",
+        "subCategories": []
       }
       """
     When I request "/category/2" using HTTP PUT
@@ -73,8 +73,8 @@ Feature: Provide a consistent standard JSON API endpoint
     Given the request body is:
       """
       {
-        "label": "Cooking",
-        "sub_categories": []
+        "name": "Cooking",
+        "subCategories": []
       }
       """
     When I request "category/4" using HTTP PUT
@@ -84,8 +84,8 @@ Feature: Provide a consistent standard JSON API endpoint
     Given the request body is:
       """
       {
-        "label": "Sleep",
-        "sub_categories": []
+        "name": "Sleep",
+        "subCategories": []
       }
       """
     When I request "/category/2" using HTTP PATCH
@@ -103,8 +103,8 @@ Feature: Provide a consistent standard JSON API endpoint
     Given the request body is:
       """
       {
-        "label": "",
-        "sub_categories": []
+        "name": "",
+        "subCategories": []
       }
       """
     When I request "/category" using HTTP POST
@@ -116,7 +116,7 @@ Feature: Provide a consistent standard JSON API endpoint
         "message": "Validation failed",
         "errors": [{
             "children": {
-                "label": {
+                "name": {
                     "errors": [
                         "This value should not be blank."
                     ]
