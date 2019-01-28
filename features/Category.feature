@@ -58,6 +58,18 @@ Feature: Provide a consistent standard JSON API endpoint
     When I request "/api/category" using HTTP POST
     Then the response code is 201
 
+  Scenario: Can add a new Category with an existing name
+    Given the request body is:
+      """
+      {
+        "name": "Clothe",
+        "subCategories": []
+      }
+      """
+    When I request "/api/category" using HTTP POST
+    Then the response code is 400
+
+
   Scenario: Can update an existing Category - PUT
     Given the request body is:
       """

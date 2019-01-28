@@ -8,6 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Asset;
 use JMS\Serializer\Annotation\SerializedName;
 use Swagger\Annotations as SWG;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * @SWG\Definition(
@@ -15,6 +16,7 @@ use Swagger\Annotations as SWG;
  * )
  *
  * @ORM\Entity(repositoryClass="App\Repository\CategoryRepository")
+ * @UniqueEntity(fields="name", message="This category name is already in use.")
  */
 class Category
 {
@@ -30,7 +32,7 @@ class Category
 
     /**
      * @Asset\NotBlank()
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, unique=true)
      * @SerializedName("name")
      * @var string
      * @SWG\Property(description="The name of the Category.")
