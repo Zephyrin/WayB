@@ -23,6 +23,9 @@ use Swagger\Annotations as SWG;
  *     "api/Category",
  *     pluralize=false
  * )
+ * @SWG\Tag(
+ *     name="Category"
+ * )
  */
 class CategoryController extends FOSRestController implements ClassResourceInterface
 {
