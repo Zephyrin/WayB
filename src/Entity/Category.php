@@ -7,8 +7,13 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Asset;
 use JMS\Serializer\Annotation\SerializedName;
+use Swagger\Annotations as SWG;
 
 /**
+ * @SWG\Definition(
+ *     description="A Category give a way to manage equipment depending on the category like 'Clothe' or 'Cooking'"
+ * )
+ *
  * @ORM\Entity(repositoryClass="App\Repository\CategoryRepository")
  */
 class Category
@@ -18,6 +23,8 @@ class Category
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
      * @SerializedName("id")
+     * @var int
+     * @SWG\Property(description="The unique identifier of the Category.")
      */
     private $id;
 
@@ -25,12 +32,16 @@ class Category
      * @Asset\NotBlank()
      * @ORM\Column(type="string", length=255)
      * @SerializedName("name")
+     * @var string
+     * @SWG\Property(description="The name of the Category.")
      */
     private $name;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\SubCategory", mappedBy="category", orphanRemoval=true)
      * @SerializedName("subCategories")
+     * @var SubCategory
+     * @SWG\Property(description="The list of all SubCategory link to this Category.")
      */
     private $subCategories;
 

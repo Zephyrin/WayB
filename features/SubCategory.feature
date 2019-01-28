@@ -19,7 +19,7 @@ Feature: Provide a consistent standard JSON API endpoint
       | Flash Light  | 3         |
 
   Scenario: Can get a single SubCategory
-    Given I request "/category/1/subcategory/1" using HTTP GET
+    Given I request "/api/category/1/subcategory/1" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -30,7 +30,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can get a collection of SubCategories
-    Given I request "/category/1/subcategory" using HTTP GET
+    Given I request "/api/category/1/subcategory" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -47,7 +47,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can get a collection of Categories and its Sub Categories
-    Given I request "/category" using HTTP GET
+    Given I request "/api/category" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -98,7 +98,7 @@ Feature: Provide a consistent standard JSON API endpoint
         "name": "Camera"
       }
       """
-    When I request "/category/3/subcategory" using HTTP POST
+    When I request "/api/category/3/subcategory" using HTTP POST
     Then the response code is 201
 
   Scenario: Can update an existing Category - PUT
@@ -108,9 +108,9 @@ Feature: Provide a consistent standard JSON API endpoint
         "name": "Video Camera"
       }
       """
-    When I request "/category/3/subcategory/5" using HTTP PUT
+    When I request "/api/category/3/subcategory/5" using HTTP PUT
     Then the response code is 204
-    When I request "/category/3/subcategory/5" using HTTP GET
+    When I request "/api/category/3/subcategory/5" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -127,7 +127,7 @@ Feature: Provide a consistent standard JSON API endpoint
         "name": ""
       }
       """
-    When I request "/category/3/subcategory/5" using HTTP PUT
+    When I request "/api/category/3/subcategory/5" using HTTP PUT
     Then the response code is 422
     And the response body contains JSON:
     """
@@ -144,7 +144,7 @@ Feature: Provide a consistent standard JSON API endpoint
         }]
     }
     """
-    When I request "/category/3/subcategory/5" using HTTP GET
+    When I request "/api/category/3/subcategory/5" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -161,9 +161,9 @@ Feature: Provide a consistent standard JSON API endpoint
         "name": "Video"
       }
       """
-    When I request "/category/3/subcategory/5" using HTTP PATCH
+    When I request "/api/category/3/subcategory/5" using HTTP PATCH
     Then the response code is 204
-    When I request "/category/3/subcategory/5" using HTTP GET
+    When I request "/api/category/3/subcategory/5" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -180,7 +180,7 @@ Feature: Provide a consistent standard JSON API endpoint
         "name": ""
       }
       """
-    When I request "/category/3/subcategory/5" using HTTP PATCH
+    When I request "/api/category/3/subcategory/5" using HTTP PATCH
     Then the response code is 422
     And the response body contains JSON:
     """
@@ -197,7 +197,7 @@ Feature: Provide a consistent standard JSON API endpoint
         }]
     }
     """
-    When I request "/category/3/subcategory/5" using HTTP GET
+    When I request "/api/category/3/subcategory/5" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -208,11 +208,11 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can delete a Sub Category
-    Given I request "/category/3/subcategory/5" using HTTP GET
+    Given I request "/api/category/3/subcategory/5" using HTTP GET
     Then the response code is 200
-    When I request "/category/3/subcategory/5" using HTTP DELETE
+    When I request "/api/category/3/subcategory/5" using HTTP DELETE
     Then the response code is 204
-    When I request "/category/3/subcategory/5" using HTTP GET
+    When I request "/api/category/3/subcategory/5" using HTTP GET
     Then the response code is 404
 
   Scenario: Must have a non-blank name
@@ -222,7 +222,7 @@ Feature: Provide a consistent standard JSON API endpoint
         "name": ""
       }
       """
-    When I request "/category/2/subcategory" using HTTP POST
+    When I request "/api/category/2/subcategory" using HTTP POST
     Then the response code is 422
     And the response body contains JSON:
     """
@@ -241,9 +241,9 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can delete a Category and its Sub Category
-    Given I request "/category/3" using HTTP DELETE
+    Given I request "/api/category/3" using HTTP DELETE
     Then the response code is 204
-    When I request "/category/3/subcategory/5" using HTTP GET
+    When I request "/api/category/3/subcategory/5" using HTTP GET
     Then the response code is 404
 
   Scenario: Can update a Category without its Sub Categories - PUT
@@ -253,9 +253,9 @@ Feature: Provide a consistent standard JSON API endpoint
         "name": "Cooking"
       }
       """
-    When I request "category/1" using HTTP PUT
+    When I request "/api/category/1" using HTTP PUT
     Then the response code is 204
-    When I request "category/1" using HTTP GET
+    When I request "/api/category/1" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """

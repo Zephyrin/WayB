@@ -24,7 +24,7 @@ Feature: Provide a consistent standard JSON API endpoint
       | 0    | Weight | false   | true     | 1           | 1      | 1        |
 
   Scenario: Can get a single ExtraFieldDef
-    Given I request "/category/1/subcategory/1/extrafielddef/1" using HTTP GET
+    Given I request "/api/category/1/subcategory/1/extrafielddef/1" using HTTP GET
     Then the response body contains JSON:
     """
     {
@@ -38,7 +38,7 @@ Feature: Provide a consistent standard JSON API endpoint
     And the response code is 200
 
   Scenario: Can get a collection of ExtraFieldDef
-    Given I request "/category/1/subcategory/1/extrafielddef" using HTTP GET
+    Given I request "/api/category/1/subcategory/1/extrafielddef" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -82,7 +82,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can get a collection of Categories and its Sub Categories and its ExtraFieldDef
-    Given I request "/category" using HTTP GET
+    Given I request "/api/category" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -180,9 +180,9 @@ Feature: Provide a consistent standard JSON API endpoint
         "linkTo": 3
       }
       """
-    When I request "/category/1/subcategory/2/extrafielddef" using HTTP POST
+    When I request "/api/category/1/subcategory/2/extrafielddef" using HTTP POST
     Then the response code is 201
-    When I request "/category/1/subcategory/2/extrafielddef/4" using HTTP GET
+    When I request "/api/category/1/subcategory/2/extrafielddef/4" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -221,9 +221,9 @@ Feature: Provide a consistent standard JSON API endpoint
         "isWeight": false
       }
       """
-    When I request "/category/1/subcategory/1/extrafielddef/1" using HTTP PUT
+    When I request "/api/category/1/subcategory/1/extrafielddef/1" using HTTP PUT
     Then the response code is 204
-    When I request "/category/1/subcategory/1/extrafielddef/1" using HTTP GET
+    When I request "/api/category/1/subcategory/1/extrafielddef/1" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -247,9 +247,9 @@ Feature: Provide a consistent standard JSON API endpoint
         "linkTo": 3
       }
       """
-    When I request "/category/1/subcategory/1/extrafielddef/2" using HTTP PUT
+    When I request "/api/category/1/subcategory/1/extrafielddef/2" using HTTP PUT
     Then the response code is 204
-    When I request "/category/1/subcategory/1/extrafielddef/2" using HTTP GET
+    When I request "/api/category/1/subcategory/1/extrafielddef/2" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -288,7 +288,7 @@ Feature: Provide a consistent standard JSON API endpoint
         "linkTo": 1
       }
       """
-    When I request "/category/1/subcategory/1/extrafielddef/2" using HTTP PUT
+    When I request "/api/category/1/subcategory/1/extrafielddef/2" using HTTP PUT
     Then the response code is 422
     And the response body contains JSON:
     """
@@ -309,7 +309,7 @@ Feature: Provide a consistent standard JSON API endpoint
         }]
     }
     """
-    When I request "/category/1/subcategory/1/extrafielddef/2" using HTTP GET
+    When I request "/api/category/1/subcategory/1/extrafielddef/2" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -336,9 +336,9 @@ Feature: Provide a consistent standard JSON API endpoint
         "name": "Price 2"
       }
       """
-    When I request "/category/1/subcategory/1/extrafielddef/2" using HTTP PATCH
+    When I request "/api/category/1/subcategory/1/extrafielddef/2" using HTTP PATCH
     Then the response code is 204
-    When I request "/category/1/subcategory/1/extrafielddef/2" using HTTP GET
+    When I request "/api/category/1/subcategory/1/extrafielddef/2" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -366,7 +366,7 @@ Feature: Provide a consistent standard JSON API endpoint
         "name": ""
       }
       """
-    When I request "/category/1/subcategory/1/extrafielddef/2" using HTTP PATCH
+    When I request "/api/category/1/subcategory/1/extrafielddef/2" using HTTP PATCH
     Then the response code is 422
     And the response body contains JSON:
     """
@@ -383,7 +383,7 @@ Feature: Provide a consistent standard JSON API endpoint
         }]
     }
     """
-    When I request "/category/1/subcategory/1/extrafielddef/2" using HTTP GET
+    When I request "/api/category/1/subcategory/1/extrafielddef/2" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -405,11 +405,11 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can delete an ExtraFieldDef
-    Given I request "/category/1/subcategory/1/extrafielddef/1" using HTTP GET
+    Given I request "/api/category/1/subcategory/1/extrafielddef/1" using HTTP GET
     Then the response code is 200
-    When I request "/category/1/subcategory/1/extrafielddef/1" using HTTP DELETE
+    When I request "/api/category/1/subcategory/1/extrafielddef/1" using HTTP DELETE
     Then the response code is 204
-    When I request "/category/1/subcategory/1/extrafielddef/1" using HTTP GET
+    When I request "/api/category/1/subcategory/1/extrafielddef/1" using HTTP GET
     Then the response code is 404
 
   Scenario: Must have a non-blank name
@@ -423,7 +423,7 @@ Feature: Provide a consistent standard JSON API endpoint
       "isWeight": false
     }
     """
-    When I request "/category/1/subcategory/2/extrafielddef" using HTTP POST
+    When I request "/api/category/1/subcategory/2/extrafielddef" using HTTP POST
     Then the response code is 422
     And the response body contains JSON:
     """
@@ -442,9 +442,9 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can delete a Category and its Sub Category and its ExtraFieldDef
-    Given I request "/category/1" using HTTP DELETE
+    Given I request "/api/category/1" using HTTP DELETE
     Then the response code is 204
-    When I request "/category/1/subcategory/1" using HTTP GET
+    When I request "/api/category/1/subcategory/1" using HTTP GET
     Then the response code is 404
-    When I request "/category/1/subcategory/1/extrafielddef/1" using HTTP GET
+    When I request "/api/category/1/subcategory/1/extrafielddef/1" using HTTP GET
     Then the response code is 404

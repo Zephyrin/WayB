@@ -21,7 +21,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * @Rest\RouteResource(
- *     "Category/{CategoryId}/SubCategory/{SubCategoryId}/ExtraFieldDef",
+ *     "api/Category/{CategoryId}/SubCategory/{SubCategoryId}/ExtraFieldDef",
  *     pluralize=false
  * )
  */

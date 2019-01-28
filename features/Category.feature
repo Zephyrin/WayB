@@ -12,7 +12,7 @@ Feature: Provide a consistent standard JSON API endpoint
       | Accessory |
 
   Scenario: Can get a single Category
-    Given I request "/category/1" using HTTP GET
+    Given I request "/api/category/1" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -24,7 +24,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can get a collection of Categories
-    Given I request "/category" using HTTP GET
+    Given I request "/api/category" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -55,7 +55,7 @@ Feature: Provide a consistent standard JSON API endpoint
         "subCategories": []
       }
       """
-    When I request "/category" using HTTP POST
+    When I request "/api/category" using HTTP POST
     Then the response code is 201
 
   Scenario: Can update an existing Category - PUT
@@ -66,7 +66,7 @@ Feature: Provide a consistent standard JSON API endpoint
         "subCategories": []
       }
       """
-    When I request "/category/2" using HTTP PUT
+    When I request "/api/category/2" using HTTP PUT
     Then the response code is 204
 
   Scenario: Cannot update an unknown Category - PUT
@@ -88,15 +88,15 @@ Feature: Provide a consistent standard JSON API endpoint
         "subCategories": []
       }
       """
-    When I request "/category/2" using HTTP PATCH
+    When I request "/api/category/2" using HTTP PATCH
     Then the response code is 204
 
   Scenario: Can delete an Category
-    Given I request "/category/3" using HTTP GET
+    Given I request "/api/category/3" using HTTP GET
     Then the response code is 200
-    When I request "/category/3" using HTTP DELETE
+    When I request "/api/category/3" using HTTP DELETE
     Then the response code is 204
-    When I request "/category/3" using HTTP GET
+    When I request "/api/category/3" using HTTP GET
     Then the response code is 404
 
   Scenario: Must have a non-blank name
@@ -107,7 +107,7 @@ Feature: Provide a consistent standard JSON API endpoint
         "subCategories": []
       }
       """
-    When I request "/category" using HTTP POST
+    When I request "/api/category" using HTTP POST
     Then the response code is 422
     And the response body contains JSON:
     """

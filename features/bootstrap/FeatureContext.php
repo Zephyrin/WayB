@@ -62,7 +62,7 @@ class FeatureContext implements Context
                 json_encode($category)
             );
             $this->apiContext->requestPath(
-                '/category',
+                '/api/category',
                 'POST'
             );
             $expectedResult = ["{",'    "status": "ok"',"}"];
@@ -97,7 +97,7 @@ class FeatureContext implements Context
             );
 
             $this->apiContext->requestPath(
-                "/category/{$category['category']}/subcategory",
+                "/api/category/{$category['category']}/subcategory",
                 'POST'
             );
             $expectedResult = ["{",'    "status": "ok"',"}"];
@@ -121,7 +121,7 @@ class FeatureContext implements Context
                 json_encode($category)
             );
             $this->apiContext->requestPath(
-                "/category/{$category['category']}/subcategory/{$category['subcategory']}/extrafielddef",
+                "/api/category/{$category['category']}/subcategory/{$category['subcategory']}/extrafielddef",
                 'POST'
             );
             $expectedResult = ["{",'    "status": "ok"',"}"];

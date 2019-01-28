@@ -14,10 +14,13 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Nelmio\ApiDocBundle\Annotation\Model;
+use Swagger\Annotations as SWG;
+
 
 /**
  * @Rest\RouteResource(
- *     "Category",
+ *     "api/Category",
  *     pluralize=false
  * )
  */
@@ -48,6 +51,37 @@ class CategoryController extends FOSRestController implements ClassResourceInter
         $this->formErrorSerializer = $formErrorSerializer;
     }
 
+    /**
+     * Create a new Category
+     *
+     * @SWG\Post(
+     *     consumes={"application/json"},
+     *     produces={"application/json"},
+     *     @SWG\Response(
+     *      response=200,
+     *      description="Successful operation"
+     *    ),
+     *    @SWG\Response(
+     *     response=422,
+     *     description="The form is not correct<BR/>
+     * See the corresponding JSON error to see which field is not correct"
+     *    )
+     *    ,
+     *    @SWG\Parameter(
+     *     name="The JSON Category",
+     *     in="body",
+     *     required=true,
+     *     @SWG\Schema(
+     *       ref=@Model(type=Category::class)
+     *     ),
+     *     description="The JSon Category"
+     *    )
+     *
+     * )
+     *
+     * @param Request $request
+     * @return \FOS\RestBundle\View\View|JsonResponse
+     */
     public function postAction(Request $request)
     {
         $data = json_decode(
@@ -79,6 +113,34 @@ class CategoryController extends FOSRestController implements ClassResourceInter
             Response::HTTP_CREATED);
     }
 
+    /**
+     * Expose the Category with the id.
+     *
+     * @SWG\Get(
+     *     summary="Get the Category based on ID",
+     *     produces={"application/json"}
+     * )
+     * @SWG\Response(
+     *     response=200,
+     *     description="Return the Category based on ID",
+     *     @SWG\Schema(ref=@Model(type=Category::class))
+     * )
+     *
+     * @SWG\Response(
+     *     response=404,
+     *     description="The Category based on ID is not found"
+     * )
+     *
+     * @SWG\Parameter(
+     *     name="id",
+     *     in="path",
+     *     type="string",
+     *     description="The ID used to find the Category"
+     * )
+     *
+     * @var $id
+     * @return \FOS\RestBundle\View\View
+     */
     public function getAction(string $id)
     {
         return $this->view(
@@ -86,6 +148,25 @@ class CategoryController extends FOSRestController implements ClassResourceInter
         );
     }
 
+    /**
+     * Expose all Categories
+     *
+     * @SWG\Get(
+     *     summary="Get all Categories",
+     *     produces={"application/json"}
+     * )
+     * @SWG\Response(
+     *     response=200,
+     *     description="Return all the Categories",
+     *     @SWG\Schema(
+     *      type="array",
+     *      @Model(type=Category::class)
+     *     )
+     * )
+     *
+     *
+     * @return \FOS\RestBundle\View\View
+     */
     public function cgetAction()
     {
         return $this->view(
@@ -93,10 +174,49 @@ class CategoryController extends FOSRestController implements ClassResourceInter
         );
     }
 
+    /**
+     * Update a Category
+     *
+     * @SWG\Put(
+     *     consumes={"application/json"},
+     *     produces={"application/json"},
+     *     @SWG\Response(
+     *      response=204,
+     *      description="Successful operation"
+     *    ),
+     *    @SWG\Response(
+     *     response=422,
+     *     description="The form is not correct<BR/>
+     * See the corresponding JSON error to see which field is not correct"
+     *    ),
+     *    @SWG\Response(
+     *     response=404,
+     *     description="The Category based on ID is not found"
+     *    ),
+     *    @SWG\Parameter(
+     *     name="The full JSON Category",
+     *     in="body",
+     *     required=true,
+     *     @SWG\Schema(
+     *       ref=@Model(type=Category::class)
+     *     ),
+     *     description="The JSon Category"
+     *    ),
+     *    @SWG\Parameter(
+     *     name="id",
+     *     in="path",
+     *     type="string",
+     *     description="The ID used to find the Category"
+     *    )
+     * )
+     *
+     * @param Request $request
+     * @param string $id of the Category to update
+     * @return \FOS\RestBundle\View\View|JsonResponse
+     */
     public function putAction(Request $request, string $id)
     {
         $existingCategory = $this->findCategoryById($id);
-
         $form = $this->createForm(CategoryType::class, $existingCategory);
 
         $form->submit($request->request->all());
@@ -118,6 +238,46 @@ class CategoryController extends FOSRestController implements ClassResourceInter
         return $this->view(null, Response::HTTP_NO_CONTENT);
     }
 
+    /**
+     * Update a part of a Category
+     *
+     * @SWG\Patch(
+     *     consumes={"application/json"},
+     *     produces={"application/json"},
+     *     @SWG\Response(
+     *      response=204,
+     *      description="Successful operation"
+     *    ),
+     *    @SWG\Response(
+     *     response=422,
+     *     description="The form is not correct<BR/>
+     * See the corresponding JSON error to see which field is not correct"
+     *    ),
+     *    @SWG\Response(
+     *     response=404,
+     *     description="The Category based on ID is not found"
+     *    ),
+     *    @SWG\Parameter(
+     *     name="A part of a JSON Category",
+     *     in="body",
+     *     required=true,
+     *     @SWG\Schema(
+     *       ref=@Model(type=Category::class)
+     *     ),
+     *     description="A part of a JSon Category"
+     *    ),
+     *    @SWG\Parameter(
+     *     name="id",
+     *     in="path",
+     *     type="string",
+     *     description="The ID used to find the Category"
+     *    )
+     * )
+     *
+     * @param Request $request
+     * @param string $id of the Category to update
+     * @return \FOS\RestBundle\View\View|JsonResponse
+     */
     public function patchAction(Request $request, string $id)
     {
         $existingCategory = $this->findCategoryById($id);
@@ -143,6 +303,31 @@ class CategoryController extends FOSRestController implements ClassResourceInter
         return $this->view(null, Response::HTTP_NO_CONTENT);
     }
 
+    /**
+     * Delete a Category with the id.
+     *
+     * @SWG\Delete(
+     *     summary="Delete a Category based on ID"
+     * )
+     * @SWG\Response(
+     *     response=204,
+     *     description="The category is correctly delete",
+     * )
+     *
+     * @SWG\Response(
+     *     response=404,
+     *     description="The Category based on ID is not found"
+     * )
+     *
+     * @SWG\Parameter(
+     *     name="id",
+     *     in="path",
+     *     type="string",
+     *     description="The ID used to find the Category"
+     * )
+     * @param string $id
+     * @return \FOS\RestBundle\View\View
+     */
     public function deleteAction(string $id)
     {
         $category = $this->findCategoryById($id);

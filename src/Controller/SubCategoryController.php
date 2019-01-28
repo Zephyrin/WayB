@@ -18,7 +18,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * @Rest\RouteResource(
- *     "Category/{CategoryId}/SubCategory",
+ *     "api/Category/{CategoryId}/SubCategory",
  *     pluralize=false
  * )
  */
