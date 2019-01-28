@@ -58,7 +58,7 @@ Feature: Provide a consistent standard JSON API endpoint
     When I request "/api/category" using HTTP POST
     Then the response code is 201
 
-  Scenario: Can add a new Category with an existing name
+  Scenario: Cannot add a new Category with an existing name
     Given the request body is:
       """
       {
@@ -67,7 +67,23 @@ Feature: Provide a consistent standard JSON API endpoint
       }
       """
     When I request "/api/category" using HTTP POST
-    Then the response code is 400
+    Then the response code is 422
+    And the response body contains JSON:
+    """
+    {
+        "status": "error",
+        "errors": [{
+            "children": {
+                "name": {
+                    "errors": [
+                        "This category name is already in use."
+                    ]
+                },
+                "subCategories": []
+            }
+        }]
+    }
+    """
 
 
   Scenario: Can update an existing Category - PUT
