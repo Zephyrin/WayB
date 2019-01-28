@@ -14,7 +14,6 @@ class SubCategoryType extends AbstractType
     {
         $builder
             ->add('name')
-            ->add('category')
             ->add('extraFieldDefs')
         ;
     }

@@ -8,9 +8,15 @@ use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation\Exclude;
 use JMS\Serializer\Annotation\SerializedName;
 use Symfony\Component\Validator\Constraints as Asset;
+use Swagger\Annotations as SWG;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
+ * @SWG\Definition(
+ *     description="A Sub-Category give a way to describe an equipment depending on their type like 'Pant' or 'Camera'"
+ * )
  * @ORM\Entity(repositoryClass="App\Repository\SubCategoryRepository")
+ * @UniqueEntity(fields="name", message="This sub-category name is already in use.")
  */
 class SubCategory
 {
@@ -19,6 +25,8 @@ class SubCategory
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
      * @SerializedName("id")
+     * @SWG\Property(description="The unique identifier of the Sub-Category.",
+     *     readOnly=true)
      */
     private $id;
 
@@ -26,6 +34,7 @@ class SubCategory
      * @Asset\NotBlank()
      * @ORM\Column(type="string", length=255)
      * @SerializedName("name")
+     * @SWG\Property(description="The name of the Sub-Category.")
      */
     private $name;
 
@@ -33,12 +42,16 @@ class SubCategory
      * @ORM\ManyToOne(targetEntity="App\Entity\Category", inversedBy="subCategories")
      * @ORM\JoinColumn(nullable=false)
      * @Exclude
+     * @SWG\Property(type="integer",
+     *     readOnly=true,
+     *     description="Not used, leave it empty. Swagger problem, not abble to remove this field form the documentation...")
      */
     private $category;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\ExtraFieldDef", mappedBy="subCategory", orphanRemoval=true)
      * @SerializedName("extraFieldDefs")
+     * @SWG\Property(description="The list of all ExtraFieldDefs link to this Sub-Category.")
      */
     private $extraFieldDefs;
 

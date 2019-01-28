@@ -15,11 +15,17 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Nelmio\ApiDocBundle\Annotation\Model;
+use Swagger\Annotations as SWG;
 
 /**
  * @Rest\RouteResource(
  *     "api/Category/{CategoryId}/SubCategory",
  *     pluralize=false
+ * )
+ *
+ * @SWG\Tag(
+ *     name="Sub-Category"
  * )
  */
 class SubCategoryController extends FOSRestController implements ClassResourceInterface
@@ -49,13 +55,54 @@ class SubCategoryController extends FOSRestController implements ClassResourceIn
         $this->formErrorSerializer = $formErrorSerializer;
     }
 
+    /**
+     * Create a new Sub-Category
+     *
+     * @SWG\Post(
+     *     consumes={"application/json"},
+     *     produces={"application/json"},
+     *     @SWG\Response(
+     *      response=200,
+     *      description="Successful operation"
+     *    ),
+     *    @SWG\Response(
+     *     response=422,
+     *     description="The form is not correct<BR/>
+     * See the corresponding JSON error to see which field is not correct"
+     *    )
+     *    ,
+     *    @SWG\Parameter(
+     *     name="categoryid",
+     *     in="path",
+     *     type="string",
+     *     required=true,
+     *     allowEmptyValue=false,
+     *     description="The ID used to find the Category"
+     *    ),
+     *    @SWG\Parameter(
+     *     name="The JSON Category",
+     *     in="body",
+     *     required=true,
+     *     @SWG\Schema(
+     *       ref=@Model(type=SubCategory::class)
+     *     ),
+     *     description="The JSon Category"
+     *    )
+     *
+     * )
+     *
+     * @param Request $request
+     * @return \FOS\RestBundle\View\View|JsonResponse
+     */
     public function postAction(Request $request)
     {
         $data = json_decode(
             $request->getContent(),
             true
         );
-        $form = $this->createForm(SubCategoryType::class, new SubCategory());
+        $form = $this->createForm(
+            SubCategoryType::class,
+            new SubCategory());
         $form->submit(
             $data
         );
@@ -83,6 +130,40 @@ class SubCategoryController extends FOSRestController implements ClassResourceIn
             Response::HTTP_CREATED);
     }
 
+    /**
+     * Expose the Sub-Category with the id.
+     *
+     * @SWG\Get(
+     *     summary="Get the Sub-Category based on its ID and the CategoryId of the category",
+     *     produces={"application/json"}
+     * )
+     * @SWG\Response(
+     *     response=200,
+     *     description="Return the Sub-Category based on ID and the CategoryId of the category",
+     *     @SWG\Schema(ref=@Model(type=SubCategory::class))
+     * )
+     *
+     * @SWG\Response(
+     *     response=404,
+     *     description="The Category based on CategoryId or the Sub-Category based on ID is not found"
+     * )
+     *
+     * @SWG\Parameter(
+     *     name="categoryid",
+     *     in="path",
+     *     type="string",
+     *     description="The ID used to find the Category"
+     * )
+     * @SWG\Parameter(
+     *     name="id",
+     *     in="path",
+     *     type="string",
+     *     description="The ID used to find the Sub-Category"
+     * )
+     *
+     * @var $id
+     * @return \FOS\RestBundle\View\View
+     */
     public function getAction(string $id)
     {
         return $this->view(
@@ -90,6 +171,35 @@ class SubCategoryController extends FOSRestController implements ClassResourceIn
         );
     }
 
+    /**
+     * Expose all Sub-Categories
+     *
+     * @SWG\Get(
+     *     summary="Get all Sub-Categories belong to CategoryId",
+     *     produces={"application/json"}
+     * )
+     * @SWG\Response(
+     *     response=200,
+     *     description="Return all the Sub-Categories",
+     *     @SWG\Schema(
+     *      type="array",
+     *      @Model(type=SubCategory::class)
+     *     )
+     * )
+     * @SWG\Parameter(
+     *     name="categoryid",
+     *     in="path",
+     *     type="string",
+     *     description="The ID of the Category which Sub-Categories belong to"
+     * )
+     *
+     * @SWG\Response(
+     *     response=404,
+     *     description="The Category based on CategoryId is not found"
+     * )
+     *
+     * @return \FOS\RestBundle\View\View
+     */
     public function cgetAction()
     {
         return $this->view(
@@ -97,6 +207,52 @@ class SubCategoryController extends FOSRestController implements ClassResourceIn
         );
     }
 
+    /**
+     * Update a SubCategory
+     *
+     * @SWG\Put(
+     *     consumes={"application/json"},
+     *     produces={"application/json"},
+     *     @SWG\Response(
+     *      response=204,
+     *      description="Successful operation"
+     *    ),
+     *    @SWG\Response(
+     *     response=422,
+     *     description="The form is not correct<BR/>
+     * See the corresponding JSON error to see which field is not correct"
+     *    ),
+     *    @SWG\Response(
+     *     response=404,
+     *     description="The Category based on CategoryId or the Sub-Category based on ID is not found"
+     *    ),
+     *    @SWG\Parameter(
+     *     name="The full JSON Sub-Category",
+     *     in="body",
+     *     required=true,
+     *     @SWG\Schema(
+     *       ref=@Model(type=SubCategory::class)
+     *     ),
+     *     description="The JSon Sub-Category"
+     *    ),
+     *    @SWG\Parameter(
+     *     name="categoryid",
+     *     in="path",
+     *     type="string",
+     *     description="The ID used to find the Category"
+     *    ),
+     *    @SWG\Parameter(
+     *     name="id",
+     *     in="path",
+     *     type="string",
+     *     description="The ID used to find the Sub-Category"
+     *    )
+     * )
+     *
+     * @param Request $request
+     * @param string $id of the Category to update
+     * @return \FOS\RestBundle\View\View|JsonResponse
+     */
     public function putAction(Request $request, string $id)
     {
         $existingSubCategory = $this->findSubCategoryById($id);
@@ -121,6 +277,52 @@ class SubCategoryController extends FOSRestController implements ClassResourceIn
         return $this->view(null, Response::HTTP_NO_CONTENT);
     }
 
+    /**
+     * Update a part of a SubCategory
+     *
+     * @SWG\Patch(
+     *     consumes={"application/json"},
+     *     produces={"application/json"},
+     *     @SWG\Response(
+     *      response=204,
+     *      description="Successful operation"
+     *    ),
+     *    @SWG\Response(
+     *     response=422,
+     *     description="The form is not correct<BR/>
+     * See the corresponding JSON error to see which field is not correct"
+     *    ),
+     *    @SWG\Response(
+     *     response=404,
+     *     description="The Category based on CategoryId or the Sub-Category based on ID is not found"
+     *    ),
+     *    @SWG\Parameter(
+     *     name="The full JSON Sub-Category",
+     *     in="body",
+     *     required=true,
+     *     @SWG\Schema(
+     *       ref=@Model(type=SubCategory::class)
+     *     ),
+     *     description="The JSon Sub-Category"
+     *    ),
+     *    @SWG\Parameter(
+     *     name="categoryid",
+     *     in="path",
+     *     type="string",
+     *     description="The ID used to find the Category"
+     *    ),
+     *    @SWG\Parameter(
+     *     name="id",
+     *     in="path",
+     *     type="string",
+     *     description="The ID used to find the Sub-Category"
+     *    )
+     * )
+     *
+     * @param Request $request
+     * @param string $id of the Category to update
+     * @return \FOS\RestBundle\View\View|JsonResponse
+     */
     public function patchAction(Request $request, string $id)
     {
         $existingSubCategory = $this->findSubCategoryById($id);
@@ -143,6 +345,37 @@ class SubCategoryController extends FOSRestController implements ClassResourceIn
         return $this->view(null, Response::HTTP_NO_CONTENT);
     }
 
+    /**
+     * Delete a SubCategory with the id.
+     *
+     * @SWG\Delete(
+     *     summary="Delete a Sub-Category based on ID"
+     * )
+     * @SWG\Response(
+     *     response=204,
+     *     description="The sub-category is correctly delete",
+     * )
+     *
+     * @SWG\Response(
+     *     response=404,
+     *     description="The category based on CategoryId or the sub-category based on ID is not found"
+     * )
+     *
+     * @SWG\Parameter(
+     *     name="categoryid",
+     *     in="path",
+     *     type="string",
+     *     description="The ID used to find the Category"
+     * )
+     * @SWG\Parameter(
+     *     name="id",
+     *     in="path",
+     *     type="string",
+     *     description="The ID used to find the Sub-Category"
+     * )
+     * @param string $id
+     * @return \FOS\RestBundle\View\View
+     */
     public function deleteAction(string $id)
     {
         $subCategory = $this->findSubCategoryById($id);
@@ -156,7 +389,7 @@ class SubCategoryController extends FOSRestController implements ClassResourceIn
     /**
      * @param string $id
      *
-     * @return Category
+     * @return SubCategory
      * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
      */
     private function findSubCategoryById(string $id)

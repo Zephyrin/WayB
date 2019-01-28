@@ -3,9 +3,12 @@
 namespace App\Form;
 
 use App\Entity\ExtraFieldDef;
+use App\Repository\ExtraFieldDefRepository;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Doctrine\ORM\EntityRepository;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 
 class ExtraFieldDefType extends AbstractType
 {
@@ -18,11 +21,15 @@ class ExtraFieldDefType extends AbstractType
             ->add('isPrice')
             ->add('isWeight')
             ->add('linkTo'
-//                , ExtraFieldDefType::class,
-//                [ 'required' => false
-////                    , ''
-////                    , 'property_path' => 'id'
-//                ]
+                , EntityType::class
+                , [
+                    'class' => ExtraFieldDef::class
+                    , 'required' => false
+                    , 'query_builder' => function(EntityRepository $er) {
+                        return $er->createQueryBuilder('u')
+                            ->orderBy('u.name', 'ASC');
+                    }
+                 ]
                 )
         ;
     }

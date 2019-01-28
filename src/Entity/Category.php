@@ -26,7 +26,8 @@ class Category
      * @ORM\Column(type="integer")
      * @SerializedName("id")
      * @var int
-     * @SWG\Property(description="The unique identifier of the Category.")
+     * @SWG\Property(description="The unique identifier of the Category.",
+     *     readOnly=true)
      */
     private $id;
 

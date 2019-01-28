@@ -9,7 +9,12 @@ use JMS\Serializer\Annotation\Exclude;
 use JMS\Serializer\Annotation\SerializedName;
 use Symfony\Component\Validator\Constraints as Asset;
 use App\Enum\TypeExtraFieldEnum;
+use Swagger\Annotations as SWG;
+
 /**
+ * @SWG\Definition(
+ *     description="An ExtraFieldDef give a way to describe an equipment field depending on their type like 'Pant' or 'Camera'"
+ * )
  * @ORM\Entity(repositoryClass="App\Repository\ExtraFieldDefRepository")
  */
 class ExtraFieldDef
@@ -19,6 +24,8 @@ class ExtraFieldDef
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
      * @SerializedName("id")
+     * @SWG\Property(description="The unique identifier of the ExtraFieldDef.",
+     *     readOnly=true)
      */
     private $id;
 
@@ -27,6 +34,7 @@ class ExtraFieldDef
      * @Asset\GreaterThanOrEqual(TypeExtraFieldEnum::ARRAY)
      * @Asset\LessThanOrEqual(TypeExtraFieldEnum::NUMBER)
      * @SerializedName("type")
+     * @SWG\Property(description="The type of the ExtraFieldDef.", enum={TypeExtraFieldEnum::ARRAY, TypeExtraFieldEnum::NUMBER})
      */
     private $type;
 
@@ -34,18 +42,21 @@ class ExtraFieldDef
      * @Asset\NotBlank()
      * @ORM\Column(type="string", length=255)
      * @SerializedName("name")
+     * @SWG\Property(description="The name of the ExtraFieldDef.")
      */
     private $name;
 
     /**
      * @ORM\Column(type="boolean")
      * @SerializedName("isPrice")
+     * @SWG\Property(description="If this field is the price or not.")
      */
     private $isPrice;
 
     /**
      * @ORM\Column(type="boolean")
      * @SerializedName("isWeight")
+     * @SWG\Property(description="If this field is the weight or not.")
      */
     private $isWeight;
 
@@ -53,19 +64,29 @@ class ExtraFieldDef
      * @ORM\ManyToOne(targetEntity="App\Entity\SubCategory", inversedBy="extraFieldDefs")
      * @ORM\JoinColumn(nullable=false)
      * @Exclude
+     * @SWG\Property(type="integer",
+     *     readOnly=true,
+     *     description="Not used, leave it empty. Swagger problem, not abble to remove this field form the documentation...")
      */
     private $subCategory;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\ExtraFieldDef",
      *     inversedBy="extraFieldDefs")
+     * @ORM\JoinColumn(name="link_to_id", referencedColumnName="id")
      * @SerializedName("linkTo")
+     * @SWG\Property(
+     *     type="ExtraFieldDef",
+     *     description="Give the other extra field definition which it is link on. For example a price can be link to a weight of type Array.")
      */
     private $linkTo;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\ExtraFieldDef", mappedBy="linkTo")
      * @Exclude
+     * @SWG\Property(type="integer",
+     *     readOnly=true,
+     *     description="Not used, leave it empty. Swagger problem, not abble to remove this field form the documentation...")
      */
     private $extraFieldDefs;
 

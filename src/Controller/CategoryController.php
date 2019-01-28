@@ -96,7 +96,6 @@ class CategoryController extends FOSRestController implements ClassResourceInter
             $data
             );
         if (false === $form->isValid()) {
-//            return $this->view($form, Response::HTTP_UNPROCESSABLE_ENTITY);
             return new JsonResponse(
                 [
                     'status' => 'error',
@@ -225,7 +224,6 @@ class CategoryController extends FOSRestController implements ClassResourceInter
         $form->submit($request->request->all());
 
         if (false === $form->isValid()) {
-//            return $this->view($form);
             return new JsonResponse(
                 [
                     'status' => 'error',
@@ -290,7 +288,6 @@ class CategoryController extends FOSRestController implements ClassResourceInter
         $form->submit($request->request->all(), false);
 
         if (false === $form->isValid()) {
-//            return $this->view($form);
             return new JsonResponse(
                 [
                     'status' => 'error',
@@ -319,7 +316,7 @@ class CategoryController extends FOSRestController implements ClassResourceInter
      *
      * @SWG\Response(
      *     response=404,
-     *     description="The Category based on ID is not found"
+     *     description="The category based on ID is not found"
      * )
      *
      * @SWG\Parameter(

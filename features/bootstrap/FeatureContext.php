@@ -92,12 +92,14 @@ class FeatureContext implements Context
     {
         foreach ($table->getColumnsHash() as $category) {
 
+            $catId = $category['category'];
+            unset($category["category"]);
             $this->apiContext->setRequestBody(
                 json_encode($category)
             );
 
             $this->apiContext->requestPath(
-                "/api/category/{$category['category']}/subcategory",
+                "/api/category/{$catId}/subcategory",
                 'POST'
             );
             $expectedResult = ["{",'    "status": "ok"',"}"];
