@@ -65,9 +65,9 @@ class FeatureContext implements Context
                 '/api/category',
                 'POST'
             );
-            $expectedResult = ["{",'    "status": "ok"',"}"];
-            $this->apiContext->assertResponseBodyIs(new \Behat\Gherkin\Node\PyStringNode($expectedResult,0));
-            echo 'passed.';
+//            $expectedResult = ["{",'    "status": "ok"',"}"];
+//            $this->apiContext->assertResponseBodyIs(new \Behat\Gherkin\Node\PyStringNode($expectedResult,0));
+//            echo 'passed.';
         }
     }
 
@@ -102,12 +102,12 @@ class FeatureContext implements Context
                 "/api/category/{$catId}/subcategory",
                 'POST'
             );
-            $expectedResult = ["{",'    "status": "ok"',"}"];
-            $this->apiContext->assertResponseBodyIs(
-                new \Behat\Gherkin\Node\PyStringNode(
-                    $expectedResult,0
-                ));
-            echo 'ok passed.';
+//            $expectedResult = ["{",'    "status": "ok"',"}"];
+//            $this->apiContext->assertResponseBodyIs(
+//                new \Behat\Gherkin\Node\PyStringNode(
+//                    $expectedResult,0
+//                ));
+//            echo 'ok passed.';
         }
     }
 

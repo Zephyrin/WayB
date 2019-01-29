@@ -41,10 +41,13 @@ class Category
     private $name;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\SubCategory", mappedBy="category", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="App\Entity\SubCategory",
+     *     mappedBy="category",
+     *     orphanRemoval=true,
+     *     cascade={"persist"})
      * @SerializedName("subCategories")
      * @var SubCategory
-     * @SWG\Property(description="The list of all SubCategory link to this Category.")
+     * @SWG\Property(description="The list of all SubCategory link to this Category")
      */
     private $subCategories;
 

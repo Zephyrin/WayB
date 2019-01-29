@@ -101,7 +101,7 @@ Feature: Provide a consistent standard JSON API endpoint
     When I request "/api/category/3/subcategory" using HTTP POST
     Then the response code is 201
 
-  Scenario: Can update an existing Category - PUT
+  Scenario: Can update an existing SubCategory - PUT
     Given the request body is:
       """
       {
@@ -263,5 +263,92 @@ Feature: Provide a consistent standard JSON API endpoint
       "id": 1,
       "name": "Cooking",
       "subCategories": []
+    }
+    """
+
+  Scenario: Can add a Category and all its relative until ExtraFieldDef
+    Given the request body is:
+    """
+    {
+      "name": "Test category",
+      "subCategories": [
+        {
+          "name": "Test sub category"
+        },
+        {
+          "name": "Test sub category 2"
+        }
+      ]
+    }
+    """
+    When I request "/api/category" using HTTP POST
+    Then the response code is 201
+    And the response body contains JSON:
+    """
+    {
+      "id": 4,
+      "name": "Test category",
+      "subCategories": [
+        {
+          "id": 6,
+          "name": "Test sub category"
+        },
+        {
+          "id": 7,
+          "name": "Test sub category 2"
+        }
+      ]
+    }
+    """
+
+  Scenario: Can update a Category and all its SubCategory using PUT
+    Given the request body is:
+    """
+    {
+      "name": "Clothe 2",
+      "subCategories": [
+        {
+          "id": 1,
+          "name": "Pants 2"
+        },
+        {
+          "id": 2,
+          "name": "T-Shirt"
+        },
+        {
+          "name": "New Type"
+        }
+      ]
+    }
+    """
+    When I request "/api/category/1" using HTTP PUT
+    Then the response code is 204
+    When I request "/api/category/1" using HTTP GET
+    Then the response body contains JSON:
+        """
+    {
+      "id": 1,
+      "name": "Clothe 2",
+      "subCategories": [
+        {
+          "id": 1,
+          "name": "Pants 2",
+          "extraFieldDefs": [
+
+          ]
+        },
+        {
+          "id": 2,
+          "name": "T-Shirt",
+          "extraFieldDefs": [
+
+          ]
+        },
+        {
+          "id": 6,
+          "name": "New Type",
+          "extraFieldDefs": [ ]
+        }
+      ]
     }
     """

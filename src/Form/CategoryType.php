@@ -6,6 +6,7 @@ use App\Entity\Category;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 
 class CategoryType extends AbstractType
 {
@@ -14,7 +15,16 @@ class CategoryType extends AbstractType
     {
         $builder
             ->add('name')
-            ->add('subCategories')
+            ->add('subCategories'
+                , CollectionType::class
+                , [
+                    'entry_type' => SubCategoryType::class
+                    , 'entry_options' => ['label' => false]
+                    , 'allow_add' => true
+                    , 'allow_delete' => true
+                    , 'by_reference' => false
+                ]
+            )
             ;
     }
 

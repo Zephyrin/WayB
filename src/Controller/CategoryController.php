@@ -55,14 +55,19 @@ class CategoryController extends FOSRestController implements ClassResourceInter
     }
 
     /**
-     * Create a new Category
+     * Create a new Category.
+     *
+     * The SubCategories can be created during the POST.
      *
      * @SWG\Post(
      *     consumes={"application/json"},
      *     produces={"application/json"},
      *     @SWG\Response(
-     *      response=200,
-     *      description="Successful operation"
+     *      response=201,
+     *      description="Successful operation with the new value insert",
+     *      @SWG\Schema(
+     *       ref=@Model(type=Category::class)
+     *     )
      *    ),
      *    @SWG\Response(
      *     response=422,
@@ -105,13 +110,12 @@ class CategoryController extends FOSRestController implements ClassResourceInter
                 JsonResponse::HTTP_UNPROCESSABLE_ENTITY
             );
         }
+        $insertData = $form->getData();
+        $this->entityManager->persist($insertData);
 
-        $this->entityManager->persist($form->getData());
         $this->entityManager->flush();
-
-        return  $this->view([
-                    'status' => 'ok',
-                ],
+        return  $this->view(
+            $this->findCategoryById($insertData->getId()),
             Response::HTTP_CREATED);
     }
 
@@ -232,6 +236,7 @@ class CategoryController extends FOSRestController implements ClassResourceInter
                 ],
                 JsonResponse::HTTP_UNPROCESSABLE_ENTITY
             );
+
         }
 
         $this->entityManager->flush();
