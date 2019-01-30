@@ -30,11 +30,11 @@ class ExtraFieldDef
     private $id;
 
     /**
-     * @ORM\Column(type="integer")
-     * @Asset\GreaterThanOrEqual(TypeExtraFieldEnum::ARRAY)
-     * @Asset\LessThanOrEqual(TypeExtraFieldEnum::NUMBER)
+     * @ORM\Column(type="string", length=20, nullable=false, )
      * @SerializedName("type")
-     * @SWG\Property(description="The type of the ExtraFieldDef.", enum={TypeExtraFieldEnum::ARRAY, TypeExtraFieldEnum::NUMBER})
+     * @SWG\Property(
+     *     description="The type of the ExtraFieldDef."
+     *     , enum={TypeExtraFieldEnum::ARRAY, TypeExtraFieldEnum::NUMBER})
      */
     private $type;
 
@@ -76,8 +76,10 @@ class ExtraFieldDef
      * @ORM\JoinColumn(name="link_to_id", referencedColumnName="id")
      * @SerializedName("linkTo")
      * @SWG\Property(
-     *     type="ExtraFieldDef",
+     *     type="#/definitions/ExtraFieldDef",
      *     description="Give the other extra field definition which it is link on. For example a price can be link to a weight of type Array.")
+     *
+     * @var ExtraFieldDef
      */
     private $linkTo;
 
@@ -100,12 +102,12 @@ class ExtraFieldDef
         return $this->id;
     }
 
-    public function getType(): ?int
+    public function getType(): ?string
     {
         return $this->type;
     }
 
-    public function setType(int $type): self
+    public function setType(string $type): self
     {
         if (!in_array($type, TypeExtraFieldEnum::getAvailableTypes())) {
             throw new \InvalidArgumentException("Invalid type");

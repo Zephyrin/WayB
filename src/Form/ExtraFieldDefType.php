@@ -3,11 +3,13 @@
 namespace App\Form;
 
 use App\Entity\ExtraFieldDef;
+use App\Enum\TypeExtraFieldEnum;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Doctrine\ORM\EntityRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 
 class ExtraFieldDefType extends AbstractType
 {
@@ -15,7 +17,9 @@ class ExtraFieldDefType extends AbstractType
                               array $options)
     {
         $builder
-            ->add('type')
+            ->add('type'
+                , ChoiceType::class
+                 , [ 'choices' => TypeExtraFieldEnum::getAvailableTypes()])
             ->add('name')
             ->add('isPrice')
             ->add('isWeight')

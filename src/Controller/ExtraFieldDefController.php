@@ -41,7 +41,6 @@ class ExtraFieldDefController extends FOSRestController implements ClassResource
      * @var ExtraFieldDefRepository
      */
     private $extraFieldDefRepository;
-
     /**
      * @var FormErrorSerializer
      */
@@ -59,7 +58,9 @@ class ExtraFieldDefController extends FOSRestController implements ClassResource
     }
 
     /**
-     * Create a new ExtraFieldDef
+     * Create a new ExtraFieldDef.
+     *
+     * The field LinkTo can be fill with the Id of the other ExtraFieldDef or using the full entity.
      *
      * @SWG\Post(
      *     consumes={"application/json"},
@@ -72,8 +73,7 @@ class ExtraFieldDefController extends FOSRestController implements ClassResource
      *     response=422,
      *     description="The form is not correct<BR/>
      * See the corresponding JSON error to see which field is not correct"
-     *    )
-     *    ,
+     *    ),
      *    @SWG\Parameter(
      *     name="categoryid",
      *     in="path",
@@ -107,7 +107,6 @@ class ExtraFieldDefController extends FOSRestController implements ClassResource
      */
     public function postAction(Request $request)
     {
-
         $data = json_decode(
             $request->getContent(),
             true
@@ -136,11 +135,11 @@ class ExtraFieldDefController extends FOSRestController implements ClassResource
         $this->entityManager->persist($extraFieldDef);
         $this->entityManager->flush();
 
-        return  $this->view([
-            'status' => 'ok',
-        ],
-            Response::HTTP_CREATED);
+        return  $this->view(
+            $extraFieldDef
+            ,Response::HTTP_CREATED);
     }
+
     /**
      * Expose the ExtraFieldDef with the id.
      *

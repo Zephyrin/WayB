@@ -134,8 +134,11 @@ class FeatureContext implements Context
      */
     public function thereAreExtrafielddefsWithTheFollowingDetails(TableNode $table)
     {
+        $i = 1;
         foreach ($table->getColumnsHash() as $extraFieldDef) {
+            $isPrice = $extraFieldDef['isPrice'];
             $extraFieldDef['isPrice'] = $extraFieldDef['isPrice'] == 'true';
+            $isWeight = $extraFieldDef['isWeight'];
             $extraFieldDef['isWeight'] = $extraFieldDef['isWeight'] == 'true';
             $catId = $extraFieldDef["category"];
             unset($extraFieldDef["category"]);
@@ -148,12 +151,36 @@ class FeatureContext implements Context
                 "/api/category/{$catId}/subcategory/{$subCatId}/extrafielddef",
                 'POST'
             );
-            $expectedResult = ["{",'    "status": "ok"',"}"];
-            $this->apiContext->assertResponseBodyIs(
+
+            $expectedResult = [
+                "{"
+                , "\"id\": {$i}"
+                , ",\"type\": \"{$extraFieldDef['type']}\""
+                , ",\"name\": \"{$extraFieldDef['name']}\""
+                , ",\"isPrice\": {$isPrice}"
+                , ",\"isWeight\": {$isWeight}"
+            ];
+            if(isset($extraFieldDef['linkTo']) && $extraFieldDef['linkTo'] !== '')
+            {
+                $linkToRef = (int)$extraFieldDef['linkTo'];
+                $linkTo = $table->getColumnsHash()[$linkToRef - 1];
+                $expectedResult[] = ",\"linkTo\": {";
+                $expectedResult[] = "\"id\": {$linkToRef}";
+                $expectedResult[] = ", \"type\": \"{$linkTo['type']}\"";
+                $expectedResult[] = ", \"name\": \"{$linkTo['name']}\"";
+                $expectedResult[] = ", \"isPrice\": {$linkTo['isPrice']}";
+                $expectedResult[] = ", \"isWeight\": {$linkTo['isWeight']}";
+                $expectedResult[] = "}";
+            }
+            $expectedResult[] = "}";
+
+            $this->apiContext->assertResponseBodyContainsJson(
                 new \Behat\Gherkin\Node\PyStringNode(
                     $expectedResult,0
                 ));
-            echo 'ok passed.';
-        }    }
+
+            $i ++;
+        }
+    }
 
 }

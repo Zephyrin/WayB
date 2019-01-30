@@ -10,7 +10,7 @@ namespace App\Enum;
 
 class TypeExtraFieldEnum extends TypeEnum
 {
-    const ARRAY = 0;
-    const NUMBER = 1;
+    const ARRAY = "ARRAY";
+    const NUMBER = "NUMBER";
 
 }

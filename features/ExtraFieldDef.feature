@@ -18,10 +18,10 @@ Feature: Provide a consistent standard JSON API endpoint
       | Mattress     | 2         |
       | Flash Light  | 3         |
     Given there are ExtraFieldDefs with the following details:
-      | type | name   | isPrice | isWeight | subcategory | linkTo | category |
-      | 1    | Size   | False   | False    | 1           |        | 1        |
-      | 0    | Price  | true    | false    | 1           | 1      | 1        |
-      | 0    | Weight | false   | true     | 1           | 1      | 1        |
+      | type   | name   | isPrice | isWeight | subcategory | linkTo | category |
+      | ARRAY  | Size   | false   | false    | 1           |        | 1        |
+      | NUMBER | Price  | true    | false    | 1           | 1      | 1        |
+      | NUMBER | Weight | false   | true     | 1           | 1      | 1        |
 
   Scenario: Can get a single ExtraFieldDef
     Given I request "/api/category/1/subcategory/1/extrafielddef/1" using HTTP GET
@@ -29,7 +29,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
     {
       "id": 1,
-      "type": 1,
+      "type": "ARRAY",
       "name": "Size",
       "isPrice": false,
       "isWeight": false
@@ -45,20 +45,20 @@ Feature: Provide a consistent standard JSON API endpoint
     [
       {
         "id": 1,
-        "type": 1,
+        "type": "ARRAY",
         "name": "Size",
         "isPrice": false,
         "isWeight": false
       },
        {
           "id": 2,
-          "type": 0,
+          "type": "NUMBER",
           "name": "Price",
           "isPrice": true,
           "isWeight": false,
           "linkTo": {
               "id": 1,
-              "type": 1,
+              "type": "ARRAY",
               "name": "Size",
               "isPrice": false,
               "isWeight": false
@@ -66,13 +66,13 @@ Feature: Provide a consistent standard JSON API endpoint
         },
         {
           "id": 3,
-          "type": 0,
+          "type": "NUMBER",
           "name": "Weight",
           "isPrice": false,
           "isWeight": true,
           "linkTo": {
               "id": 1,
-              "type": 1,
+              "type": "ARRAY",
               "name": "Size",
               "isPrice": false,
               "isWeight": false
@@ -96,21 +96,21 @@ Feature: Provide a consistent standard JSON API endpoint
           "extraFieldDefs": [
           {
             "id": 1,
-            "type": 1,
+            "type": "ARRAY",
             "name": "Size",
             "isPrice": false,
             "isWeight": false
           },
           {
             "id": 2,
-            "type": 0,
+            "type": "NUMBER",
             "name": "Price",
             "isPrice": true,
             "isWeight": false,
             "linkTo":
               {
                 "id": 1,
-                "type": 1,
+                "type": "ARRAY",
                 "name": "Size",
                 "isPrice": false,
                 "isWeight": false
@@ -118,14 +118,14 @@ Feature: Provide a consistent standard JSON API endpoint
           },
           {
             "id": 3,
-            "type": 0,
+            "type": "NUMBER",
             "name": "Weight",
             "isPrice": false,
             "isWeight": true,
             "linkTo":
               {
                 "id": 1,
-                "type": 1,
+                "type": "ARRAY",
                 "name": "Size",
                 "isPrice": false,
                 "isWeight": false
@@ -173,7 +173,7 @@ Feature: Provide a consistent standard JSON API endpoint
     Given the request body is:
       """
       {
-        "type": 1,
+        "type": "ARRAY",
         "name": "New field",
         "isPrice": false,
         "isWeight": true,
@@ -182,27 +182,51 @@ Feature: Provide a consistent standard JSON API endpoint
       """
     When I request "/api/category/1/subcategory/2/extrafielddef" using HTTP POST
     Then the response code is 201
+    And the response body contains JSON:
+      """
+      {
+        "id": 4,
+        "type": "ARRAY",
+        "name": "New field",
+        "isPrice": false,
+        "isWeight": true,
+        "linkTo": {
+          "id": 3,
+          "type": "NUMBER",
+          "name": "Weight",
+          "isPrice": false,
+          "isWeight": true,
+          "linkTo": {
+              "id": 1,
+              "type": "ARRAY",
+              "name": "Size",
+              "isPrice": false,
+              "isWeight": false
+          }
+        }
+      }
+      """
     When I request "/api/category/1/subcategory/2/extrafielddef/4" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
     {
       "id": 4,
-      "type": 1,
+      "type": "ARRAY",
       "name": "New field",
       "isPrice": false,
       "isWeight": true,
       "linkTo":
       {
         "id": 3,
-        "type": 0,
+        "type": "NUMBER",
         "name": "Weight",
         "isPrice": false,
         "isWeight": true,
         "linkTo":
         {
           "id": 1,
-          "type": 1,
+          "type": "ARRAY",
           "name": "Size",
           "isPrice": false,
           "isWeight": false
@@ -215,7 +239,7 @@ Feature: Provide a consistent standard JSON API endpoint
     Given the request body is:
       """
       {
-        "type": 1,
+        "type": "ARRAY",
         "name": "Size 2",
         "isPrice": false,
         "isWeight": false
@@ -229,7 +253,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
     {
       "id": 1,
-      "type": 1,
+      "type": "ARRAY",
       "name": "Size 2",
       "isPrice": false,
       "isWeight": false
@@ -240,7 +264,7 @@ Feature: Provide a consistent standard JSON API endpoint
     Given the request body is:
       """
       {
-        "type": 0,
+        "type": "NUMBER",
         "name": "Price 2",
         "isPrice": true,
         "isWeight": false,
@@ -255,20 +279,20 @@ Feature: Provide a consistent standard JSON API endpoint
     """
     {
       "id": 2,
-      "type": 0,
+      "type": "NUMBER",
       "name": "Price 2",
       "isPrice": true,
       "isWeight": false,
       "linkTo":
       {
         "id": 3,
-        "type": 0,
+        "type": "NUMBER",
         "name": "Weight",
         "isPrice": false,
         "isWeight": true,
         "linkTo": {
           "id": 1,
-          "type": 1,
+          "type": "ARRAY",
           "name": "Size",
           "isPrice": false,
           "isWeight": false
@@ -281,7 +305,7 @@ Feature: Provide a consistent standard JSON API endpoint
     Given the request body is:
       """
       {
-        "type": 1,
+        "type": "ARRAY",
         "name": "",
         "isPrice": false,
         "isWeight": false,
@@ -315,13 +339,13 @@ Feature: Provide a consistent standard JSON API endpoint
     """
     {
       "id": 2,
-      "type": 0,
+      "type": "NUMBER",
       "name": "Price",
       "isPrice": true,
       "isWeight": false,
       "linkTo": {
         "id": 1,
-        "type": 1,
+        "type": "ARRAY",
         "name": "Size",
         "isPrice": false,
         "isWeight": false
@@ -344,14 +368,14 @@ Feature: Provide a consistent standard JSON API endpoint
     """
     {
       "id": 2,
-      "type": 0,
+      "type": "NUMBER",
       "name": "Price 2",
       "isPrice": true,
       "isWeight": false,
       "linkTo":
       {
         "id": 1,
-        "type": 1,
+        "type": "ARRAY",
         "name": "Size",
         "isPrice": false,
         "isWeight": false
@@ -389,14 +413,14 @@ Feature: Provide a consistent standard JSON API endpoint
     """
     {
       "id": 2,
-      "type": 0,
+      "type": "NUMBER",
       "name": "Price",
       "isPrice": true,
       "isWeight": false,
       "linkTo":
       {
         "id": 1,
-        "type": 1,
+        "type": "ARRAY",
         "name": "Size",
         "isPrice": false,
         "isWeight": false
@@ -417,7 +441,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
     {
       "id": 1,
-      "type": 1,
+      "type": "ARRAY",
       "name": "",
       "isPrice": false,
       "isWeight": false
