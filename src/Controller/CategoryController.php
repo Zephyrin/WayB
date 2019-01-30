@@ -73,8 +73,7 @@ class CategoryController extends FOSRestController implements ClassResourceInter
      *     response=422,
      *     description="The form is not correct<BR/>
      * See the corresponding JSON error to see which field is not correct"
-     *    )
-     *    ,
+     *    ),
      *    @SWG\Parameter(
      *     name="The JSON Category",
      *     in="body",
@@ -115,7 +114,7 @@ class CategoryController extends FOSRestController implements ClassResourceInter
 
         $this->entityManager->flush();
         return  $this->view(
-            $this->findCategoryById($insertData->getId()),
+            $insertData,
             Response::HTTP_CREATED);
     }
 
@@ -251,7 +250,10 @@ class CategoryController extends FOSRestController implements ClassResourceInter
      * Update a part of a Category
      *
      * All missing attribute will not be update.
-     * If you want update one SubCategory during this process, you need to add all other SubCategory otherwise they will be delete.
+     *
+     * If you want update one SubCategory during this process, you need to add all other SubCategory in the correct order otherwise they will be delete.
+     *
+     * Be careful, when updating SubCategories, you need to range it in correct order.
      *
      * @SWG\Patch(
      *     consumes={"application/json"},
@@ -296,7 +298,9 @@ class CategoryController extends FOSRestController implements ClassResourceInter
 
         $form = $this->createForm(CategoryType::class, $existingCategory);
 
-        $form->submit($request->request->all(), false);
+        $form->submit(
+            $request->request->all()
+            , false);
 
         if (false === $form->isValid()) {
             return new JsonResponse(

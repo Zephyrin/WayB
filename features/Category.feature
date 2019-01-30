@@ -57,6 +57,14 @@ Feature: Provide a consistent standard JSON API endpoint
       """
     When I request "/api/category" using HTTP POST
     Then the response code is 201
+    And the response body contains JSON:
+    """
+      {
+        "id": 4,
+        "name": "Kitchen",
+        "subCategories": []
+      }
+    """
 
   Scenario: Cannot add a new Category with an existing name
     Given the request body is:
@@ -96,6 +104,33 @@ Feature: Provide a consistent standard JSON API endpoint
       """
     When I request "/api/category/2" using HTTP PUT
     Then the response code is 204
+
+  Scenario: Cannot update a new Category with an existing name
+    Given the request body is:
+      """
+      {
+        "name": "Clothe",
+        "subCategories": []
+      }
+      """
+    When I request "/api/category/2" using HTTP PUT
+    Then the response code is 422
+    And the response body contains JSON:
+    """
+    {
+        "status": "error",
+        "errors": [{
+            "children": {
+                "name": {
+                    "errors": [
+                        "This category name is already in use."
+                    ]
+                },
+                "subCategories": []
+            }
+        }]
+    }
+    """
 
   Scenario: Cannot update an unknown Category - PUT
     Given the request body is:

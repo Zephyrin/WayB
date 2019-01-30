@@ -57,6 +57,7 @@ class FeatureContext implements Context
      */
     public function thereAreCategoriesWithTheFollowingDetails(TableNode $categories)
     {
+        $i = 1;
         foreach ($categories->getColumnsHash() as $category) {
             $this->apiContext->setRequestBody(
                 json_encode($category)
@@ -65,9 +66,18 @@ class FeatureContext implements Context
                 '/api/category',
                 'POST'
             );
-//            $expectedResult = ["{",'    "status": "ok"',"}"];
-//            $this->apiContext->assertResponseBodyIs(new \Behat\Gherkin\Node\PyStringNode($expectedResult,0));
-//            echo 'passed.';
+            $expectedResult = [
+                "{"
+                , "\"id\": {$i},"
+                , "\"name\": \"{$category['name']}\""
+                , "}"
+            ];
+            $this->apiContext->assertResponseBodyContainsJson(
+                new \Behat\Gherkin\Node\PyStringNode(
+                    $expectedResult
+                    , 0
+                ));
+            $i ++;
         }
     }
 
@@ -90,24 +100,32 @@ class FeatureContext implements Context
      */
     public function thereAreSubcategoriesWithTheFollowingDetails(TableNode $table)
     {
-        foreach ($table->getColumnsHash() as $category) {
+        $i = 1;
+        foreach ($table->getColumnsHash() as $subCategory) {
 
-            $catId = $category['category'];
-            unset($category["category"]);
+            $catId = $subCategory['category'];
+            unset($subCategory["category"]);
             $this->apiContext->setRequestBody(
-                json_encode($category)
+                json_encode($subCategory)
             );
 
             $this->apiContext->requestPath(
                 "/api/category/{$catId}/subcategory",
                 'POST'
             );
-//            $expectedResult = ["{",'    "status": "ok"',"}"];
-//            $this->apiContext->assertResponseBodyIs(
-//                new \Behat\Gherkin\Node\PyStringNode(
-//                    $expectedResult,0
-//                ));
-//            echo 'ok passed.';
+
+            $expectedResult = [
+                "{"
+                , "\"id\": {$i},"
+                , "\"name\": \"{$subCategory['name']}\""
+                , "}"
+            ];
+            $this->apiContext->assertResponseBodyContainsJson(
+                new \Behat\Gherkin\Node\PyStringNode(
+                    $expectedResult
+                    , 0
+                ));
+            $i ++;
         }
     }
 
@@ -116,14 +134,18 @@ class FeatureContext implements Context
      */
     public function thereAreExtrafielddefsWithTheFollowingDetails(TableNode $table)
     {
-        foreach ($table->getColumnsHash() as $category) {
-            $category['isPrice'] = $category['isPrice'] == 'true';
-            $category['isWeight'] = $category['isWeight'] == 'true';
+        foreach ($table->getColumnsHash() as $extraFieldDef) {
+            $extraFieldDef['isPrice'] = $extraFieldDef['isPrice'] == 'true';
+            $extraFieldDef['isWeight'] = $extraFieldDef['isWeight'] == 'true';
+            $catId = $extraFieldDef["category"];
+            unset($extraFieldDef["category"]);
+            $subCatId = $extraFieldDef["subcategory"];
+            unset($extraFieldDef["subcategory"]);
             $this->apiContext->setRequestBody(
-                json_encode($category)
+                json_encode($extraFieldDef)
             );
             $this->apiContext->requestPath(
-                "/api/category/{$category['category']}/subcategory/{$category['subcategory']}/extrafielddef",
+                "/api/category/{$catId}/subcategory/{$subCatId}/extrafielddef",
                 'POST'
             );
             $expectedResult = ["{",'    "status": "ok"',"}"];

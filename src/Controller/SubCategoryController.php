@@ -56,14 +56,17 @@ class SubCategoryController extends FOSRestController implements ClassResourceIn
     }
 
     /**
-     * Create a new Sub-Category
+     * Create a new Sub-Category link to a Category
      *
      * @SWG\Post(
      *     consumes={"application/json"},
      *     produces={"application/json"},
      *     @SWG\Response(
      *      response=200,
-     *      description="Successful operation"
+     *      description="Successful operation with the new value insert",
+     *      @SWG\Schema(
+     *       ref=@Model(type=SubCategory::class)
+     *      )
      *    ),
      *    @SWG\Response(
      *     response=422,
@@ -116,6 +119,7 @@ class SubCategoryController extends FOSRestController implements ClassResourceIn
                 JsonResponse::HTTP_UNPROCESSABLE_ENTITY
             );
         }
+
         $subCat = $form->getData();
         $category = $this->entityManager->find(
             Category::class,
@@ -124,9 +128,8 @@ class SubCategoryController extends FOSRestController implements ClassResourceIn
         $this->entityManager->persist($subCat);
         $this->entityManager->flush();
 
-        return  $this->view([
-            'status' => 'ok',
-        ],
+        return  $this->view(
+            $subCat,
             Response::HTTP_CREATED);
     }
 

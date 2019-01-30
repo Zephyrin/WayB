@@ -100,6 +100,14 @@ Feature: Provide a consistent standard JSON API endpoint
       """
     When I request "/api/category/3/subcategory" using HTTP POST
     Then the response code is 201
+    And the response body contains JSON:
+    """
+    {
+      "id": 6,
+      "name": "Camera",
+      "extraFieldDefs": [ ]
+    }
+    """
 
   Scenario: Can update an existing SubCategory - PUT
     Given the request body is:
@@ -120,7 +128,7 @@ Feature: Provide a consistent standard JSON API endpoint
     }
     """
 
-  Scenario: Cannot update an existing Category with empty name - PUT
+  Scenario: Cannot update an existing SubCategory with empty name - PUT
     Given the request body is:
       """
       {
@@ -266,7 +274,7 @@ Feature: Provide a consistent standard JSON API endpoint
     }
     """
 
-  Scenario: Can add a Category and all its relative until ExtraFieldDef
+  Scenario: Can add a Category and all its SubCategories
     Given the request body is:
     """
     {
@@ -380,12 +388,10 @@ Feature: Provide a consistent standard JSON API endpoint
         {
           "id": 1,
           "name": "Pants 2",
-          "extraFieldDefs": [
-
-          ]
+          "extraFieldDefs": [ ]
         },
         {
-          "id": 6,
+          "id": 2,
           "name": "New Type",
           "extraFieldDefs": [ ]
         }
