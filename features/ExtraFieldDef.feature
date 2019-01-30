@@ -436,7 +436,7 @@ Feature: Provide a consistent standard JSON API endpoint
     When I request "/api/category/1/subcategory/1/extrafielddef/1" using HTTP GET
     Then the response code is 404
 
-  Scenario: Must have a non-blank name
+  Scenario: Cannot add an ExtraFieldDef with a blank name
     Given the request body is:
     """
     {
