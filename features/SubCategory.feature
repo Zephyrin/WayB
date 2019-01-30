@@ -325,7 +325,7 @@ Feature: Provide a consistent standard JSON API endpoint
     Then the response code is 204
     When I request "/api/category/1" using HTTP GET
     Then the response body contains JSON:
-        """
+    """
     {
       "id": 1,
       "name": "Clothe 2",
@@ -347,6 +347,78 @@ Feature: Provide a consistent standard JSON API endpoint
         {
           "id": 6,
           "name": "New Type",
+          "extraFieldDefs": [ ]
+        }
+      ]
+    }
+    """
+
+  Scenario: Can update a Category and one of its SubCategory using PATCH
+    Given the request body is:
+    """
+    {
+      "subCategories": [
+        {
+          "id": 1,
+          "name": "Pants 2"
+        },
+        {
+          "name": "New Type"
+        }
+      ]
+    }
+    """
+    When I request "/api/category/1" using HTTP PATCH
+    Then the response code is 204
+    When I request "/api/category/1" using HTTP GET
+    Then the response body contains JSON:
+    """
+    {
+      "id": 1,
+      "name": "Clothe",
+      "subCategories": [
+        {
+          "id": 1,
+          "name": "Pants 2",
+          "extraFieldDefs": [
+
+          ]
+        },
+        {
+          "id": 6,
+          "name": "New Type",
+          "extraFieldDefs": [ ]
+        }
+      ]
+    }
+    """
+
+  Scenario: Can update a Category without its SubCategory using PATCH
+    Given the request body is:
+    """
+    {
+      "name": "Clothe 2"
+    }
+    """
+    When I request "/api/category/1" using HTTP PATCH
+    Then the response code is 204
+    When I request "/api/category/1" using HTTP GET
+    Then the response body contains JSON:
+    """
+    {
+      "id": 1,
+      "name": "Clothe 2",
+      "subCategories": [
+        {
+          "id": 1,
+          "name": "Pants",
+          "extraFieldDefs": [
+
+          ]
+        },
+        {
+          "id": 2,
+          "name": "T-shirt",
           "extraFieldDefs": [ ]
         }
       ]

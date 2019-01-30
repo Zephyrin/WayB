@@ -120,7 +120,7 @@ class CategoryController extends FOSRestController implements ClassResourceInter
     }
 
     /**
-     * Expose the Category with the id.
+     * Expose the Category with the id
      *
      * @SWG\Get(
      *     summary="Get the Category based on ID",
@@ -181,7 +181,10 @@ class CategoryController extends FOSRestController implements ClassResourceInter
     }
 
     /**
-     * Update a Category
+     * Update a Category and its SubCategories.
+     *
+     * Be careful, a missing subCategory in the array subCategories will be delete.
+     * You can also update a part of a subCategory.
      *
      * @SWG\Put(
      *     consumes={"application/json"},
@@ -247,6 +250,9 @@ class CategoryController extends FOSRestController implements ClassResourceInter
     /**
      * Update a part of a Category
      *
+     * All missing attribute will not be update.
+     * If you want update one SubCategory during this process, you need to add all other SubCategory otherwise they will be delete.
+     *
      * @SWG\Patch(
      *     consumes={"application/json"},
      *     produces={"application/json"},
@@ -309,11 +315,14 @@ class CategoryController extends FOSRestController implements ClassResourceInter
     }
 
     /**
-     * Delete a Category with the id.
+     * Delete a Category with the id
      *
-     * @SWG\Delete(
-     *     summary="Delete a Category based on ID"
-     * )
+     * Also delete all SubCategory link to Category.
+     * And of course all ExtraFieldDef link to all previously deleted SubCategory.
+     *
+     * You should know what your are doing ! Cannot be reverse.
+     *
+     * @SWG\Delete()
      * @SWG\Response(
      *     response=204,
      *     description="The category is correctly delete",
