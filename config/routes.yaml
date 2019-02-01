@@ -10,10 +10,18 @@ subcategories:
 extrafielddef:
      type:     rest
      resource: App\Controller\ExtraFieldDefController
-app.swagger_ui:
-     path: /api/doc
-     methods: GET
-     defaults: { _controller: nelmio_api_doc.controller.swagger_ui }
+#Login user
+api_auth_login:
+     path: /api/auth/login
+     methods: [POST]
+api:
+     prefix: /api
+     resource: '../src/Controller/Api'
+#Documentation
+#app.swagger_ui:
+#     path: /api/doc
+#     methods: GET
+#     defaults: { _controller: nelmio_api_doc.controller.swagger_ui }
 #app.swagger:
 #     path: /api/doc.json
 #     methods: GET
