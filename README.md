@@ -28,3 +28,8 @@ php bin/console make:migration
 ```bash
 php bin/console server:run
 ```
+
+If you are using a VM :
+```bash
+php bin/console server:start 0.0.0.0:8000
+```
