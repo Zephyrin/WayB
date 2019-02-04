@@ -21,7 +21,6 @@ class ApiContextAuth extends Context\ApiContext
 
     public function removeAuthorization()
     {
-        var_dump($this->token);
         $this->setRequestHeader('Authorization', '');
     }
 }

@@ -140,7 +140,7 @@ Feature: Provide a consistent standard JSON API endpoint
         "subCategories": []
       }
       """
-    When I request "category/4" using HTTP PUT
+    When I request "/api/category/4" using HTTP PUT
     Then the response code is 404
 
   Scenario: Can update an existing Category - PATCH

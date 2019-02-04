@@ -10,6 +10,9 @@ subcategories:
 extrafielddef:
      type:     rest
      resource: App\Controller\ExtraFieldDefController
+brands:
+     type:     rest
+     resource: App\Controller\BrandController
 #Login user
 api_auth_login:
      path: /api/auth/login

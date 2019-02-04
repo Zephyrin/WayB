@@ -1,7 +1,6 @@
 <?php
 namespace App\Controller\Api;
 
-use App\Enum\GenderEnum;
 use FOS\UserBundle\Model\UserManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -10,17 +9,41 @@ use App\Entity\User;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Constraints as Assert;
+use Swagger\Annotations as SWG;
+use Nelmio\ApiDocBundle\Annotation\Model;
+
 
 /**
  * @Route("/auth")
+ * @SWG\Tag(
+ *     name="User"
+ * )
  */
 class ApiAuthController extends AbstractController
 {
     /**
+     * Register an user to the DB.
+     *
      * @Route("/register", name="api_auth_register",  methods={"POST"})
+     *
+     * @SWG\Post(
+     *     consumes={"application/json"},
+     *     produces={"application/json"},
+     *     @SWG\Response(
+     *      response=307,
+     *      description="Redirect to login form with the user as parameter"
+     *    ),
+     *    @SWG\Response(
+     *     response=500,
+     *     description="The form is not correct<BR/>
+     * See the corresponding JSON error to see which field is not correct"
+     *    )
+     * )
+     *
      * @param Request $request
      * @param UserManagerInterface $userManager
-     * @return JsonResponse|\Symfony\Component\HttpFoundation\RedirectResponse     */
+     * @return JsonResponse|\Symfony\Component\HttpFoundation\RedirectResponse
+     */
     public function register(Request $request, UserManagerInterface $userManager)
     {
         $data = json_decode(
@@ -69,6 +92,5 @@ class ApiAuthController extends AbstractController
             'username' => $data['username'],
             'password' => $data['password']
         ], 307);
-        //return new JsonResponse(["success" => $user->getUsername(). " has been registered!"], 200);
     }
 }

@@ -51,7 +51,9 @@ class FeatureContext implements Context
         $pdo->query('delete from sub_category');
         $pdo->query('delete from extra_field_def');
         $pdo->query('delete from fos_user');
-        $pdo->query('delete from sqlite_sequence where name=\'category\' or name=\'sub_category\' or name=\'extra_field_def\' or name=\'fos_user\';');
+        $pdo->query('delete from brand');
+
+        $pdo->query('delete from sqlite_sequence where name=\'category\' or name=\'sub_category\' or name=\'extra_field_def\' or name=\'fos_user\' or name=\'brand\';');
     }
 
     /**
@@ -210,6 +212,37 @@ class FeatureContext implements Context
                     $expectedResult,0
                 ));
 
+            $i ++;
+        }
+    }
+
+    /**
+     * @Given there are Brands with the following details:
+     */
+    public function thereAreBrandsWithTheFollowingDetails(TableNode $brands)
+    {
+        $i = 1;
+        foreach ($brands->getColumnsHash() as $brand) {
+            $this->apiContext->setRequestBody(
+                json_encode($brand)
+            );
+            $this->apiContext->requestPath(
+                '/api/brand',
+                'POST'
+            );
+            $expectedResult = [
+                "{"
+                , "\"id\": {$i},"
+                , "\"name\": \"{$brand['name']}\","
+                , "\"description\": \"{$brand['description']}\","
+                , "\"uri\": \"{$brand['uri']}\""
+                , "}"
+            ];
+            $this->apiContext->assertResponseBodyContainsJson(
+                new \Behat\Gherkin\Node\PyStringNode(
+                    $expectedResult
+                    , 0
+                ));
             $i ++;
         }
     }
