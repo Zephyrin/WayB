@@ -54,7 +54,7 @@ class ApiAuthController extends AbstractController
             ->setPlainPassword($password)
             ->setEmail($email)
             ->setEnabled(true)
-            ->setRoles(['ROLE_USER'])
+            ->setRoles(['ROLE_USER', 'ROLE_AMBASSADOR'])
             ->setSuperAdmin(false)
             ->setGender($gender);
         ;

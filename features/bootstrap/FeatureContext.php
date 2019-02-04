@@ -3,6 +3,7 @@
 use Behat\Behat\Context\Context;
 use Behat\Gherkin\Node\TableNode;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
+
 /**
  * This context class contains the definitions of the steps used by the demo 
  * feature file. Learn how to get started with Behat and BDD on Behat's website.
@@ -11,9 +12,8 @@ use Behat\Behat\Hook\Scope\BeforeScenarioScope;
  */
 class FeatureContext implements Context
 {
-
-
     private $apiContext;
+
 
     public function __construct()
     {
@@ -24,10 +24,11 @@ class FeatureContext implements Context
         BeforeScenarioScope $scope
     )
     {
-        $this->apiContext = $scope
-            ->getEnvironment()
+        $env = $scope
+            ->getEnvironment();
+        $this->apiContext = $env
             ->getContext(
-                \Imbo\BehatApiExtension\Context\ApiContext::class
+                ApiContextAuth::class
             )
         ;
     }
@@ -49,7 +50,37 @@ class FeatureContext implements Context
         $pdo->query('delete from category');
         $pdo->query('delete from sub_category');
         $pdo->query('delete from extra_field_def');
-        $pdo->query('delete from sqlite_sequence where name=\'category\' or name=\'sub_category\' or name=\'extra_field_def\';');
+        $pdo->query('delete from fos_user');
+        $pdo->query('delete from sqlite_sequence where name=\'category\' or name=\'sub_category\' or name=\'extra_field_def\' or name=\'fos_user\';');
+    }
+
+    /**
+     * @BeforeScenario
+     * @login
+     *
+     * @see https://symfony.com/doc/current/security/entity_provider.html#creating-your-first-user
+     */
+    public function login()
+    {
+        $this->apiContext->setRequestBody(
+            '{ "username": "patatat", "password": "fregida", "email": "patata@wayb.com", "gender": "MALE" }'
+        );
+        $this->apiContext->requestPath(
+            '/api/auth/register',
+            'POST'
+        );
+
+
+        $this->apiContext->getTokenFromLogin();
+
+    }
+
+    /**
+     * @AfterScenario
+     * @logout
+     */
+    public function logout() {
+        $this->apiContext->RemoveAuthorization('Authorization', '');
     }
 
     /**

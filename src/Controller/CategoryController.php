@@ -16,7 +16,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
-
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 
 /**
  * @Rest\RouteResource(
@@ -85,7 +85,7 @@ class CategoryController extends FOSRestController implements ClassResourceInter
      *    )
      *
      * )
-     *
+     * @Security("has_role('ROLE_AMBASSADOR')")
      * @param Request $request
      * @return \FOS\RestBundle\View\View|JsonResponse
      */
