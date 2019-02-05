@@ -2,10 +2,10 @@
 
 namespace App\Controller;
 
-use App\Entity\Category;
-use App\Entity\SubCategory;
-use App\Form\SubCategoryType;
-use App\Repository\SubCategoryRepository;
+use App\Entity\Equipment;
+use App\Entity\ExtraField;
+use App\Form\ExtraFieldType;
+use App\Repository\ExtraFieldRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Serializer\FormErrorSerializer;
 use FOS\RestBundle\Controller\Annotations as Rest;
@@ -19,25 +19,27 @@ use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 
 /**
+ * Class ExtraFieldController
+ * @package App\Controller
+ *
  * @Rest\RouteResource(
- *     "api/Category/{CategoryId}/SubCategory",
+ *     "api/equipment/{equipmentId}/extrafield",
  *     pluralize=false
  * )
- *
  * @SWG\Tag(
- *     name="Sub-Category"
+ *     name="ExtraField"
  * )
  */
-class SubCategoryController extends FOSRestController implements ClassResourceInterface
+class ExtraFieldController extends FOSRestController implements ClassResourceInterface
 {
     /**
      * @var EntityManagerInterface
      */
     private $entityManager;
     /**
-     * @var subCategoryRepository
+     * @var ExtraFieldRepository
      */
-    private $subCategoryRepository;
+    private $extraFieldRepository;
 
     /**
      * @var FormErrorSerializer
@@ -46,17 +48,17 @@ class SubCategoryController extends FOSRestController implements ClassResourceIn
 
     public function __construct(
         EntityManagerInterface $entityManager,
-        SubCategoryRepository $subCategoryRepository,
+        ExtraFieldRepository $extraFieldRepository,
         FormErrorSerializer $formErrorSerializer
     )
     {
         $this->entityManager = $entityManager;
-        $this->subCategoryRepository = $subCategoryRepository;
+        $this->extraFieldRepository = $extraFieldRepository;
         $this->formErrorSerializer = $formErrorSerializer;
     }
 
     /**
-     * Create a new Sub-Category link to a Category
+     * Create a new ExtraField link to an Equipment
      *
      * @SWG\Post(
      *     consumes={"application/json"},
@@ -65,7 +67,7 @@ class SubCategoryController extends FOSRestController implements ClassResourceIn
      *      response=200,
      *      description="Successful operation with the new value insert",
      *      @SWG\Schema(
-     *       ref=@Model(type=SubCategory::class)
+     *       ref=@Model(type=ExtraField::class)
      *      )
      *    ),
      *    @SWG\Response(
@@ -75,21 +77,21 @@ class SubCategoryController extends FOSRestController implements ClassResourceIn
      *    )
      *    ,
      *    @SWG\Parameter(
-     *     name="categoryid",
+     *     name="equipmentid",
      *     in="path",
      *     type="string",
      *     required=true,
      *     allowEmptyValue=false,
-     *     description="The ID used to find the Category"
+     *     description="The ID used to find the Equipment"
      *    ),
      *    @SWG\Parameter(
-     *     name="The JSON Sub-Category",
+     *     name="The JSON ExtraField",
      *     in="body",
      *     required=true,
      *     @SWG\Schema(
-     *       ref=@Model(type=SubCategory::class)
+     *       ref=@Model(type=ExtraField::class)
      *     ),
-     *     description="The JSon Sub-Category"
+     *     description="The JSon ExtraField"
      *    )
      *
      * )
@@ -104,8 +106,8 @@ class SubCategoryController extends FOSRestController implements ClassResourceIn
             true
         );
         $form = $this->createForm(
-            SubCategoryType::class,
-            new SubCategory());
+            ExtraFieldType::class,
+            new ExtraField());
         $form->submit(
             $data
         );
@@ -120,48 +122,48 @@ class SubCategoryController extends FOSRestController implements ClassResourceIn
             );
         }
 
-        $subCat = $form->getData();
-        $category = $this->entityManager->find(
-            Category::class,
-            $request->attributes->get('categoryid'));
-        $subCat->setCategory($category);
-        $this->entityManager->persist($subCat);
+        $extraField = $form->getData();
+        $equipment = $this->entityManager->find(
+            Equipment::class,
+            $request->attributes->get('equipmentid'));
+        $extraField->setCategory($equipment);
+        $this->entityManager->persist($extraField);
         $this->entityManager->flush();
 
         return  $this->view(
-            $subCat,
+            $extraField,
             Response::HTTP_CREATED);
     }
 
     /**
-     * Expose the Sub-Category with the id.
+     * Expose the ExtraField with the id.
      *
      * @SWG\Get(
-     *     summary="Get the Sub-Category based on its ID and the CategoryId of the category",
+     *     summary="Get the ExtraField based on its ID and the EquipmentId of the equipment",
      *     produces={"application/json"}
      * )
      * @SWG\Response(
      *     response=200,
-     *     description="Return the Sub-Category based on ID and the CategoryId of the category",
-     *     @SWG\Schema(ref=@Model(type=SubCategory::class))
+     *     description="Return the ExtraField based on ID and the EquipmentId of the equipment",
+     *     @SWG\Schema(ref=@Model(type=ExtraField::class))
      * )
      *
      * @SWG\Response(
      *     response=404,
-     *     description="The Category based on CategoryId or the Sub-Category based on ID is not found"
+     *     description="The Equipment based on EquipmentId or the ExtraField based on ID is not found"
      * )
      *
      * @SWG\Parameter(
-     *     name="categoryid",
+     *     name="equipmentid",
      *     in="path",
      *     type="string",
-     *     description="The ID used to find the Category"
+     *     description="The ID used to find the Equipment"
      * )
      * @SWG\Parameter(
      *     name="id",
      *     in="path",
      *     type="string",
-     *     description="The ID used to find the Sub-Category"
+     *     description="The ID used to find the ExtraField"
      * )
      *
      * @var $id
@@ -170,35 +172,35 @@ class SubCategoryController extends FOSRestController implements ClassResourceIn
     public function getAction(string $id)
     {
         return $this->view(
-            $this->findSubCategoryById($id)
+            $this->findExtraFieldById($id)
         );
     }
 
     /**
-     * Expose all Sub-Categories
+     * Expose all ExtraField
      *
      * @SWG\Get(
-     *     summary="Get all Sub-Categories belong to CategoryId",
+     *     summary="Get all ExtraFields belong to EquipmentId",
      *     produces={"application/json"}
      * )
      * @SWG\Response(
      *     response=200,
-     *     description="Return all the Sub-Categories",
+     *     description="Return all the ExtraFields",
      *     @SWG\Schema(
      *      type="array",
-     *      @Model(type=SubCategory::class)
+     *      @Model(type=ExtraField::class)
      *     )
      * )
      * @SWG\Parameter(
-     *     name="categoryid",
+     *     name="equipmentid",
      *     in="path",
      *     type="string",
-     *     description="The ID of the Category which Sub-Categories belong to"
+     *     description="The ID of the Equipment which ExtraFields belong to"
      * )
      *
      * @SWG\Response(
      *     response=404,
-     *     description="The Category based on CategoryId is not found"
+     *     description="The Equipment based on EquipmentId is not found"
      * )
      *
      * @return \FOS\RestBundle\View\View
@@ -206,12 +208,12 @@ class SubCategoryController extends FOSRestController implements ClassResourceIn
     public function cgetAction()
     {
         return $this->view(
-            $this->subCategoryRepository->findAll()
+            $this->extraFieldRepository->findAll()
         );
     }
 
     /**
-     * Update a SubCategory
+     * Update an ExtraField
      *
      * @SWG\Put(
      *     consumes={"application/json"},
@@ -227,28 +229,28 @@ class SubCategoryController extends FOSRestController implements ClassResourceIn
      *    ),
      *    @SWG\Response(
      *     response=404,
-     *     description="The Category based on CategoryId or the Sub-Category based on ID is not found"
+     *     description="The Equipment based on EquipmentId or the ExtraField based on ID is not found"
      *    ),
      *    @SWG\Parameter(
-     *     name="The full JSON Sub-Category",
+     *     name="The full JSON ExtraField",
      *     in="body",
      *     required=true,
      *     @SWG\Schema(
-     *       ref=@Model(type=SubCategory::class)
+     *       ref=@Model(type=ExtraField::class)
      *     ),
-     *     description="The JSon Sub-Category"
+     *     description="The JSon ExtraField"
      *    ),
      *    @SWG\Parameter(
-     *     name="categoryid",
+     *     name="equipmentid",
      *     in="path",
      *     type="string",
-     *     description="The ID used to find the Category"
+     *     description="The ID used to find the Equipment"
      *    ),
      *    @SWG\Parameter(
      *     name="id",
      *     in="path",
      *     type="string",
-     *     description="The ID used to find the Sub-Category"
+     *     description="The ID used to find the ExtraField"
      *    )
      * )
      *
@@ -258,11 +260,11 @@ class SubCategoryController extends FOSRestController implements ClassResourceIn
      */
     public function putAction(Request $request, string $id)
     {
-        $existingSubCategory = $this->findSubCategoryById($id);
-        $form = $this->createForm(SubCategoryType::class, $existingSubCategory);
+        $existingExtraField = $this->findExtraFieldById($id);
+        $form = $this->createForm(ExtraFieldType::class, $existingExtraField);
         $data = json_decode($request->getContent(), true);
 
-        $data['category'] = $request->attributes->get('categoryid');
+        $data['equipment'] = $request->attributes->get('equipmentid');
         $form->submit($data);
         if (false === $form->isValid()) {
             return new JsonResponse(
@@ -281,7 +283,7 @@ class SubCategoryController extends FOSRestController implements ClassResourceIn
     }
 
     /**
-     * Update a part of a SubCategory
+     * Update a part of an ExtraField
      *
      * @SWG\Patch(
      *     consumes={"application/json"},
@@ -297,39 +299,39 @@ class SubCategoryController extends FOSRestController implements ClassResourceIn
      *    ),
      *    @SWG\Response(
      *     response=404,
-     *     description="The Category based on CategoryId or the Sub-Category based on ID is not found"
+     *     description="The Equipment based on EquipmentId or the ExtraField based on ID is not found"
      *    ),
      *    @SWG\Parameter(
-     *     name="The full JSON Sub-Category",
+     *     name="The full JSON ExtraField",
      *     in="body",
      *     required=true,
      *     @SWG\Schema(
-     *       ref=@Model(type=SubCategory::class)
+     *       ref=@Model(type=ExtraField::class)
      *     ),
-     *     description="The JSon Sub-Category"
+     *     description="The JSon ExtraField"
      *    ),
      *    @SWG\Parameter(
-     *     name="categoryid",
+     *     name="equipmentid",
      *     in="path",
      *     type="string",
-     *     description="The ID used to find the Category"
+     *     description="The ID used to find the Equipment"
      *    ),
      *    @SWG\Parameter(
      *     name="id",
      *     in="path",
      *     type="string",
-     *     description="The ID used to find the Sub-Category"
+     *     description="The ID used to find the ExtraField"
      *    )
      * )
      *
      * @param Request $request
-     * @param string $id of the Category to update
+     * @param string $id of the ExtraField to update
      * @return \FOS\RestBundle\View\View|JsonResponse
      */
     public function patchAction(Request $request, string $id)
     {
-        $existingSubCategory = $this->findSubCategoryById($id);
-        $form = $this->createForm(SubCategoryType::class, $existingSubCategory);
+        $existingExtraField = $this->findExtraFieldById($id);
+        $form = $this->createForm(ExtraFieldType::class, $existingExtraField);
 
         $form->submit($request->request->all(), false);
         if (false === $form->isValid()) {
@@ -349,41 +351,41 @@ class SubCategoryController extends FOSRestController implements ClassResourceIn
     }
 
     /**
-     * Delete a SubCategory with the id.
+     * Delete an ExtraField with the id.
      *
      * @SWG\Delete(
-     *     summary="Delete a Sub-Category based on ID"
+     *     summary="Delete an ExtraField based on ID"
      * )
      * @SWG\Response(
      *     response=204,
-     *     description="The sub-category is correctly delete",
+     *     description="The ExtraField is correctly delete",
      * )
      *
      * @SWG\Response(
      *     response=404,
-     *     description="The category based on CategoryId or the sub-category based on ID is not found"
+     *     description="The Equipement based on EquipmentId or the ExtraField based on ID is not found"
      * )
      *
      * @SWG\Parameter(
-     *     name="categoryid",
+     *     name="equipmentid",
      *     in="path",
      *     type="string",
-     *     description="The ID used to find the Category"
+     *     description="The ID used to find the Equipment"
      * )
      * @SWG\Parameter(
      *     name="id",
      *     in="path",
      *     type="string",
-     *     description="The ID used to find the Sub-Category"
+     *     description="The ID used to find the ExtraField"
      * )
      * @param string $id
      * @return \FOS\RestBundle\View\View
      */
     public function deleteAction(string $id)
     {
-        $subCategory = $this->findSubCategoryById($id);
+        $extraField = $this->findExtraFieldById($id);
 
-        $this->entityManager->remove($subCategory);
+        $this->entityManager->remove($extraField);
         $this->entityManager->flush();
 
         return $this->view(null, Response::HTTP_NO_CONTENT);
@@ -392,15 +394,15 @@ class SubCategoryController extends FOSRestController implements ClassResourceIn
     /**
      * @param string $id
      *
-     * @return SubCategory
+     * @return ExtraField
      * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
      */
-    private function findSubCategoryById(string $id)
+    private function findExtraFieldById(string $id)
     {
-        $existingSubCategory = $this->subCategoryRepository->find($id);
-        if (null === $existingSubCategory) {
+        $existingExtraField = $this->extraFieldRepository->find($id);
+        if (null === $existingExtraField) {
             throw new NotFoundHttpException();
         }
-        return $existingSubCategory;
+        return $existingExtraField;
     }
 }

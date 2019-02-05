@@ -33,3 +33,9 @@ If you are using a VM :
 ```bash
 php bin/console server:start 0.0.0.0:8000
 ```
+
+# Swagger Documentation
+Once the server is launch you can find the Swagger documentation to this link:
+```html
+http://localhost:8000/api/doc
+```

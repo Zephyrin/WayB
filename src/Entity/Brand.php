@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Asset;
 use Swagger\Annotations as SWG;
@@ -46,6 +48,16 @@ class Brand
      */
     private $uri;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Equipment", mappedBy="brand")
+     */
+    private $equipments;
+
+    public function __construct()
+    {
+        $this->equipments = new ArrayCollection();
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -83,6 +95,37 @@ class Brand
     public function setUri(string $uri): self
     {
         $this->uri = $uri;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Equipment[]
+     */
+    public function getEquipments(): Collection
+    {
+        return $this->equipments;
+    }
+
+    public function addEquipment(Equipment $equipment): self
+    {
+        if (!$this->equipments->contains($equipment)) {
+            $this->equipments[] = $equipment;
+            $equipment->setBrand($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEquipment(Equipment $equipment): self
+    {
+        if ($this->equipments->contains($equipment)) {
+            $this->equipments->removeElement($equipment);
+            // set the owning side to null (unless already changed)
+            if ($equipment->getBrand() === $this) {
+                $equipment->setBrand(null);
+            }
+        }
 
         return $this;
     }

@@ -56,9 +56,17 @@ class SubCategory
      */
     private $extraFieldDefs;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Equipment",
+     *     mappedBy="subCategory",
+     *     orphanRemoval=true)
+     */
+    private $equipments;
+
     public function __construct()
     {
         $this->extraFieldDefs = new ArrayCollection();
+        $this->equipments = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -115,6 +123,37 @@ class SubCategory
             // set the owning side to null (unless already changed)
             if ($extraFieldDef->getSubCategory() === $this) {
                 $extraFieldDef->setSubCategory(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Equipment[]
+     */
+    public function getEquipments(): Collection
+    {
+        return $this->equipments;
+    }
+
+    public function addEquipment(Equipment $equipment): self
+    {
+        if (!$this->equipments->contains($equipment)) {
+            $this->equipments[] = $equipment;
+            $equipment->setSubCategory($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEquipment(Equipment $equipment): self
+    {
+        if ($this->equipments->contains($equipment)) {
+            $this->equipments->removeElement($equipment);
+            // set the owning side to null (unless already changed)
+            if ($equipment->getSubCategory() === $this) {
+                $equipment->setSubCategory(null);
             }
         }
 

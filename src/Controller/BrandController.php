@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Entity\Brand;
 use App\Form\BrandType;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use App\Repository\BrandRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Serializer\FormErrorSerializer;
@@ -17,7 +16,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 
 /**
  * Class BrandController
