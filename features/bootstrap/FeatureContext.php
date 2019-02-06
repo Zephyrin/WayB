@@ -54,8 +54,20 @@ class FeatureContext implements Context
         $pdo->query('delete from extra_field_def');
         $pdo->query('delete from fos_user');
         $pdo->query('delete from brand');
+        $pdo->query('delete from equipment');
+        $pdo->query('delete from extra_field');
 
-        $pdo->query('delete from sqlite_sequence where name=\'category\' or name=\'sub_category\' or name=\'extra_field_def\' or name=\'fos_user\' or name=\'brand\';');
+        $pdo->query('delete from sqlite_sequence
+            where 
+                name=\'category\' 
+                or name=\'sub_category\' 
+                or name=\'extra_field_def\' 
+                or name=\'fos_user\' 
+                or name=\'brand\'
+                or name=\'equipment\'
+                or name=\'extra_field\'
+            ;'
+        );
     }
 
     /**
@@ -66,17 +78,28 @@ class FeatureContext implements Context
      */
     public function login()
     {
+//        $this->apiContext->setRequestBody(
+//            '{ "username": "patatat", "password": "fregida", "email": "patata@wayb.com", "gender": "MALE" }'
+//        );
+//        $this->apiContext->requestPath(
+//            '/api/auth/register',
+//            'POST'
+//        );
+//
+//
+//
         $this->apiContext->setRequestBody(
-            '{ "username": "patatat", "password": "fregida", "email": "patata@wayb.com", "gender": "MALE" }'
+            '{ 
+                "username": "superadmin"
+                , "password": "a" 
+            }'
         );
         $this->apiContext->requestPath(
-            '/api/auth/register',
+            '/api/auth/login',
             'POST'
         );
 
-
         $this->apiContext->getTokenFromLogin();
-
     }
 
     /**
@@ -249,4 +272,34 @@ class FeatureContext implements Context
         }
     }
 
+    /**
+     * @Given there are Equipments with the following details:
+     */
+    public function thereAreEquipmentsWithTheFollowingDetails(TableNode $equipments)
+    {
+        $i = 1;
+        foreach ($equipments->getColumnsHash() as $equipment) {
+            $this->apiContext->setRequestBody(
+                json_encode($equipment)
+            );
+            $this->apiContext->requestPath(
+                '/api/equipment',
+                'POST'
+            );
+//            $expectedResult = [
+//                "{"
+//                , "\"id\": {$i},"
+//                , "\"name\": \"{$equipment['name']}\","
+//                , "\"description\": \"{$equipment['description']}\","
+//                , "\"extraFields\": [ ]"
+//                , "}"
+//            ];
+//            $this->apiContext->assertResponseBodyContainsJson(
+//                new \Behat\Gherkin\Node\PyStringNode(
+//                    $expectedResult
+//                    , 0
+//                ));
+            $i ++;
+        }
+    }
 }

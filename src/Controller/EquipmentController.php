@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Equipment;
+use App\Entity\SubCategory;
 use App\Form\EquipmentType;
 use App\Repository\EquipmentRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -115,7 +116,14 @@ class EquipmentController extends FOSRestController implements ClassResourceInte
         }
 
         $equipment = $form->getData();
-
+        if($equipment->getSubCategory() == null
+            && is_int(intval($data['subCategoryId']))
+        ) {
+            $subCat = $this->entityManager
+                ->getRepository(SubCategory::class)
+                ->find($data['subCategoryId']);
+            $equipment->setSubCategory($subCat);
+        }
         $this->entityManager->persist($equipment);
         $this->entityManager->flush();
 

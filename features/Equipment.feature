@@ -1,0 +1,477 @@
+Feature: Provide a consistent standard JSON API endpoint
+
+  In order to build interchangeable front ends
+  As a JSON API developer
+  I need to allow Create, Read, Update, and Delete functionality
+
+  Background:
+    Given there are Categories with the following details:
+      | name     |
+      | Clothe    |
+      | Sleeping  |
+      | Accessory |
+    Given there are SubCategories with the following details:
+      | name         | category  |
+      | Pants        | 1         |
+      | Jacket       | 1         |
+      | Sleeping Bag | 2         |
+      | Mattress     | 2         |
+      | Flash Light  | 3         |
+    Given there are ExtraFieldDefs with the following details:
+      | type   | name   | isPrice | isWeight | subcategory | linkTo | category |
+      | ARRAY  | Size   | false   | false    | 1           |        | 1        |
+      | NUMBER | Price  | true    | false    | 1           | 1      | 1        |
+      | NUMBER | Weight | false   | true     | 1           | 1      | 1        |
+    Given there are Brands with the following details:
+      | name           | description         | uri                  |
+      | MSR            | MSR Desc            | www.msr.com          |
+      | Mammut         | Mammut Desc         | www.mammut.com       |
+      | The north face | The north face desc | www.thenorthface.com |
+    Given there are Equipments with the following details:
+      | name                         | description                                                                                                                                                                                                          | brand | subCategoryId |
+      | Men's Zoomie Rain Jacket     | Made for those who want to explore in the rain and look good while they do it, this sleek city jacket features fully waterproof fabric, as well as urban-inspired design and detailing.                              | 3     | 2             |
+      | Men's Printed Cyclone Hoodie | Wander the woods and stay comfortable throughout: this lightweight hoodie offers packable wind protection, complete with an adjustable hood for added coverage. High-wicking fabric keeps you dry on those hot days. | 3     | 2             |
+
+  Scenario: Can get a single Equipment
+    Given I request "/api/equipment/1" using HTTP GET
+    Then the response body contains JSON:
+    """
+    {
+      "id": 1,
+      "name": "Men's Zoomie Rain Jacket",
+      "description": "Made for those who want to explore in the rain and look good while they do it, this sleek city jacket features fully waterproof fabric, as well as urban-inspired design and detailing.",
+      "extraFields": [ ],
+      "brand": {
+        "id": 3,
+        "name": "The north face",
+        "uri": "www.thenorthface.com",
+        "description": "The north face desc"
+      }
+    }
+    """
+    And the response code is 200
+
+  Scenario: Can get a collection of Equipment
+    Given I request "/api/equipment" using HTTP GET
+    Then the response code is 200
+    And the response body contains JSON:
+    """
+    [
+      {
+        "id": 1,
+        "name": "Men's Zoomie Rain Jacket",
+        "description": "Made for those who want to explore in the rain and look good while they do it, this sleek city jacket features fully waterproof fabric, as well as urban-inspired design and detailing.",
+        "extraFields": [ ],
+        "brand": {
+          "id": 3,
+          "name": "The north face",
+          "uri": "www.thenorthface.com",
+          "description": "The north face desc"
+        }
+      },
+      {
+        "id": 2,
+        "name": "Men's Printed Cyclone Hoodie",
+        "description": "Wander the woods and stay comfortable throughout: this lightweight hoodie offers packable wind protection, complete with an adjustable hood for added coverage. High-wicking fabric keeps you dry on those hot days.",
+        "extraFields": [ ],
+        "brand": {
+          "id": 3,
+          "name": "The north face",
+          "uri": "www.thenorthface.com",
+          "description": "The north face desc"
+        }
+      }
+    ]
+    """
+
+  Scenario: Can get a collection of Categories and its Sub Categories and its ExtraFieldDef
+    Given I request "/api/category" using HTTP GET
+    Then the response code is 200
+    And the response body contains JSON:
+    """
+    [{
+      "id": 1,
+      "name": "Clothe",
+      "subCategories": [
+        {
+          "id": 1,
+          "name": "Pants",
+          "extraFieldDefs": [
+          {
+            "id": 1,
+            "type": "ARRAY",
+            "name": "Size",
+            "isPrice": false,
+            "isWeight": false
+          },
+          {
+            "id": 2,
+            "type": "NUMBER",
+            "name": "Price",
+            "isPrice": true,
+            "isWeight": false,
+            "linkTo":
+              {
+                "id": 1,
+                "type": "ARRAY",
+                "name": "Size",
+                "isPrice": false,
+                "isWeight": false
+              }
+          },
+          {
+            "id": 3,
+            "type": "NUMBER",
+            "name": "Weight",
+            "isPrice": false,
+            "isWeight": true,
+            "linkTo":
+              {
+                "id": 1,
+                "type": "ARRAY",
+                "name": "Size",
+                "isPrice": false,
+                "isWeight": false
+              }
+          }
+          ]
+        },
+        {
+          "id": 2,
+          "name": "T-shirt",
+          "extraFieldDefs": []
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Sleeping",
+      "subCategories": [
+        {
+          "id": 3,
+          "name": "Sleeping Bag",
+          "extraFieldDefs": []
+        },
+        {
+          "id": 4,
+          "name": "Mattress",
+          "extraFieldDefs": []
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Accessory",
+      "subCategories": [
+        {
+        "id": 5,
+        "name": "Flash Light",
+        "extraFieldDefs": []
+        }
+      ]
+    }]
+    """
+
+  Scenario: Can add a new ExtraFieldDef
+    Given the request body is:
+      """
+      {
+        "type": "ARRAY",
+        "name": "New field",
+        "isPrice": false,
+        "isWeight": true,
+        "linkTo": 3
+      }
+      """
+    When I request "/api/category/1/subcategory/2/extrafielddef" using HTTP POST
+    Then the response code is 201
+    And the response body contains JSON:
+      """
+      {
+        "id": 4,
+        "type": "ARRAY",
+        "name": "New field",
+        "isPrice": false,
+        "isWeight": true,
+        "linkTo": {
+          "id": 3,
+          "type": "NUMBER",
+          "name": "Weight",
+          "isPrice": false,
+          "isWeight": true,
+          "linkTo": {
+              "id": 1,
+              "type": "ARRAY",
+              "name": "Size",
+              "isPrice": false,
+              "isWeight": false
+          }
+        }
+      }
+      """
+    When I request "/api/category/1/subcategory/2/extrafielddef/4" using HTTP GET
+    Then the response code is 200
+    And the response body contains JSON:
+    """
+    {
+      "id": 4,
+      "type": "ARRAY",
+      "name": "New field",
+      "isPrice": false,
+      "isWeight": true,
+      "linkTo":
+      {
+        "id": 3,
+        "type": "NUMBER",
+        "name": "Weight",
+        "isPrice": false,
+        "isWeight": true,
+        "linkTo":
+        {
+          "id": 1,
+          "type": "ARRAY",
+          "name": "Size",
+          "isPrice": false,
+          "isWeight": false
+        }
+      }
+    }
+    """
+
+  Scenario: Can update an existing ExtraFieldDef - PUT
+    Given the request body is:
+      """
+      {
+        "type": "ARRAY",
+        "name": "Size 2",
+        "isPrice": false,
+        "isWeight": false
+      }
+      """
+    When I request "/api/category/1/subcategory/1/extrafielddef/1" using HTTP PUT
+    Then the response code is 204
+    When I request "/api/category/1/subcategory/1/extrafielddef/1" using HTTP GET
+    Then the response code is 200
+    And the response body contains JSON:
+    """
+    {
+      "id": 1,
+      "type": "ARRAY",
+      "name": "Size 2",
+      "isPrice": false,
+      "isWeight": false
+    }
+    """
+
+  Scenario: Can update an existing ExtraFieldDef with LinkTo - PUT
+    Given the request body is:
+      """
+      {
+        "type": "NUMBER",
+        "name": "Price 2",
+        "isPrice": true,
+        "isWeight": false,
+        "linkTo": 3
+      }
+      """
+    When I request "/api/category/1/subcategory/1/extrafielddef/2" using HTTP PUT
+    Then the response code is 204
+    When I request "/api/category/1/subcategory/1/extrafielddef/2" using HTTP GET
+    Then the response code is 200
+    And the response body contains JSON:
+    """
+    {
+      "id": 2,
+      "type": "NUMBER",
+      "name": "Price 2",
+      "isPrice": true,
+      "isWeight": false,
+      "linkTo":
+      {
+        "id": 3,
+        "type": "NUMBER",
+        "name": "Weight",
+        "isPrice": false,
+        "isWeight": true,
+        "linkTo": {
+          "id": 1,
+          "type": "ARRAY",
+          "name": "Size",
+          "isPrice": false,
+          "isWeight": false
+        }
+      }
+    }
+    """
+
+  Scenario: Cannot update an existing ExtraFieldDef with empty name - PUT
+    Given the request body is:
+      """
+      {
+        "type": "ARRAY",
+        "name": "",
+        "isPrice": false,
+        "isWeight": false,
+        "linkTo": 1
+      }
+      """
+    When I request "/api/category/1/subcategory/1/extrafielddef/2" using HTTP PUT
+    Then the response code is 422
+    And the response body contains JSON:
+    """
+    {
+        "status": "error",
+        "errors": [{
+            "children": {
+                "type": [],
+                "name": {
+                    "errors": [
+                        "This value should not be blank."
+                    ]
+                },
+                "isPrice": [],
+                "isWeight": [],
+                "linkTo": []
+            }
+        }]
+    }
+    """
+    When I request "/api/category/1/subcategory/1/extrafielddef/2" using HTTP GET
+    Then the response code is 200
+    And the response body contains JSON:
+    """
+    {
+      "id": 2,
+      "type": "NUMBER",
+      "name": "Price",
+      "isPrice": true,
+      "isWeight": false,
+      "linkTo": {
+        "id": 1,
+        "type": "ARRAY",
+        "name": "Size",
+        "isPrice": false,
+        "isWeight": false
+      }
+    }
+    """
+
+  Scenario: Can update an existing ExtraFieldDef - PATCH
+    Given the request body is:
+      """
+      {
+        "name": "Price 2"
+      }
+      """
+    When I request "/api/category/1/subcategory/1/extrafielddef/2" using HTTP PATCH
+    Then the response code is 204
+    When I request "/api/category/1/subcategory/1/extrafielddef/2" using HTTP GET
+    Then the response code is 200
+    And the response body contains JSON:
+    """
+    {
+      "id": 2,
+      "type": "NUMBER",
+      "name": "Price 2",
+      "isPrice": true,
+      "isWeight": false,
+      "linkTo":
+      {
+        "id": 1,
+        "type": "ARRAY",
+        "name": "Size",
+        "isPrice": false,
+        "isWeight": false
+      }
+    }
+    """
+
+  Scenario: Cannot update an existing SubCategory with empty name - PATCH
+    Given the request body is:
+      """
+      {
+        "name": ""
+      }
+      """
+    When I request "/api/category/1/subcategory/1/extrafielddef/2" using HTTP PATCH
+    Then the response code is 422
+    And the response body contains JSON:
+    """
+    {
+        "status": "error",
+        "errors": [{
+            "children": {
+                "name": {
+                    "errors": [
+                        "This value should not be blank."
+                    ]
+                }
+            }
+        }]
+    }
+    """
+    When I request "/api/category/1/subcategory/1/extrafielddef/2" using HTTP GET
+    Then the response code is 200
+    And the response body contains JSON:
+    """
+    {
+      "id": 2,
+      "type": "NUMBER",
+      "name": "Price",
+      "isPrice": true,
+      "isWeight": false,
+      "linkTo":
+      {
+        "id": 1,
+        "type": "ARRAY",
+        "name": "Size",
+        "isPrice": false,
+        "isWeight": false
+      }
+    }
+    """
+
+  Scenario: Can delete an ExtraFieldDef
+    Given I request "/api/category/1/subcategory/1/extrafielddef/1" using HTTP GET
+    Then the response code is 200
+    When I request "/api/category/1/subcategory/1/extrafielddef/1" using HTTP DELETE
+    Then the response code is 204
+    When I request "/api/category/1/subcategory/1/extrafielddef/1" using HTTP GET
+    Then the response code is 404
+
+  Scenario: Cannot add an ExtraFieldDef with a blank name
+    Given the request body is:
+    """
+    {
+      "id": 1,
+      "type": "ARRAY",
+      "name": "",
+      "isPrice": false,
+      "isWeight": false
+    }
+    """
+    When I request "/api/category/1/subcategory/2/extrafielddef" using HTTP POST
+    Then the response code is 422
+    And the response body contains JSON:
+    """
+    {
+        "status": "error",
+        "errors": [{
+            "children": {
+                "name": {
+                    "errors": [
+                        "This value should not be blank."
+                    ]
+                }
+            }
+        }]
+    }
+    """
+
+  Scenario: Can delete a Category and its Sub Category and its ExtraFieldDef
+    Given I request "/api/category/1" using HTTP DELETE
+    Then the response code is 204
+    When I request "/api/category/1/subcategory/1" using HTTP GET
+    Then the response code is 404
+    When I request "/api/category/1/subcategory/1/extrafielddef/1" using HTTP GET
+    Then the response code is 404

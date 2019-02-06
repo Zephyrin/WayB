@@ -65,6 +65,7 @@ class Equipment
      *     mappedBy="equipment",
      *     orphanRemoval=true)
      * @SWG\Property(description="Specific fields of the Equipment.")
+     * @SerializedName("extraFields")
      */
     private $extraFields;
 
