@@ -9,12 +9,13 @@ class ApiContextAuth extends Context\ApiContext
     {
         $this->requireResponse();
         $body = $this->getResponseBody();
-        $this->token = $body->token;
+        if(isset($body->token))
+        $this->token = "Bearer $body->token";
     }
 
     public function requestPath($path, $method = null)
     {
-        $this->setRequestHeader("Authorization", "Bearer {$this->token}");
+        $this->setRequestHeader("Authorization", "{$this->token}");
 
         return parent::requestPath($path, $method);
     }

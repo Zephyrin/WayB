@@ -88,6 +88,7 @@ class CategoryController extends FOSRestController implements ClassResourceInter
      * @Security("has_role('ROLE_AMBASSADOR')")
      * @param Request $request
      * @return \FOS\RestBundle\View\View|JsonResponse
+     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
      */
     public function postAction(Request $request)
     {
@@ -221,6 +222,7 @@ class CategoryController extends FOSRestController implements ClassResourceInter
      * @param Request $request
      * @param string $id of the Category to update
      * @return \FOS\RestBundle\View\View|JsonResponse
+     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
      */
     public function putAction(Request $request, string $id)
     {
@@ -291,6 +293,7 @@ class CategoryController extends FOSRestController implements ClassResourceInter
      * @param Request $request
      * @param string $id of the Category to update
      * @return \FOS\RestBundle\View\View|JsonResponse
+     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
      */
     public function patchAction(Request $request, string $id)
     {

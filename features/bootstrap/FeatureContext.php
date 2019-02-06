@@ -19,7 +19,9 @@ class FeatureContext implements Context
     {
     }
 
-    /** @BeforeScenario */
+    /** @BeforeScenario
+     * @param BeforeScenarioScope $scope
+     */
     public function gatherContexts(
         BeforeScenarioScope $scope
     )
@@ -38,7 +40,7 @@ class FeatureContext implements Context
      */
     public function cleanUpDatabase()
     {
-        $host = 'sqlite:///home/ptipc/Développement/WayB/var/app.db';
+        $host = 'sqlite:///home/aaa/dev/WayB/var/app.db';
         $user = '';
         $pass = '';
 

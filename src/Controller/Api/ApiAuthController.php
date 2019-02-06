@@ -6,6 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use App\Entity\User;
+use App\Form\UserType;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -50,38 +51,32 @@ class ApiAuthController extends AbstractController
             $request->getContent(),
             true
         );
+        $form = $this->createForm(
+            UserType::class
+            , new User()
+        );
 
-        $validator = Validation::createValidator();
-        $constraint = new Assert\Collection(array(
-            // the keys correspond to the keys in the input array
-            'username' => new Assert\Length(array('min' => 1)),
-            'password' => new Assert\Length(array('min' => 1)),
-            'email' => new Assert\Email(),
-            'gender' => new Assert\Length(array('min' => 1, 'max' => 6))                                                                                                                                                                                                                                    
-        ));
+        $form->submit($data);
 
-        $violations = $validator->validate($data, $constraint);
-
-        if ($violations->count() > 0) {
-            return new JsonResponse(["error" => (string)$violations], 500);
+        if(false == $form->isValid())
+        {
+            return new JsonResponse(
+                [
+                    'status' => 'error',
+                    'Message' => 'Validation error',
+                    'errors' => $this->formErrorSerializer->normalize($form),
+                ],
+                JsonResponse::HTTP_UNPROCESSABLE_ENTITY
+            );
         }
 
-        $username = $data['username'];
-        $password = $data['password'];
-        $email = $data['email'];
-        $gender = $data['gender'];
-        $user = new User();
+        $user = $form->getData();
+        $user->setPassword(null);
+        $user->setPlainPassword($data['password']);
 
-        $user
-            ->setUsername($username)
-            ->setPlainPassword($password)
-            ->setEmail($email)
-            ->setEnabled(true)
-            ->setRoles(['ROLE_USER', 'ROLE_AMBASSADOR'])
-            ->setSuperAdmin(false)
-            ->setGender($gender);
-        ;
-
+        $user->setRoles(['ROLE_AMBASSADOR']);
+        $user->setSuperAdmin(false);
+        $user->setEnabled(true);
         try {
             $userManager->updateUser($user, true);
         } catch (\Exception $e) {
