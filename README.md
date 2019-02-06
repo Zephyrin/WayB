@@ -4,13 +4,14 @@ It include a JWT user registration. For more information about this server, plea
 
 # Server configuration
 
-The server need at least PHP 7.2 and composer.
+The server need at least **PHP 7.2**, **composer** and **php7.2-mbstring**
 Inside the project folder:
  
 ```bash
 curl -sS https://getcomposer.org/installer | php
 php compose install
 ```
+
 
 ## Database 
 
