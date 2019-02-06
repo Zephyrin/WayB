@@ -13,6 +13,12 @@ extrafielddef:
 brands:
      type:     rest
      resource: App\Controller\BrandController
+equipment:
+     type:     rest
+     resource: App\Controller\EquipmentController
+extrafield:
+     type:     rest
+     resource: App\Controller\ExtraFieldController
 #Login user
 api_auth_login:
      path: /api/auth/login
