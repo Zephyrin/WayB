@@ -21,7 +21,7 @@ Then the creation of the database can be made with this command in the root of t
 
 ```bash
 php bin/console doctrine:database:create
-php bin/console make:migration
+php bin/console doctrine:migrations:migrate
 ```
 
 ## Running this application in standalone :
