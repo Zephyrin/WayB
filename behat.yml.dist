@@ -2,8 +2,8 @@ default:
     suites:
         default:
             contexts:
-                - FeatureContext:
-                    kernel: '@kernel'
+                - FeatureContext
+                - ApiContextAuth
 
     extensions:
         Behat\Symfony2Extension:
