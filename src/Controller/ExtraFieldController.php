@@ -23,7 +23,7 @@ use Swagger\Annotations as SWG;
  * @package App\Controller
  *
  * @Rest\RouteResource(
- *     "api/equipment/{equipmentId}/extrafield",
+ *     "api/user/{userId}/equipment/{equipmentId}/extraField",
  *     pluralize=false
  * )
  * @SWG\Tag(
@@ -98,6 +98,7 @@ class ExtraFieldController extends FOSRestController implements ClassResourceInt
      *
      * @param Request $request
      * @return \FOS\RestBundle\View\View|JsonResponse
+     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
      */
     public function postAction(Request $request)
     {
@@ -126,7 +127,9 @@ class ExtraFieldController extends FOSRestController implements ClassResourceInt
         $equipment = $this->entityManager->find(
             Equipment::class,
             $request->attributes->get('equipmentid'));
-        $extraField->setCategory($equipment);
+        if($equipment == null)
+            throw new NotFoundHttpException();
+        $extraField->setEquipment($equipment);
         $this->entityManager->persist($extraField);
         $this->entityManager->flush();
 
@@ -257,6 +260,7 @@ class ExtraFieldController extends FOSRestController implements ClassResourceInt
      * @param Request $request
      * @param string $id of the Category to update
      * @return \FOS\RestBundle\View\View|JsonResponse
+     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
      */
     public function putAction(Request $request, string $id)
     {

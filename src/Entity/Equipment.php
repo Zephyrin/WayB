@@ -62,7 +62,8 @@ class Equipment
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\ExtraField",
      *     mappedBy="equipment",
-     *     orphanRemoval=true)
+     *     orphanRemoval=true,
+     *     cascade={"persist"})
      * @SWG\Property(description="Specific fields of the Equipment.")
      * @SerializedName("extraFields")
      */
