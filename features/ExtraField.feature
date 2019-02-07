@@ -333,7 +333,6 @@ Feature: Provide a consistent standard JSON API endpoint
     When I request "/api/user/1/equipment/1/extrafield/1" using HTTP GET
     Then the response code is 404
 
-
   Scenario: Can delete a Category and its Sub Category
     Given I request "/api/user/1/equipment/1" using HTTP DELETE
     Then the response code is 204
@@ -420,4 +419,3 @@ Feature: Provide a consistent standard JSON API endpoint
       }
     }
     """
-    

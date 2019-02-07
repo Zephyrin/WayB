@@ -1,6 +1,8 @@
 <?php
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use FOS\UserBundle\Model\User as BaseUser;
 use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation\SerializedName;
@@ -30,9 +32,15 @@ class User extends BaseUser
      */
     protected $gender;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Have", mappedBy="user", orphanRemoval=true)
+     */
+    private $haves;
+
     public function __construct()
     {
         parent::__construct();
+        $this->haves = new ArrayCollection();
         // your own logic
     }
 
@@ -47,6 +55,37 @@ class User extends BaseUser
             throw new \InvalidArgumentException("Invalid type");
         }
         $this->gender = $gender;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Have[]
+     */
+    public function getHaves(): Collection
+    {
+        return $this->haves;
+    }
+
+    public function addHafe(Have $hafe): self
+    {
+        if (!$this->haves->contains($hafe)) {
+            $this->haves[] = $hafe;
+            $hafe->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeHafe(Have $hafe): self
+    {
+        if ($this->haves->contains($hafe)) {
+            $this->haves->removeElement($hafe);
+            // set the owning side to null (unless already changed)
+            if ($hafe->getUser() === $this) {
+                $hafe->setUser(null);
+            }
+        }
 
         return $this;
     }
