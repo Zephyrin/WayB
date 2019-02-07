@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Brand;
 use App\Entity\Equipment;
 use App\Entity\SubCategory;
 use App\Form\EquipmentType;
@@ -24,7 +25,7 @@ use Swagger\Annotations as SWG;
  * @package App\Controller
  *
  * @Rest\RouteResource(
- *     "api/Equipment",
+ *     "api/User/{userId}/Equipment",
  *     pluralize=false
  * )
  * @SWG\Tag(
@@ -91,6 +92,8 @@ class EquipmentController extends FOSRestController implements ClassResourceInte
      *
      * @param Request $request
      * @return \FOS\RestBundle\View\View|JsonResponse
+     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
+     * @TODO Add user check and user link.
      */
     public function postAction(Request $request)
     {
@@ -117,12 +120,20 @@ class EquipmentController extends FOSRestController implements ClassResourceInte
 
         $equipment = $form->getData();
         if($equipment->getSubCategory() == null
-            && is_int(intval($data['subCategoryId']))
+            && is_int(intval($data['subCategory']))
         ) {
             $subCat = $this->entityManager
                 ->getRepository(SubCategory::class)
-                ->find($data['subCategoryId']);
+                ->find($data['subCategory']);
             $equipment->setSubCategory($subCat);
+        }
+        if($equipment->getBrand() == null
+            && is_int(intval($data['brand']))
+        ) {
+            $brand = $this->entityManager
+                ->getRepository(Brand::class)
+                ->find($data['brand']);
+            $equipment->setBrand($brand);
         }
         $this->entityManager->persist($equipment);
         $this->entityManager->flush();
@@ -184,6 +195,7 @@ class EquipmentController extends FOSRestController implements ClassResourceInte
      * )
      *
      * @return \FOS\RestBundle\View\View
+     * @TODO Add user restriction.
      */
     public function cgetAction()
     {
@@ -231,6 +243,7 @@ class EquipmentController extends FOSRestController implements ClassResourceInte
      * @param Request $request
      * @param string $id of the Equipment to update
      * @return \FOS\RestBundle\View\View|JsonResponse
+     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
      */
     public function putAction(Request $request, string $id)
     {
@@ -294,6 +307,7 @@ class EquipmentController extends FOSRestController implements ClassResourceInte
      * @param Request $request
      * @param string $id of the Equipment to update
      * @return \FOS\RestBundle\View\View|JsonResponse
+     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
      */
     public function patchAction(Request $request, string $id)
     {

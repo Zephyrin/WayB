@@ -283,22 +283,9 @@ class FeatureContext implements Context
                 json_encode($equipment)
             );
             $this->apiContext->requestPath(
-                '/api/equipment',
+                '/api/user/1/equipment',
                 'POST'
             );
-//            $expectedResult = [
-//                "{"
-//                , "\"id\": {$i},"
-//                , "\"name\": \"{$equipment['name']}\","
-//                , "\"description\": \"{$equipment['description']}\","
-//                , "\"extraFields\": [ ]"
-//                , "}"
-//            ];
-//            $this->apiContext->assertResponseBodyContainsJson(
-//                new \Behat\Gherkin\Node\PyStringNode(
-//                    $expectedResult
-//                    , 0
-//                ));
             $i ++;
         }
     }

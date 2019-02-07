@@ -5,7 +5,6 @@ namespace App\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use JMS\Serializer\Annotation\Exclude;
 use Swagger\Annotations as SWG;
 use JMS\Serializer\Annotation\SerializedName;
 use Symfony\Component\Validator\Constraints as Asset;
@@ -49,8 +48,8 @@ class Equipment
      * @ORM\ManyToOne(targetEntity="App\Entity\SubCategory"
      *   , inversedBy="equipments")
      * @ORM\JoinColumn(nullable=false)
-     * @Exclude
      * @SWG\Property(description="The SubCategory that this Equipment belong to.")
+     * @SerializedName("subCategory")
      */
     private $subCategory;
 
@@ -84,7 +83,7 @@ class Equipment
         return $this->name;
     }
 
-    public function setName(string $name): self
+    public function setName(?string $name): self
     {
         $this->name = $name;
 

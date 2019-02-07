@@ -5,6 +5,7 @@ namespace App\Form;
 use App\Entity\Brand;
 use App\Entity\Equipment;
 use App\Entity\SubCategory;
+use App\Repository\SubCategoryRepository;
 use Doctrine\ORM\EntityRepository;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -35,8 +36,8 @@ class EquipmentType extends AbstractType
                 , EntityType::class
                 , [
                     'class' => SubCategory::class
-                    , 'required' => false
-                    , 'query_builder' => function(EntityRepository $er) {
+                    , 'required' => true
+                    , 'query_builder' => function(SubCategoryRepository $er) {
                         return $er
                             ->createQueryBuilder('u')
                             ->orderBy('u.name', 'ASC');

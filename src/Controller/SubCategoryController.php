@@ -255,6 +255,7 @@ class SubCategoryController extends FOSRestController implements ClassResourceIn
      * @param Request $request
      * @param string $id of the Category to update
      * @return \FOS\RestBundle\View\View|JsonResponse
+     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
      */
     public function putAction(Request $request, string $id)
     {
@@ -325,6 +326,7 @@ class SubCategoryController extends FOSRestController implements ClassResourceIn
      * @param Request $request
      * @param string $id of the Category to update
      * @return \FOS\RestBundle\View\View|JsonResponse
+     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
      */
     public function patchAction(Request $request, string $id)
     {

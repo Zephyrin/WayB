@@ -60,6 +60,7 @@ class SubCategory
      * @ORM\OneToMany(targetEntity="App\Entity\Equipment",
      *     mappedBy="subCategory",
      *     orphanRemoval=true)
+     * @Exclude
      */
     private $equipments;
 
