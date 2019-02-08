@@ -3,6 +3,8 @@
 use Behat\Behat\Context\Context;
 use Behat\Gherkin\Node\TableNode;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Tools\SchemaTool;
 
 /**
  * This context class contains the definitions of the steps used by the demo 
@@ -13,10 +15,11 @@ use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 class FeatureContext implements Context
 {
     private $apiContext;
+    private $em;
 
-
-    public function __construct()
+    public function __construct(EntityManager $entityManager)
     {
+        $this->em = $entityManager;
     }
 
     /** @BeforeScenario
@@ -40,34 +43,40 @@ class FeatureContext implements Context
      */
     public function cleanUpDatabase()
     {
-        $host = 'sqlite:///home/aaa/dev/WayB/var/app.db';
-        $user = '';
-        $pass = '';
-
-        $opt = [
-            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_EMULATE_PREPARES   => false,
-        ];
-        $pdo = new PDO($host, $user, $pass, $opt);
-        $pdo->query('delete from category');
-        $pdo->query('delete from sub_category');
-        $pdo->query('delete from extra_field_def');
-        $pdo->query('delete from fos_user');
-        $pdo->query('delete from brand');
-        $pdo->query('delete from equipment');
-        $pdo->query('delete from extra_field');
-
-        $pdo->query('delete from sqlite_sequence
-            where 
-                name=\'category\' 
-                or name=\'sub_category\' 
-                or name=\'extra_field_def\' 
-                or name=\'fos_user\' 
-                or name=\'brand\'
-                or name=\'equipment\'
-                or name=\'extra_field\'
-            ;'
-        );
+        $metaData = $this->em->getMetadataFactory()->getAllMetadata();
+        $schemaTool = new SchemaTool($this->em);
+        $schemaTool->dropDatabase();
+        if (!empty($metaData)) {
+            $schemaTool->createSchema($metaData);
+        }
+//        $host = 'sqlite:///%kernel.root_dir%/../var/app.db';
+//        $user = '';
+//        $pass = '';
+//
+//        $opt = [
+//            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+//            PDO::ATTR_EMULATE_PREPARES   => false,
+//        ];
+//        $pdo = new PDO($host, $user, $pass, $opt);
+//        $pdo->query('delete from category');
+//        $pdo->query('delete from sub_category');
+//        $pdo->query('delete from extra_field_def');
+//        $pdo->query('delete from fos_user');
+//        $pdo->query('delete from brand');
+//        $pdo->query('delete from equipment');
+//        $pdo->query('delete from extra_field');
+//
+//        $pdo->query('delete from sqlite_sequence
+//            where
+//                name=\'category\'
+//                or name=\'sub_category\'
+//                or name=\'extra_field_def\'
+//                or name=\'fos_user\'
+//                or name=\'brand\'
+//                or name=\'equipment\'
+//                or name=\'extra_field\'
+//            ;'
+//        );
     }
 
     /**
@@ -311,5 +320,21 @@ class FeatureContext implements Context
             );
             $i ++;
         }
+    }
+
+    /**
+     * @Given /^there are User with the following details:$/
+     */
+    public function thereAreUserWithTheFollowingDetails(TableNode $table)
+    {
+
+    }
+
+    /**
+     * @Given /^there are Have with the following details:$/
+     */
+    public function thereAreHaveWithTheFollowingDetails(TableNode $table)
+    {
+
     }
 }

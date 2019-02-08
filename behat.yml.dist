@@ -2,7 +2,8 @@ default:
     suites:
         default:
             contexts:
-                - FeatureContext
+                - FeatureContext :
+                    entityManager: "@doctrine.orm.default_entity_manager"
                 - ApiContextAuth
 
     extensions:

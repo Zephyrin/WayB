@@ -19,6 +19,9 @@ equipment:
 extrafield:
      type:     rest
      resource: App\Controller\ExtraFieldController
+have:
+     type:     rest
+     resource: App\Controller\HaveController
 #Login user
 api_auth_login:
      path: /api/auth/login

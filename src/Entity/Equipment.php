@@ -69,9 +69,15 @@ class Equipment
      */
     private $extraFields;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Have", mappedBy="equipment")
+     */
+    private $haves;
+
     public function __construct()
     {
         $this->extraFields = new ArrayCollection();
+        $this->haves = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -152,6 +158,37 @@ class Equipment
             // set the owning side to null (unless already changed)
             if ($extraField->getEquipment() === $this) {
                 $extraField->setEquipment(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Have[]
+     */
+    public function getHaves(): Collection
+    {
+        return $this->haves;
+    }
+
+    public function addHafe(Have $hafe): self
+    {
+        if (!$this->haves->contains($hafe)) {
+            $this->haves[] = $hafe;
+            $hafe->setEquipment($this);
+        }
+
+        return $this;
+    }
+
+    public function removeHafe(Have $hafe): self
+    {
+        if ($this->haves->contains($hafe)) {
+            $this->haves->removeElement($hafe);
+            // set the owning side to null (unless already changed)
+            if ($hafe->getEquipment() === $this) {
+                $hafe->setEquipment(null);
             }
         }
 

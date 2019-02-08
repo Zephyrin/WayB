@@ -34,6 +34,9 @@ class User extends BaseUser
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Have", mappedBy="user", orphanRemoval=true)
+     * @SWG\Property(
+     *     description="The list of what the user has."
+     *     , type="array::class")
      */
     private $haves;
 
@@ -67,23 +70,23 @@ class User extends BaseUser
         return $this->haves;
     }
 
-    public function addHafe(Have $hafe): self
+    public function addHave(Have $have): self
     {
-        if (!$this->haves->contains($hafe)) {
-            $this->haves[] = $hafe;
-            $hafe->setUser($this);
+        if (!$this->haves->contains($have)) {
+            $this->haves[] = $have;
+            $have->setUser($this);
         }
 
         return $this;
     }
 
-    public function removeHafe(Have $hafe): self
+    public function removeHave(Have $have): self
     {
-        if ($this->haves->contains($hafe)) {
-            $this->haves->removeElement($hafe);
+        if ($this->haves->contains($have)) {
+            $this->haves->removeElement($have);
             // set the owning side to null (unless already changed)
-            if ($hafe->getUser() === $this) {
-                $hafe->setUser(null);
+            if ($have->getUser() === $this) {
+                $have->setUser(null);
             }
         }
 

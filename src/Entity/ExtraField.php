@@ -3,7 +3,6 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use JMS\Serializer\Annotation as Serializer;
 use JMS\Serializer\Annotation\SerializedName;
 use Symfony\Component\Validator\Constraints as Asset;
 use App\Enum\TypeExtraFieldEnum;
