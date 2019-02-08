@@ -42,24 +42,28 @@ Feature: Provide a consistent standard JSON API endpoint
       | 2        | 1           | 0            | 1         |
 
   Scenario: Can get a single Equipment
-    Given I request "/api/user/1/equipment/1" using HTTP GET
+    Given I request "/api/user/1/have/1" using HTTP GET
     Then the response body contains JSON:
     """
     {
       "id": 1,
-      "name": "Men's Zoomie Rain Jacket",
-      "description": "Description 1",
-      "extraFields": [ ],
-      "brand": {
-        "id": 3,
-        "name": "The north face",
-        "uri": "www.thenorthface.com",
-        "description": "The north face desc"
-      },
-      "subCategory": {
-        "id": 2,
-        "name": "Jacket",
-        "extraFieldDefs": { }
+      "ownQuantity": 0,
+      "wantQuantity": 0,
+      "equipment": {
+        "name": "Men's Zoomie Rain Jacket",
+        "description": "Description 1",
+        "extraFields": [ ],
+        "brand": {
+          "id": 3,
+          "name": "The north face",
+          "uri": "www.thenorthface.com",
+          "description": "The north face desc"
+        },
+        "subCategory": {
+          "id": 2,
+          "name": "Jacket",
+          "extraFieldDefs": { }
+        }
       }
     }
     """

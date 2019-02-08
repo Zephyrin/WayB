@@ -14,6 +14,9 @@ use Doctrine\ORM\Tools\SchemaTool;
  */
 class FeatureContext implements Context
 {
+    /**
+     * @var ApiContextAuth apiContext
+     */
     private $apiContext;
     private $em;
 
@@ -40,6 +43,7 @@ class FeatureContext implements Context
 
     /**
      * @BeforeScenario
+     * @throws \Doctrine\ORM\Tools\ToolsException
      */
     public function cleanUpDatabase()
     {
@@ -49,34 +53,6 @@ class FeatureContext implements Context
         if (!empty($metaData)) {
             $schemaTool->createSchema($metaData);
         }
-//        $host = 'sqlite:///%kernel.root_dir%/../var/app.db';
-//        $user = '';
-//        $pass = '';
-//
-//        $opt = [
-//            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-//            PDO::ATTR_EMULATE_PREPARES   => false,
-//        ];
-//        $pdo = new PDO($host, $user, $pass, $opt);
-//        $pdo->query('delete from category');
-//        $pdo->query('delete from sub_category');
-//        $pdo->query('delete from extra_field_def');
-//        $pdo->query('delete from fos_user');
-//        $pdo->query('delete from brand');
-//        $pdo->query('delete from equipment');
-//        $pdo->query('delete from extra_field');
-//
-//        $pdo->query('delete from sqlite_sequence
-//            where
-//                name=\'category\'
-//                or name=\'sub_category\'
-//                or name=\'extra_field_def\'
-//                or name=\'fos_user\'
-//                or name=\'brand\'
-//                or name=\'equipment\'
-//                or name=\'extra_field\'
-//            ;'
-//        );
     }
 
     /**
@@ -87,16 +63,6 @@ class FeatureContext implements Context
      */
     public function login()
     {
-//        $this->apiContext->setRequestBody(
-//            '{ "username": "patatat", "password": "fregida", "email": "patata@wayb.com", "gender": "MALE" }'
-//        );
-//        $this->apiContext->requestPath(
-//            '/api/auth/register',
-//            'POST'
-//        );
-//
-//
-//
         $this->apiContext->setRequestBody(
             '{ 
                 "username": "superadmin"
@@ -121,6 +87,8 @@ class FeatureContext implements Context
 
     /**
      * @Given there are Categories with the following details:
+     * @param TableNode $categories
+     * @throws \Imbo\BehatApiExtension\Exception\AssertionFailedException
      */
     public function thereAreCategoriesWithTheFollowingDetails(TableNode $categories)
     {
@@ -150,6 +118,7 @@ class FeatureContext implements Context
 
     /**
      * @When a demo scenario sends a request to :arg1
+     * @param $arg1
      */
     public function aDemoScenarioSendsARequestTo($arg1)
     {
@@ -164,6 +133,8 @@ class FeatureContext implements Context
 
     /**
      * @Given there are SubCategories with the following details:
+     * @param TableNode $table
+     * @throws \Imbo\BehatApiExtension\Exception\AssertionFailedException
      */
     public function thereAreSubcategoriesWithTheFollowingDetails(TableNode $table)
     {
@@ -198,6 +169,8 @@ class FeatureContext implements Context
 
     /**
      * @Given there are ExtraFieldDefs with the following details:
+     * @param TableNode $table
+     * @throws \Imbo\BehatApiExtension\Exception\AssertionFailedException
      */
     public function thereAreExtrafielddefsWithTheFollowingDetails(TableNode $table)
     {
@@ -252,6 +225,8 @@ class FeatureContext implements Context
 
     /**
      * @Given there are Brands with the following details:
+     * @param TableNode $brands
+     * @throws \Imbo\BehatApiExtension\Exception\AssertionFailedException
      */
     public function thereAreBrandsWithTheFollowingDetails(TableNode $brands)
     {
@@ -283,6 +258,7 @@ class FeatureContext implements Context
 
     /**
      * @Given there are Equipments with the following details:
+     * @param TableNode $equipments
      */
     public function thereAreEquipmentsWithTheFollowingDetails(TableNode $equipments)
     {
@@ -324,17 +300,37 @@ class FeatureContext implements Context
 
     /**
      * @Given /^there are User with the following details:$/
+     * @param TableNode $users
      */
-    public function thereAreUserWithTheFollowingDetails(TableNode $table)
+    public function thereAreUserWithTheFollowingDetails(TableNode $users)
     {
-
+        foreach ($users->getColumnsHash() as $user) {
+            $this->apiContext->setRequestBody(
+                json_encode($user)
+            );
+            $this->apiContext->requestPath(
+                "/api/auth/register",
+                'POST'
+            );
+        }
     }
 
     /**
      * @Given /^there are Have with the following details:$/
+     * @param TableNode $haves
      */
-    public function thereAreHaveWithTheFollowingDetails(TableNode $table)
+    public function thereAreHaveWithTheFollowingDetails(TableNode $haves)
     {
-
+        foreach ($haves->getColumnsHash() as $have) {
+            $eqId = $have["user"];
+            unset($have["user"]);
+            $this->apiContext->setRequestBody(
+                json_encode($have)
+            );
+            $this->apiContext->requestPath(
+                "/api/user/{$eqId}/have",
+                'POST'
+            );
+        }
     }
 }
