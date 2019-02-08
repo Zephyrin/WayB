@@ -6,7 +6,7 @@ security:
 
     role_hierarchy:
         ROLE_AMBASSADOR:    ROLE_USER
-        ROLE_ADMIN:         [ROLE_AMBASSADOR, ROLE_USER]
+        ROLE_ADMIN:         ROLE_AMBASSADOR
         ROLE_SUPER_ADMIN:   ROLE_ADMIN
 
     providers:
