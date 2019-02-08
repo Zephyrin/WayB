@@ -41,8 +41,9 @@ Feature: Provide a consistent standard JSON API endpoint
       | 1        | 1           | 0            | 2         |
       | 2        | 1           | 0            | 1         |
 
-  Scenario: Can get a single Equipment
-    Given I request "/api/user/1/have/1" using HTTP GET
+  Scenario: Can get a single Equipment With User A
+    Given I am Login As A
+    And I request "/api/user/1/have/1" using HTTP GET
     Then the response body contains JSON:
     """
     {

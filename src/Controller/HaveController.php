@@ -164,11 +164,15 @@ class HaveController extends FOSRestController implements ClassResourceInterface
      *     description="The ID used to find the information about the equipment"
      * )
      *
-     * @var $id
+     *
+     * @param Request $request
+     * @param string $id
      * @return \FOS\RestBundle\View\View
      */
-    public function getAction(string $id)
+    public function getAction(Request $request, string $id)
     {
+        $user = $this->findUserByRequest($request);
+        $userToken = $request->getUser();
         return $this->view(
             $this->findHaveById($id)
         );
@@ -201,10 +205,12 @@ class HaveController extends FOSRestController implements ClassResourceInterface
      *     description="The User based on UserId is not found"
      * )
      *
+     * @param Request $request
      * @return \FOS\RestBundle\View\View
      */
-    public function cgetAction()
+    public function cgetAction(Request $request)
     {
+
         return $this->view(
             $this->haveRepository->findAll()
         );

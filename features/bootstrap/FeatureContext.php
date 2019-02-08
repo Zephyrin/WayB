@@ -82,7 +82,7 @@ class FeatureContext implements Context
      * @logout
      */
     public function logout() {
-        $this->apiContext->RemoveAuthorization('Authorization', '');
+        $this->apiContext->logout('Authorization', '');
     }
 
     /**
@@ -332,5 +332,25 @@ class FeatureContext implements Context
                 'POST'
             );
         }
+    }
+
+    /**
+     * @Given /^I am Login As A$/
+     */
+    public function iAmLoginAsA()
+    {
+        $this->apiContext->Logout();
+        $this->apiContext->setRequestBody(
+            '{ 
+                "username": "a"
+                , "password": "a" 
+            }'
+        );
+        $this->apiContext->requestPath(
+            '/api/auth/login',
+            'POST'
+        );
+
+        $this->apiContext->getTokenFromLogin();
     }
 }

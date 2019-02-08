@@ -20,7 +20,7 @@ class ApiContextAuth extends Context\ApiContext
         return parent::requestPath($path, $method);
     }
 
-    public function removeAuthorization()
+    public function logout()
     {
         $this->setRequestHeader('Authorization', '');
     }
