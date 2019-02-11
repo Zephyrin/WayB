@@ -353,4 +353,24 @@ class FeatureContext implements Context
 
         $this->apiContext->getTokenFromLogin();
     }
+
+    /**
+     * @Given /^I am Login As B$/
+     */
+    public function iAmLoginAsB()
+    {
+        $this->apiContext->Logout();
+        $this->apiContext->setRequestBody(
+            '{ 
+                "username": "b"
+                , "password": "b" 
+            }'
+        );
+        $this->apiContext->requestPath(
+            '/api/auth/login',
+            'POST'
+        );
+
+        $this->apiContext->getTokenFromLogin();
+    }
 }

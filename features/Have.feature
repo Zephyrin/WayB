@@ -70,6 +70,11 @@ Feature: Provide a consistent standard JSON API endpoint
     """
     And the response code is 200
 
+  Scenario: Cannot get a single Equipment With User B
+    Given I am Login As B
+    And I request "/api/user/1/have/1" using HTTP GET
+    Then the response code is 403
+
   Scenario: Can get a collection of Equipment
     Given I request "/api/user/1/equipment" using HTTP GET
     Then the response code is 200

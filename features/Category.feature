@@ -6,7 +6,7 @@ Feature: Provide a consistent standard JSON API endpoint
 
   Background:
     Given there are Categories with the following details:
-      | name     |
+      | name      |
       | Clothe    |
       | Sleeping  |
       | Accessory |

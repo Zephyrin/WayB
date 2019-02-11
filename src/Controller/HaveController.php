@@ -165,14 +165,14 @@ class HaveController extends FOSRestController implements ClassResourceInterface
      * )
      *
      *
-     * @param Request $request
      * @param string $id
+     * @param User $user
      * @return \FOS\RestBundle\View\View
      */
-    public function getAction(Request $request, string $id)
+    public function getAction(string $id, User $user)
     {
-        $user = $this->findUserByRequest($request);
-        $userToken = $request->getUser();
+        $this->denyAccessUnlessGranted('view', $user);
+
         return $this->view(
             $this->findHaveById($id)
         );
