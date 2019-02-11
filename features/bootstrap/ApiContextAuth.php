@@ -7,6 +7,7 @@ class ApiContextAuth extends Context\ApiContext
     protected $token;
     public function getTokenFromLogin()
     {
+        $this->token = '';
         $this->requireResponse();
         $body = $this->getResponseBody();
         if(isset($body->token))

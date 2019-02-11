@@ -26,6 +26,9 @@ have:
 api_auth_login:
      path: /api/auth/login
      methods: [POST]
+user:
+     type:     rest
+     resource: App\Controller\UserController
 api:
      prefix: /api
      resource: '../src/Controller/Api'

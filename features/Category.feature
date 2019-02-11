@@ -5,6 +5,10 @@ Feature: Provide a consistent standard JSON API endpoint
   I need to allow Create, Read, Update, and Delete functionality
 
   Background:
+    Given there are User with the following details:
+      | username | password | email     | gender | ROLE            |
+      | a        | a        | a.b@c.com | MALE   | ROLE_AMBASSADOR |
+      | b        | b        | b.b@c.com | MALE   | ROLE_USER       |
     Given there are Categories with the following details:
       | name      |
       | Clothe    |
@@ -12,7 +16,8 @@ Feature: Provide a consistent standard JSON API endpoint
       | Accessory |
 
   Scenario: Can get a single Category
-    Given I request "/api/category/1" using HTTP GET
+    Given I am Login As B
+    And I request "/api/category/1" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -24,7 +29,8 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can get a collection of Categories
-    Given I request "/api/category" using HTTP GET
+    Given I am Login As B
+    And I request "/api/category" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -48,7 +54,8 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can add a new Category
-    Given the request body is:
+    Given I am Login As A
+    And the request body is:
       """
       {
         "name": "Kitchen",
@@ -65,6 +72,20 @@ Feature: Provide a consistent standard JSON API endpoint
         "subCategories": []
       }
     """
+
+
+  Scenario: Cannot add a new Category as USER
+    Given I am Login As B
+    And the request body is:
+      """
+      {
+        "name": "Kitchen",
+        "subCategories": []
+      }
+      """
+    When I request "/api/category" using HTTP POST
+    Then the response code is 403
+
 
   Scenario: Cannot add a new Category with an existing name
     Given the request body is:

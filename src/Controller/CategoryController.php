@@ -349,7 +349,7 @@ class CategoryController extends FOSRestController implements ClassResourceInter
      *     description="The ID used to find the Category"
      * )
      *
-     * @Security("has_role('ROLE_AMBASSADOR')")
+     * @Security("has_role('ROLE_ADMIN')")
      * @param string $id
      * @return \FOS\RestBundle\View\View
      */

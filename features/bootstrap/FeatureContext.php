@@ -304,7 +304,11 @@ class FeatureContext implements Context
      */
     public function thereAreUserWithTheFollowingDetails(TableNode $users)
     {
+        $i = 1;
+        $this->logout();
         foreach ($users->getColumnsHash() as $user) {
+            $role = $user['ROLE'];
+            unset($user['ROLE']);
             $this->apiContext->setRequestBody(
                 json_encode($user)
             );
@@ -312,7 +316,22 @@ class FeatureContext implements Context
                 "/api/auth/register",
                 'POST'
             );
+            $this->apiContext->getTokenFromLogin();
+            if($role !== 'ROLE_USER')
+            {
+                $this->logout();
+                $this->login();
+                $this->apiContext->setRequestBody(
+                    "{ \"roles\": [\"{$role}\"] }"
+                );
+                $this->apiContext->requestPath(
+                    "/api/user/{$i}",
+                    'PATCH'
+                );
+            }
+            $i ++;
         }
+        $this->login();
     }
 
     /**
