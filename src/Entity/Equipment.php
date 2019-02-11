@@ -172,23 +172,23 @@ class Equipment
         return $this->haves;
     }
 
-    public function addHafe(Have $hafe): self
+    public function addHave(Have $have): self
     {
-        if (!$this->haves->contains($hafe)) {
-            $this->haves[] = $hafe;
-            $hafe->setEquipment($this);
+        if (!$this->haves->contains($have)) {
+            $this->haves[] = $have;
+            $have->setEquipment($this);
         }
 
         return $this;
     }
 
-    public function removeHafe(Have $hafe): self
+    public function removeHave(Have $have): self
     {
-        if ($this->haves->contains($hafe)) {
-            $this->haves->removeElement($hafe);
+        if ($this->haves->contains($have)) {
+            $this->haves->removeElement($have);
             // set the owning side to null (unless already changed)
-            if ($hafe->getEquipment() === $this) {
-                $hafe->setEquipment(null);
+            if ($have->getEquipment() === $this) {
+                $have->setEquipment(null);
             }
         }
 

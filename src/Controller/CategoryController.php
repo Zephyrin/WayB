@@ -219,6 +219,7 @@ class CategoryController extends FOSRestController implements ClassResourceInter
      *    )
      * )
      *
+     * @Security("has_role('ROLE_AMBASSADOR')")
      * @param Request $request
      * @param string $id of the Category to update
      * @return \FOS\RestBundle\View\View|JsonResponse
@@ -290,6 +291,7 @@ class CategoryController extends FOSRestController implements ClassResourceInter
      *    )
      * )
      *
+     * @Security("has_role('ROLE_AMBASSADOR')")
      * @param Request $request
      * @param string $id of the Category to update
      * @return \FOS\RestBundle\View\View|JsonResponse
@@ -346,6 +348,8 @@ class CategoryController extends FOSRestController implements ClassResourceInter
      *     type="string",
      *     description="The ID used to find the Category"
      * )
+     *
+     * @Security("has_role('ROLE_AMBASSADOR')")
      * @param string $id
      * @return \FOS\RestBundle\View\View
      */
