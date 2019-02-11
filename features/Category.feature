@@ -88,7 +88,9 @@ Feature: Provide a consistent standard JSON API endpoint
 
 
   Scenario: Cannot add a new Category with an existing name
-    Given the request body is:
+
+    Given I am Login As A
+    And the request body is:
       """
       {
         "name": "Clothe",
@@ -116,7 +118,8 @@ Feature: Provide a consistent standard JSON API endpoint
 
 
   Scenario: Can update an existing Category - PUT
-    Given the request body is:
+    Given I am Login As A
+    And the request body is:
       """
       {
         "name": "Cooking",
@@ -126,8 +129,21 @@ Feature: Provide a consistent standard JSON API endpoint
     When I request "/api/category/2" using HTTP PUT
     Then the response code is 204
 
+  Scenario: Cannot update an existing Category - PUT
+    Given I am Login As B
+    And the request body is:
+      """
+      {
+        "name": "Cooking",
+        "subCategories": []
+      }
+      """
+    When I request "/api/category/2" using HTTP PUT
+    Then the response code is 403
+
   Scenario: Cannot update a new Category with an existing name
-    Given the request body is:
+    Given I am Login As A
+    And the request body is:
       """
       {
         "name": "Clothe",
@@ -154,7 +170,8 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Cannot update an unknown Category - PUT
-    Given the request body is:
+    Given I am Login As A
+    And the request body is:
       """
       {
         "name": "Cooking",
@@ -165,7 +182,8 @@ Feature: Provide a consistent standard JSON API endpoint
     Then the response code is 404
 
   Scenario: Can update an existing Category - PATCH
-    Given the request body is:
+    Given I am Login As A
+    And the request body is:
       """
       {
         "name": "Sleep",
@@ -184,7 +202,8 @@ Feature: Provide a consistent standard JSON API endpoint
     Then the response code is 404
 
   Scenario: Must have a non-blank name
-    Given the request body is:
+    Given I am Login As A
+    And the request body is:
       """
       {
         "name": "",

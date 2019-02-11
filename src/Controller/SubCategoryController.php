@@ -11,6 +11,7 @@ use App\Serializer\FormErrorSerializer;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\Controller\FOSRestController;
 use FOS\RestBundle\Routing\ClassResourceInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -93,9 +94,10 @@ class SubCategoryController extends FOSRestController implements ClassResourceIn
      *    )
      *
      * )
-     *
+     * @Security("has_role('ROLE_AMBASSADOR')")
      * @param Request $request
      * @return \FOS\RestBundle\View\View|JsonResponse
+     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
      */
     public function postAction(Request $request)
     {
@@ -251,7 +253,7 @@ class SubCategoryController extends FOSRestController implements ClassResourceIn
      *     description="The ID used to find the Sub-Category"
      *    )
      * )
-     *
+     * @Security("has_role('ROLE_AMBASSADOR')")
      * @param Request $request
      * @param string $id of the Category to update
      * @return \FOS\RestBundle\View\View|JsonResponse
@@ -322,7 +324,7 @@ class SubCategoryController extends FOSRestController implements ClassResourceIn
      *     description="The ID used to find the Sub-Category"
      *    )
      * )
-     *
+     * @Security("has_role('ROLE_AMBASSADOR')")
      * @param Request $request
      * @param string $id of the Category to update
      * @return \FOS\RestBundle\View\View|JsonResponse
@@ -378,6 +380,7 @@ class SubCategoryController extends FOSRestController implements ClassResourceIn
      *     type="string",
      *     description="The ID used to find the Sub-Category"
      * )
+     * @Security("has_role('ROLE_ADMIN')")
      * @param string $id
      * @return \FOS\RestBundle\View\View
      */
