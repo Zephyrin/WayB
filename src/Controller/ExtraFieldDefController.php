@@ -2,9 +2,6 @@
 
 namespace App\Controller;
 
-namespace App\Controller;
-
-use App\Entity\Category;
 use App\Entity\ExtraFieldDef;
 use App\Entity\SubCategory;
 use App\Form\ExtraFieldDefType;
@@ -14,6 +11,7 @@ use App\Serializer\FormErrorSerializer;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\Controller\FOSRestController;
 use FOS\RestBundle\Routing\ClassResourceInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -102,8 +100,10 @@ class ExtraFieldDefController extends FOSRestController implements ClassResource
      *
      * )
      *
+     * @Security("has_role('ROLE_AMBASSADOR')")
      * @param Request $request
      * @return \FOS\RestBundle\View\View|JsonResponse
+     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
      */
     public function postAction(Request $request)
     {
@@ -275,10 +275,11 @@ class ExtraFieldDefController extends FOSRestController implements ClassResource
      *     description="The ID used to find the ExtraFieldDef"
      *    )
      * )
-     *
+     * @Security("has_role('ROLE_AMBASSADOR')")
      * @param Request $request
      * @param string $id of the Category to update
      * @return \FOS\RestBundle\View\View|JsonResponse
+     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
      */
     public function putAction(Request $request, string $id)
     {
@@ -354,10 +355,11 @@ class ExtraFieldDefController extends FOSRestController implements ClassResource
      *     description="The ID used to find the ExtraFieldDef"
      *    )
      * )
-     *
+     * @Security("has_role('ROLE_AMBASSADOR')")
      * @param Request $request
      * @param string $id of the Category to update
      * @return \FOS\RestBundle\View\View|JsonResponse
+     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
      */
     public function patchAction(Request $request, string $id)
     {
@@ -414,6 +416,7 @@ class ExtraFieldDefController extends FOSRestController implements ClassResource
      *     type="string",
      *     description="The ID used to find the ExtraFieldDef"
      * )
+     * @Security("has_role('ROLE_ADMIN')")
      * @param string $id
      * @return \FOS\RestBundle\View\View
      */
@@ -430,7 +433,7 @@ class ExtraFieldDefController extends FOSRestController implements ClassResource
     /**
      * @param string $id
      *
-     * @return Category
+     * @return ExtraFieldDef
      * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
      */
     private function findExtraFieldDefById(string $id)

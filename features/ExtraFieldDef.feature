@@ -5,6 +5,10 @@ Feature: Provide a consistent standard JSON API endpoint
   I need to allow Create, Read, Update, and Delete functionality
 
   Background:
+    Given there are User with the following details:
+      | username | password | email     | gender | ROLE            |
+      | a        | a        | a.b@c.com | MALE   | ROLE_AMBASSADOR |
+      | b        | b        | b.b@c.com | MALE   | ROLE_USER       |
     Given there are Categories with the following details:
       | name     |
       | Clothe    |
@@ -24,7 +28,8 @@ Feature: Provide a consistent standard JSON API endpoint
       | NUMBER | Weight | false   | true     | 1           | 1      | 1        |
 
   Scenario: Can get a single ExtraFieldDef
-    Given I request "/api/category/1/subcategory/1/extrafielddef/1" using HTTP GET
+    Given I am Login As B
+    And I request "/api/category/1/subcategory/1/extrafielddef/1" using HTTP GET
     Then the response body contains JSON:
     """
     {
@@ -38,7 +43,8 @@ Feature: Provide a consistent standard JSON API endpoint
     And the response code is 200
 
   Scenario: Can get a collection of ExtraFieldDef
-    Given I request "/api/category/1/subcategory/1/extrafielddef" using HTTP GET
+    Given I am Login As B
+    And I request "/api/category/1/subcategory/1/extrafielddef" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -82,7 +88,8 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can get a collection of Categories and its Sub Categories and its ExtraFieldDef
-    Given I request "/api/category" using HTTP GET
+    Given I am Login As B
+    And I request "/api/category" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -170,7 +177,8 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can add a new ExtraFieldDef
-    Given the request body is:
+    Given I am Login As A
+    And the request body is:
       """
       {
         "type": "ARRAY",
@@ -235,8 +243,26 @@ Feature: Provide a consistent standard JSON API endpoint
     }
     """
 
+  Scenario: Cannot add a new ExtraFieldDef
+    Given I am Login As B
+    And the request body is:
+      """
+      {
+        "type": "ARRAY",
+        "name": "New field",
+        "isPrice": false,
+        "isWeight": true,
+        "linkTo": 3
+      }
+      """
+    When I request "/api/category/1/subcategory/2/extrafielddef" using HTTP POST
+    Then the response code is 403
+    When I request "/api/category/1/subcategory/2/extrafielddef/4" using HTTP GET
+    Then the response code is 404
+
   Scenario: Can update an existing ExtraFieldDef - PUT
-    Given the request body is:
+    Given I am Login As A
+    And the request body is:
       """
       {
         "type": "ARRAY",
@@ -260,8 +286,35 @@ Feature: Provide a consistent standard JSON API endpoint
     }
     """
 
+  Scenario: Cannot update an existing ExtraFieldDef - PUT
+    Given I am Login As B
+    And the request body is:
+      """
+      {
+        "type": "ARRAY",
+        "name": "Size 2",
+        "isPrice": false,
+        "isWeight": false
+      }
+      """
+    When I request "/api/category/1/subcategory/1/extrafielddef/1" using HTTP PUT
+    Then the response code is 403
+    When I request "/api/category/1/subcategory/1/extrafielddef/1" using HTTP GET
+    Then the response code is 200
+    And the response body contains JSON:
+    """
+    {
+      "id": 1,
+      "type": "ARRAY",
+      "name": "Size",
+      "isPrice": false,
+      "isWeight": false
+    }
+    """
+
   Scenario: Can update an existing ExtraFieldDef with LinkTo - PUT
-    Given the request body is:
+    Given I am Login As A
+    And the request body is:
       """
       {
         "type": "NUMBER",
@@ -302,7 +355,8 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Cannot update an existing ExtraFieldDef with empty name - PUT
-    Given the request body is:
+    Given I am Login As A
+    And the request body is:
       """
       {
         "type": "ARRAY",
@@ -354,7 +408,8 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can update an existing ExtraFieldDef - PATCH
-    Given the request body is:
+    Given I am Login As A
+    And the request body is:
       """
       {
         "name": "Price 2"
@@ -383,8 +438,40 @@ Feature: Provide a consistent standard JSON API endpoint
     }
     """
 
+  Scenario: Cannot update an existing ExtraFieldDef - PATCH
+    Given I am Login As B
+    And the request body is:
+      """
+      {
+        "name": "Price 2"
+      }
+      """
+    When I request "/api/category/1/subcategory/1/extrafielddef/2" using HTTP PATCH
+    Then the response code is 403
+    When I request "/api/category/1/subcategory/1/extrafielddef/2" using HTTP GET
+    Then the response code is 200
+    And the response body contains JSON:
+    """
+    {
+      "id": 2,
+      "type": "NUMBER",
+      "name": "Price",
+      "isPrice": true,
+      "isWeight": false,
+      "linkTo":
+      {
+        "id": 1,
+        "type": "ARRAY",
+        "name": "Size",
+        "isPrice": false,
+        "isWeight": false
+      }
+    }
+    """
+
   Scenario: Cannot update an existing SubCategory with empty name - PATCH
-    Given the request body is:
+    Given I am Login As A
+    And the request body is:
       """
       {
         "name": ""
@@ -437,7 +524,8 @@ Feature: Provide a consistent standard JSON API endpoint
     Then the response code is 404
 
   Scenario: Cannot add an ExtraFieldDef with a blank name
-    Given the request body is:
+    Given I am Login As A
+    And the request body is:
     """
     {
       "id": 1,
