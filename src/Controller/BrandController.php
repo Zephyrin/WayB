@@ -8,7 +8,7 @@ use App\Repository\BrandRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Serializer\FormErrorSerializer;
 use FOS\RestBundle\Controller\Annotations as Rest;
-use FOS\RestBundle\Controller\FOSRestController;
+use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Routing\ClassResourceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -29,7 +29,7 @@ use Swagger\Annotations as SWG;
  *     name="Brand"
  * )
  */
-class BrandController extends FOSRestController implements ClassResourceInterface
+class BrandController extends AbstractFOSRestController implements ClassResourceInterface
 {
     /**
      * @var EntityManagerInterface
@@ -165,7 +165,7 @@ class BrandController extends FOSRestController implements ClassResourceInterfac
      *     description="Return all the Brands",
      *     @SWG\Schema(
      *      type="array",
-     *      @Model(type=Brand::class)
+     *      @SWG\Items(ref=@Model(type=Brand::class))
      *     )
      * )
      *

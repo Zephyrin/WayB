@@ -9,7 +9,7 @@ use App\Repository\HaveRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Serializer\FormErrorSerializer;
 use FOS\RestBundle\Controller\Annotations as Rest;
-use FOS\RestBundle\Controller\FOSRestController;
+use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Routing\ClassResourceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -30,7 +30,7 @@ use Swagger\Annotations as SWG;
  *     name="User has"
  * )
  */
-class HaveController extends FOSRestController implements ClassResourceInterface
+class HaveController extends AbstractFOSRestController implements ClassResourceInterface
 {
     /**
      * @var EntityManagerInterface
@@ -190,7 +190,7 @@ class HaveController extends FOSRestController implements ClassResourceInterface
      *     description="Return all the Equipments and their user information",
      *     @SWG\Schema(
      *      type="array",
-     *      @Model(type=Have::class)
+     *      @SWG\Items(ref=@Model(type=Have::class))
      *     )
      * )
      * @SWG\Parameter(

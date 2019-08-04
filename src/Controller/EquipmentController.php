@@ -10,7 +10,7 @@ use App\Repository\EquipmentRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Serializer\FormErrorSerializer;
 use FOS\RestBundle\Controller\Annotations as Rest;
-use FOS\RestBundle\Controller\FOSRestController;
+use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Routing\ClassResourceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -32,7 +32,7 @@ use Swagger\Annotations as SWG;
  *     name="Equipment"
  * )
  */
-class EquipmentController extends FOSRestController implements ClassResourceInterface
+class EquipmentController extends AbstractFOSRestController implements ClassResourceInterface
 {
     /**
      * @var EntityManagerInterface
@@ -190,7 +190,7 @@ class EquipmentController extends FOSRestController implements ClassResourceInte
      *     description="Return all the Equipments",
      *     @SWG\Schema(
      *      type="array",
-     *      @Model(type=Equipment::class)
+     *      @SWG\Items(ref=@Model(type=Equipment::class))
      *     )
      * )
      *

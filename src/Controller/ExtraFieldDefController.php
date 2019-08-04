@@ -9,7 +9,7 @@ use App\Repository\ExtraFieldDefRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Serializer\FormErrorSerializer;
 use FOS\RestBundle\Controller\Annotations as Rest;
-use FOS\RestBundle\Controller\FOSRestController;
+use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Routing\ClassResourceInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -29,7 +29,7 @@ use Swagger\Annotations as SWG;
  *     name="Extra Field Definition"
  * )
  */
-class ExtraFieldDefController extends FOSRestController implements ClassResourceInterface
+class ExtraFieldDefController extends AbstractFOSRestController implements ClassResourceInterface
 {
     /**
      * @var EntityManagerInterface
@@ -199,7 +199,7 @@ class ExtraFieldDefController extends FOSRestController implements ClassResource
      *     description="Return all the ExtraFieldDef",
      *     @SWG\Schema(
      *      type="array",
-     *      @Model(type=ExtraFieldDef::class)
+     *      @SWG\Items(ref=@Model(type=ExtraFieldDef::class))
      *     )
      * )
      * @SWG\Parameter(

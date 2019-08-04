@@ -7,7 +7,7 @@ use App\Form\UserAdminType;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Serializer\FormErrorSerializer;
 use FOS\RestBundle\Controller\Annotations as Rest;
-use FOS\RestBundle\Controller\FOSRestController;
+use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Routing\ClassResourceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -26,7 +26,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
  *     name="User"
  * )
  */
-class UserController extends FOSRestController implements ClassResourceInterface
+class UserController extends AbstractFOSRestController implements ClassResourceInterface
 {
     /**
      * @var EntityManagerInterface
@@ -72,8 +72,8 @@ class UserController extends FOSRestController implements ClassResourceInterface
      *     name="A part of a JSON User",
      *     in="body",
      *     required=true,
-     *     @SWG\Schema(
-     *       ref=@Model(type=Object::class)
+     *     @SWG\Property(
+     *      type="string"
      *     ),
      *     description="A part of a JSon User"
      *    ),

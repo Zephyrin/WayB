@@ -9,7 +9,7 @@ use App\Repository\SubCategoryRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Serializer\FormErrorSerializer;
 use FOS\RestBundle\Controller\Annotations as Rest;
-use FOS\RestBundle\Controller\FOSRestController;
+use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Routing\ClassResourceInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -29,7 +29,7 @@ use Swagger\Annotations as SWG;
  *     name="Sub-Category"
  * )
  */
-class SubCategoryController extends FOSRestController implements ClassResourceInterface
+class SubCategoryController extends AbstractFOSRestController implements ClassResourceInterface
 {
     /**
      * @var EntityManagerInterface
@@ -188,7 +188,7 @@ class SubCategoryController extends FOSRestController implements ClassResourceIn
      *     description="Return all the Sub-Categories",
      *     @SWG\Schema(
      *      type="array",
-     *      @Model(type=SubCategory::class)
+     *      @SWG\Items(ref=@Model(type=SubCategory::class))
      *     )
      * )
      * @SWG\Parameter(

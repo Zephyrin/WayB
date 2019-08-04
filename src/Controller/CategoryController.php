@@ -8,7 +8,7 @@ use App\Repository\CategoryRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Serializer\FormErrorSerializer;
 use FOS\RestBundle\Controller\Annotations as Rest;
-use FOS\RestBundle\Controller\FOSRestController;
+use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Routing\ClassResourceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -27,7 +27,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
  *     name="Category"
  * )
  */
-class CategoryController extends FOSRestController implements ClassResourceInterface
+class CategoryController extends AbstractFOSRestController implements ClassResourceInterface
 {
     /**
      * @var EntityManagerInterface
@@ -166,7 +166,7 @@ class CategoryController extends FOSRestController implements ClassResourceInter
      *     description="Return all the Categories",
      *     @SWG\Schema(
      *      type="array",
-     *      @Model(type=Category::class)
+     *      @SWG\Items(ref=@Model(type=Category::class))
      *     )
      * )
      *

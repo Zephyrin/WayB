@@ -25,3 +25,5 @@ behat.yml
 ###> lexik/jwt-authentication-bundle ###
 #/config/jwt/*.pem
 ###< lexik/jwt-authentication-bundle ###
+sqlite3.def
+sqlite3.dll
