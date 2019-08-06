@@ -5,6 +5,8 @@ use FOS\UserBundle\Model\UserManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use App\Serializer\FormErrorSerializer;
 use App\Entity\User;
 use App\Form\UserType;
 use Symfony\Component\Routing\Annotation\Route;
@@ -22,6 +24,16 @@ use Nelmio\ApiDocBundle\Annotation\Model;
  */
 class ApiAuthController extends AbstractController
 {
+    /**
+     * @var FormErrorSerializer
+     */
+    private $formErrorSerializer;
+
+    public function __construct(
+        FormErrorSerializer $formErrorSerializer
+    ) {
+        $this->formErrorSerializer = $formErrorSerializer;
+    }
     /**
      * Register an user to the DB.
      *

@@ -5,6 +5,10 @@
 
 ### Phpstorm ###
 .idea/
+
+### VScode ###
+.vscode/
+
 ###> symfony/framework-bundle ###
 /.env.local
 /.env.local.php
