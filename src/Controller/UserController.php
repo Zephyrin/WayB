@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Form\UserAdminType;
 use Doctrine\ORM\EntityManagerInterface;
+use FOS\UserBundle\Model\UserManagerInterface;
 use App\Serializer\FormErrorSerializer;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
@@ -38,12 +39,19 @@ class UserController extends AbstractFOSRestController implements ClassResourceI
      */
     private $formErrorSerializer;
 
+    /**
+     * @var FosUserRepository
+     */
+    private $userRepository;
+
     public function __construct(
         EntityManagerInterface $entityManager,
+        UserManagerInterface $userRepository,
         FormErrorSerializer $formErrorSerializer
     )
     {
         $this->entityManager = $entityManager;
+        $this->userRepository = $userRepository;
         $this->formErrorSerializer = $formErrorSerializer;
     }
 
@@ -134,6 +142,26 @@ class UserController extends AbstractFOSRestController implements ClassResourceI
             throw new NotFoundHttpException();
         }
 
+        return $existingUser;
+    }
+
+    /** 
+     * @param Request $request
+     * @param string username
+     * 
+     * @return User
+     * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+     */
+    public function getAction(Request $request, string $username)
+    {
+        $existingUser = $this->userRepository->findUserByUsernameOrEmail(
+            $username
+        );
+
+        if (null == $existingUser) {
+            throw new NotFoundHttpException();
+        }
+        $existingUser->setPassword("");
         return $existingUser;
     }
 }
