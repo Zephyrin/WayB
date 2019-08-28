@@ -164,4 +164,29 @@ class UserController extends AbstractFOSRestController implements ClassResourceI
         $existingUser->setPassword("");
         return $existingUser;
     }
+
+    /**
+     * Expose all Users
+     *
+     * @SWG\Get(
+     *     summary="Get all Users",
+     *     produces={"application/json"}
+     * )
+     * @SWG\Response(
+     *     response=200,
+     *     description="Return all the Users",
+     *     @SWG\Schema(
+     *      type="string"
+     *     )
+     * )
+     *
+     *
+     * @return \FOS\RestBundle\View\View
+     */
+    public function cgetAction()
+    {
+        return $this->view(
+            $this->userRepository->findUsers()    
+        );
+    }
 }

@@ -1,7 +1,7 @@
 #config/packages/security.yaml
 security:
     encoders:
-        FOS\UserBundle\Model\UserInterface: bcrypt
+        FOS\UserBundle\Model\UserInterface: auto
         Symfony\Component\Security\Core\User\User: plaintext
 
     role_hierarchy:

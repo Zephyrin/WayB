@@ -12,12 +12,10 @@ framework:
         cookie_samesite: lax
 
     #esi: true
-    #fragments: true
+    fragments: false
     php_errors:
         log: true
-    templating:
-        enabled: true
-        engines: twig
+
     serializer:
         enabled: false
         #name_converter: 'serializer.name_converter.camel_case_to_snake_case'
