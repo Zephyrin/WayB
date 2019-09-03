@@ -3,7 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
-use App\Form\UserAdminType;
+use App\Form\UserType;
 use Doctrine\ORM\EntityManagerInterface;
 use FOS\UserBundle\Model\UserManagerInterface;
 use App\Serializer\FormErrorSerializer;
@@ -20,7 +20,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 
 /**
  * @Rest\RouteResource(
- *     "api/User",
+ *     "api/user",
  *     pluralize=false
  * )
  * @SWG\Tag(
@@ -93,7 +93,7 @@ class UserController extends AbstractFOSRestController implements ClassResourceI
      *    )
      * )
      *
-     * @Security("has_role('ROLE_SUPER_ADMIN')")
+     * @Security("has_role('ROLE_ADMIN')")
      * @param Request $request
      * @param string $id of the User to update
      * @return \FOS\RestBundle\View\View|JsonResponse
@@ -103,13 +103,13 @@ class UserController extends AbstractFOSRestController implements ClassResourceI
     {
         $existingUser = $this->findUserById($id);
 
-        $form = $this->createForm(UserAdminType::class, $existingUser);
-
-        $form->submit(
-            $request->request->all()
-            , false);
-
-        if (false === $form->isValid()) {
+        $form = $this->createForm(UserType::class, $existingUser);
+        /* $form->handleRequest($request, false); */
+        /* $form->submit(
+            $request
+            , false); */
+        $form->submit($request->request->all(), false);
+        if (/* !$form->isSubmitted() || */ false === $form->isValid()) {
             return new JsonResponse(
                 [
                     'status' => 'error',
