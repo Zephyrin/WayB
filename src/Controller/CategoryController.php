@@ -16,7 +16,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 
 /**
  * @Rest\RouteResource(
@@ -85,7 +85,8 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
      *    )
      *
      * )
-     * @Security("has_role('ROLE_AMBASSADOR')")
+     * 
+     * @IsGranted("ROLE_AMBASSADOR")
      * @param Request $request
      * @return \FOS\RestBundle\View\View|JsonResponse
      * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
@@ -219,7 +220,7 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
      *    )
      * )
      *
-     * @Security("has_role('ROLE_AMBASSADOR')")
+     * @IsGranted("ROLE_AMBASSADOR")
      * @param Request $request
      * @param string $id of the Category to update
      * @return \FOS\RestBundle\View\View|JsonResponse
@@ -291,7 +292,7 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
      *    )
      * )
      *
-     * @Security("has_role('ROLE_AMBASSADOR')")
+     * @IsGranted("ROLE_AMBASSADOR")
      * @param Request $request
      * @param string $id of the Category to update
      * @return \FOS\RestBundle\View\View|JsonResponse
@@ -349,7 +350,7 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
      *     description="The ID used to find the Category"
      * )
      *
-     * @Security("has_role('ROLE_ADMIN')")
+     * @IsGranted("ROLE_AMBASSADOR")
      * @param string $id
      * @return \FOS\RestBundle\View\View
      */

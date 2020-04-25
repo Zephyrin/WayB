@@ -29,11 +29,12 @@ Feature: Provide a consistent standard JSON API endpoint
       | The north face | The north face desc | www.thenorthface.com |
     Given there are Equipments with the following details:
       | name                         | description   | brand | subCategory |
-      | Men's Zoomie Rain Jacket     | Description 1 | 3     | 2             |
-      | Men's Printed Cyclone Hoodie | Description 2 | 3     | 2             |
+      | Men's Zoomie Rain Jacket     | Description 1 | 3     | 2           |
+      | Men's Printed Cyclone Hoodie | Description 2 | 3     | 2           |
 
   Scenario: Can get a single Equipment
     Given I request "/api/user/1/equipment/1" using HTTP GET
+    Then print last response
     Then the response body contains JSON:
     """
     {
@@ -54,6 +55,7 @@ Feature: Provide a consistent standard JSON API endpoint
       }
     }
     """
+    Then print last response
     And the response code is 200
 
   Scenario: Can get a collection of Equipment

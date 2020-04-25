@@ -24,5 +24,6 @@ class ApiContextAuth extends Context\ApiContext
     public function logout()
     {
         $this->setRequestHeader('Authorization', '');
+        $this->token = "Bearer ";
     }
 }

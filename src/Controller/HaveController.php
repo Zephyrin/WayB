@@ -15,7 +15,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 
 /**
@@ -29,7 +28,7 @@ use Swagger\Annotations as SWG;
  * @SWG\Tag(
  *     name="User has"
  * )
- */
+ */use Nelmio\ApiDocBundle\Annotation\Model;
 class HaveController extends AbstractFOSRestController implements ClassResourceInterface
 {
     /**

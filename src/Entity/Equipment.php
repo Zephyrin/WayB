@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Swagger\Annotations as SWG;
 use JMS\Serializer\Annotation\SerializedName;
+use phpDocumentor\Reflection\Types\Boolean;
 use Symfony\Component\Validator\Constraints as Asset;
 
 /**
@@ -73,6 +74,22 @@ class Equipment
      * @ORM\OneToMany(targetEntity="App\Entity\Have", mappedBy="equipment")
      */
     private $haves;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="equipments")
+     * @ORM\JoinColumn(name="created_by", referencedColumnName="id")
+     * @SWG\Property(description="The User",
+     *     type="Object::class")
+     */
+    private $createdBy;
+
+    /**
+     * @ORM\Column(type="boolean")
+     * @SerializedName("validate")
+     * @var boolean
+     * @SWG\Property(description="The equipment is validate by ambassador's user and can be used by other user")
+     */
+    private $validate;
 
     public function __construct()
     {
@@ -191,6 +208,30 @@ class Equipment
                 $have->setEquipment(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getCreatedBy(): ?User
+    {
+        return $this->createdBy;
+    }
+
+    public function setCreatedBy(?User $createdBy): self
+    {
+        $this->createdBy = $createdBy;
+
+        return $this;
+    }
+
+    public function getValidate(): ?bool
+    {
+        return $this->validate;
+    }
+
+    public function setValidate(bool $validate): self
+    {
+        $this->validate = $validate;
 
         return $this;
     }

@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Brand;
 use App\Entity\Equipment;
 use App\Entity\SubCategory;
+use App\Entity\User;
 use App\Form\EquipmentType;
 use App\Repository\EquipmentRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -119,6 +120,8 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
         }
 
         $equipment = $form->getData();
+        $equipment->setCreatedBy($this->findUserByRequest($request));
+        $equipment->setValidate(false);
         if($equipment->getSubCategory() == null
             && is_int(intval($data['subCategory']))
         ) {
@@ -179,7 +182,7 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
     }
 
     /**
-     * Expose all Equipment
+     * Expose all Equipment belong to the user or has been validate
      *
      * @SWG\Get(
      *     summary="Get all Equipment",
@@ -194,13 +197,13 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
      *     )
      * )
      *
+     * @param Request $request
      * @return \FOS\RestBundle\View\View
-     * @TODO Add user restriction.
      */
-    public function cgetAction()
+    public function cgetAction(Request $request)
     {
         return $this->view(
-            $this->equipmentRepository->findAll()
+            $this->equipmentRepository->findByUserOrValidate($this->findUserByRequest($request))
         );
     }
 
@@ -224,7 +227,7 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
      *     description="The Equipment based on ID is not found"
      *    ),
      *    @SWG\Parameter(
-     *     name="The full JSON Equipment",
+     *     name="The full JSON Equipment, the field validate cannot be update.",
      *     in="body",
      *     required=true,
      *     @SWG\Schema(
@@ -250,7 +253,7 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
         $existingEquipment = $this->findEquipmentById($id);
         $form = $this->createForm(EquipmentType::class, $existingEquipment);
         $data = json_decode($request->getContent(), true);
-
+        $validate = $existingEquipment->getValidate();
         $form->submit($data);
         if (false === $form->isValid()) {
             return new JsonResponse(
@@ -262,7 +265,7 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
                 JsonResponse::HTTP_UNPROCESSABLE_ENTITY
             );
         }
-
+        $existingEquipment->setValidate($validate);
         $this->entityManager->flush();
 
         return $this->view(null, Response::HTTP_NO_CONTENT);
@@ -288,7 +291,7 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
      *     description="The Equipment based on ID is not found"
      *    ),
      *    @SWG\Parameter(
-     *     name="The full JSON Equipment",
+     *     name="The full JSON Equipment. The field validate cannot be update by normal user. Should be update by AMBASSADOR users.",
      *     in="body",
      *     required=true,
      *     @SWG\Schema(
@@ -314,7 +317,7 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
         $existingEquipment = $this->findEquipmentById($id);
         $form = $this->createForm(EquipmentType::class
             , $existingEquipment);
-
+        $validate = $existingEquipment->getValidate();
         $form->submit($request->request->all()
             , false);
         if (false === $form->isValid()) {
@@ -326,7 +329,19 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
                 JsonResponse::HTTP_UNPROCESSABLE_ENTITY
             );
         }
-
+        if($existingEquipment->getValidate() !== $validate) {
+            $user = $this->findUserByRequest($request);
+            if(!$user->hasRole("ROLE_AMBASSADOR")) {
+                return new JsonResponse(
+                    [ 
+                        'status' => 'error',
+                        'errors' => $this->formErrorSerializer->normalize($form)
+                    ],
+                    JsonResponse::HTTP_METHOD_NOT_ALLOWED
+                );
+            }
+        }
+        $existingEquipment->setValidate($validate);
         $this->entityManager->flush();
 
         return $this->view(null
@@ -382,5 +397,21 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
             throw new NotFoundHttpException();
         }
         return $existingEquipment;
+    }
+
+    /**
+     * @param Request $request
+     *
+     * @return User
+     * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+     */
+    private function findUserByRequest(Request $request)
+    {
+        $user = $this->entityManager->find(
+            User::class,
+            $request->attributes->get('userid'));
+        if($user == null)
+            throw new NotFoundHttpException();
+        return $user;
     }
 }

@@ -82,7 +82,11 @@ class FeatureContext implements Context
      * @logout
      */
     public function logout() {
-        $this->apiContext->logout('Authorization', '');
+        $this->apiContext->requestPath(
+            '/api/auth/logout',
+            'POST'
+        );
+        $this->apiContext->logout();
     }
 
     /**
@@ -93,6 +97,7 @@ class FeatureContext implements Context
     public function thereAreCategoriesWithTheFollowingDetails(TableNode $categories)
     {
         $i = 1;
+        $this->iAmLoginAsA();
         foreach ($categories->getColumnsHash() as $category) {
             $this->apiContext->setRequestBody(
                 json_encode($category)
@@ -114,21 +119,7 @@ class FeatureContext implements Context
                 ));
             $i ++;
         }
-    }
-
-    /**
-     * @When a demo scenario sends a request to :arg1
-     * @param $arg1
-     */
-    public function aDemoScenarioSendsARequestTo($arg1)
-    {
-    }
-
-    /**
-     * @Then the response should be received
-     */
-    public function theResponseShouldBeReceived()
-    {
+        $this->logout();
     }
 
     /**
@@ -230,6 +221,7 @@ class FeatureContext implements Context
      */
     public function thereAreBrandsWithTheFollowingDetails(TableNode $brands)
     {
+        $this->iAmLoginAsA();
         $i = 1;
         foreach ($brands->getColumnsHash() as $brand) {
             $this->apiContext->setRequestBody(
@@ -254,6 +246,7 @@ class FeatureContext implements Context
                 ));
             $i ++;
         }
+        $this->logout();
     }
 
     /**
@@ -330,8 +323,8 @@ class FeatureContext implements Context
                 );
             }
             $i ++;
+            $this->logout();
         }
-        $this->login();
     }
 
     /**
@@ -391,5 +384,13 @@ class FeatureContext implements Context
         );
 
         $this->apiContext->getTokenFromLogin();
+    }
+
+    /**
+     * @Then print last response
+     */
+    public function printLastResponse()
+    {
+
     }
 }

@@ -17,7 +17,7 @@ Feature: Provide a consistent standard JSON API endpoint
 
   Scenario: Can get a single Category
     Given I am Login As B
-    And I request "/api/category/1" using HTTP GET
+    Then I request "/api/category/1" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -28,9 +28,13 @@ Feature: Provide a consistent standard JSON API endpoint
     }
     """
 
+  Scenario: Cannot get a single Category
+    Given I request "/api/category/1" using HTTP GET
+    Then the response code is 401
+
   Scenario: Can get a collection of Categories
     Given I am Login As B
-    And I request "/api/category" using HTTP GET
+    Then I request "/api/category" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -88,7 +92,6 @@ Feature: Provide a consistent standard JSON API endpoint
 
 
   Scenario: Cannot add a new Category with an existing name
-
     Given I am Login As A
     And the request body is:
       """
@@ -116,7 +119,6 @@ Feature: Provide a consistent standard JSON API endpoint
     }
     """
 
-
   Scenario: Can update an existing Category - PUT
     Given I am Login As A
     And the request body is:
@@ -129,7 +131,7 @@ Feature: Provide a consistent standard JSON API endpoint
     When I request "/api/category/2" using HTTP PUT
     Then the response code is 204
 
-  Scenario: Cannot update an existing Category - PUT
+  Scenario: Cannot update an existing Category - PUT - USER
     Given I am Login As B
     And the request body is:
       """
@@ -192,14 +194,36 @@ Feature: Provide a consistent standard JSON API endpoint
       """
     When I request "/api/category/2" using HTTP PATCH
     Then the response code is 204
+  
+  Scenario: Cannot update an existing Category - PATCH - USER
+    Given I am Login As B
+    And the request body is:
+      """
+      {
+        "name": "Sleep",
+        "subCategories": []
+      }
+      """
+    When I request "/api/category/2" using HTTP PATCH
+    Then the response code is 403
 
   Scenario: Can delete an Category
-    Given I request "/api/category/3" using HTTP GET
+    Given I am Login As A
+    Then I request "/api/category/3" using HTTP GET
     Then the response code is 200
     When I request "/api/category/3" using HTTP DELETE
     Then the response code is 204
     When I request "/api/category/3" using HTTP GET
     Then the response code is 404
+  
+  Scenario: Can delete an Category - DELETE - USER
+    Given I am Login As B
+    Then I request "/api/category/3" using HTTP GET
+    Then the response code is 200
+    When I request "/api/category/3" using HTTP DELETE
+    Then the response code is 403
+    When I request "/api/category/3" using HTTP GET
+    Then the response code is 200
 
   Scenario: Must have a non-blank name
     Given I am Login As A

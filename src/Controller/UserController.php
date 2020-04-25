@@ -145,7 +145,7 @@ class UserController extends AbstractFOSRestController implements ClassResourceI
     private function findUserById(string $id)
     {
         $existingUser = $this->entityManager->find(
-            User::Class,
+            User::class,
             $id
         );
 

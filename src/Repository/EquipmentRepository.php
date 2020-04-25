@@ -22,19 +22,17 @@ class EquipmentRepository extends ServiceEntityRepository
     // /**
     //  * @return Equipment[] Returns an array of Equipment objects
     //  */
-    /*
-    public function findByExampleField($value)
+    public function findByUserOrValidate($value)
     {
         return $this->createQueryBuilder('e')
-            ->andWhere('e.exampleField = :val')
+            ->andWhere('e.validate = true')
+            ->andWhere('e.createdBy = :val')
             ->setParameter('val', $value)
             ->orderBy('e.id', 'ASC')
-            ->setMaxResults(10)
             ->getQuery()
             ->getResult()
         ;
     }
-    */
 
     /*
     public function findOneBySomeField($value): ?Equipment

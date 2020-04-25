@@ -16,6 +16,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 
 /**
  * Class BrandController
@@ -28,6 +29,7 @@ use Swagger\Annotations as SWG;
  * @SWG\Tag(
  *     name="Brand"
  * )
+ * 
  */
 class BrandController extends AbstractFOSRestController implements ClassResourceInterface
 {
@@ -57,7 +59,7 @@ class BrandController extends AbstractFOSRestController implements ClassResource
     }
 
     /**
-     * Create a new Brand.
+     * Create a new Brand if user is AMBASSADOR.
      *
      *
      * @SWG\Post(
@@ -86,6 +88,8 @@ class BrandController extends AbstractFOSRestController implements ClassResource
      *    )
      *
      * )
+     * 
+     * @IsGranted("ROLE_AMBASSADOR")
      * @param Request $request
      * @return \FOS\RestBundle\View\View|JsonResponse
      */
@@ -215,6 +219,7 @@ class BrandController extends AbstractFOSRestController implements ClassResource
      *    )
      * )
      *
+     * @IsGranted("ROLE_AMBASSADOR")
      * @param Request $request
      * @param string $id of the Brand to update
      * @return \FOS\RestBundle\View\View|JsonResponse
@@ -281,6 +286,7 @@ class BrandController extends AbstractFOSRestController implements ClassResource
      *    )
      * )
      *
+     * @IsGranted("ROLE_AMBASSADOR")
      * @param Request $request
      * @param string $id of the Brand to update
      * @return \FOS\RestBundle\View\View|JsonResponse
@@ -334,6 +340,8 @@ class BrandController extends AbstractFOSRestController implements ClassResource
      *     type="string",
      *     description="The ID used to find the Brand"
      * )
+     * 
+     * @IsGranted("ROLE_AMBASSADOR")
      * @param string $id
      * @return \FOS\RestBundle\View\View
      */

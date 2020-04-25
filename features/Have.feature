@@ -5,6 +5,10 @@ Feature: Provide a consistent standard JSON API endpoint
   I need to allow Create, Read, Update, and Delete functionality
 
   Background:
+    Given there are User with the following details:
+      | username | password | email     | gender | ROLE            |
+      | a        | a        | a.b@c.com | MALE   | ROLE_AMBASSADOR |
+      | b        | b        | b.b@c.com | MALE   | ROLE_USER       |
     Given there are Categories with the following details:
       | name     |
       | Clothe    |
@@ -31,10 +35,6 @@ Feature: Provide a consistent standard JSON API endpoint
       | name                         | description   | brand | subCategory |
       | Men's Zoomie Rain Jacket     | Description 1 | 3     | 2           |
       | Men's Printed Cyclone Hoodie | Description 2 | 3     | 2           |
-    Given there are User with the following details:
-      | username | password | email     | gender |
-      | a        | a        | a.b@c.com | MALE   |
-      | b        | b        | b.b@c.com | MALE   |
     Given there are Have with the following details:
       | user     | ownQuantity | wantQuantity | equipment |
       | 1        | 0           | 0            | 1         |
