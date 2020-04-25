@@ -108,8 +108,19 @@ class UserController extends AbstractFOSRestController implements ClassResourceI
         /* $form->submit(
             $request
             , false); */
+        $roles = $existingUser->getRoles();
+        foreach($roles as $role) {
+            $existingUser->removeRole($role);
+        }
+        $partialUser = $request->request->all();
+        if(array_key_exists("roles", $partialUser)){
+            foreach($partialUser["roles"] as $role) {
+                $existingUser->addRole($role);
+            }
+        }
+
         $form->submit($request->request->all(), false);
-        if (/* !$form->isSubmitted() || */ false === $form->isValid()) {
+        if (/*!$form->isSubmitted() ||*/ false === $form->isValid()) {
             return new JsonResponse(
                 [
                     'status' => 'error',
