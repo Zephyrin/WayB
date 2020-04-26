@@ -323,6 +323,10 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
      *     response=404,
      *     description="The User based on UserId or the Have based on ID is not found"
      *    ),
+     *    @SWG\Response(
+     *     response=403,
+     *     description="You are not allowed to update a Have of an another user"
+     *    ),
      *    @SWG\Parameter(
      *     name="The full JSON Have",
      *     in="body",
@@ -353,9 +357,20 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
      */
     public function patchAction(Request $request, string $id)
     {
+        $user = $this->findUserByRequest($request);
+        $login_user = $this->getUser();
+        if($user !== $login_user) {
+            return new JsonResponse(
+                [
+                    'status' => 'error',
+                    'message' => 'You are not allowed to change for other user',
+                ],
+                JsonResponse::HTTP_FORBIDDEN
+            );
+        }
         $existingHave = $this->findHaveById($id);
+        $equipment = $existingHave->getEquipment();
         $form = $this->createForm(HaveType::class, $existingHave);
-
         $form->submit($request->request->all(), false);
         if (false === $form->isValid()) {
             return new JsonResponse(
@@ -403,10 +418,20 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
      * @param string $id
      * @param Request $request
      * @return \FOS\RestBundle\View\View
-     * @TODO user
      */
     public function deleteAction(Request $request, string $id)
     {
+        $user = $this->findUserByRequest($request);
+        $login_user = $this->getUser();
+        if($user !== $login_user) {
+            return new JsonResponse(
+                [
+                    'status' => 'error',
+                    'message' => 'You are not allowed to change for other user',
+                ],
+                JsonResponse::HTTP_FORBIDDEN
+            );
+        }
         $this->findUserByRequest($request);
         $have = $this->findHaveById($id);
 

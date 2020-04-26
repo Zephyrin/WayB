@@ -460,88 +460,97 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can update an existing Equipment - PATCH
-    Given the request body is:
+    Given I am Login As A
+    Then the request body is:
       """
       {
-        "brand": 2
+        "wantQuantity": 1
       }
       """
-    When I request "/api/user/1/equipment/1" using HTTP PATCH
+    When I request "/api/user/1/have/1" using HTTP PATCH
     Then the response code is 204
-    When I request "/api/user/1/equipment/1" using HTTP GET
+    When I request "/api/user/1/have/1" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
     {
       "id": 1,
-      "name": "Men's Zoomie Rain Jacket",
-      "description": "Description 1",
-      "extraFields": [ ],
-      "brand": {
-        "id": 2,
-        "name": "Mammut",
-        "uri": "www.mammut.com",
-        "description": "Mammut Desc"
-      },
-      "subCategory": {
-        "id": 2,
-        "name": "Jacket",
-        "extraFieldDefs": [ ]
+      "ownQuantity": 0,
+      "wantQuantity": 1,
+      "equipment": {
+        "name": "Men's Zoomie Rain Jacket",
+        "description": "Description 1",
+        "extraFields": [ ],
+        "brand": {
+          "id": 3,
+          "name": "The north face",
+          "uri": "www.thenorthface.com",
+          "description": "The north face desc"
+        },
+        "subCategory": {
+          "id": 2,
+          "name": "Jacket",
+          "extraFieldDefs": { }
+        }
       }
     }
     """
 
-  Scenario: Cannot update an existing Equipment with empty name - PATCH
-    Given the request body is:
+  Scenario: Canot update an existing Equipment of an another user - PATCH
+    Given I am Login As B
+    Then the request body is:
       """
       {
-        "name": ""
+        "wantQuantity": 1
       }
       """
-    When I request "/api/user/1/equipment/1" using HTTP PATCH
-    Then the response code is 422
-    And the response body contains JSON:
-    """
-    {
-        "status": "error",
-        "errors": [{
-            "children": {
-                "name": {
-                    "errors": [
-                        "This value should not be blank."
-                    ]
-                }
-            }
-        }]
-    }
-    """
-    When I request "/api/user/1/equipment/1" using HTTP GET
+    When I request "/api/user/1/have/1" using HTTP PATCH
+    Then the response code is 403
+    When I request "/api/user/1/have/1" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
     {
       "id": 1,
-      "name": "Men's Zoomie Rain Jacket",
-      "description": "Description 1",
-      "extraFields": [ ],
-      "brand": {
-        "id": 3,
-        "name": "The north face",
-        "uri": "www.thenorthface.com",
-        "description": "The north face desc"
-      },
-      "subCategory": {
-        "id": 2,
-        "name": "Jacket",
-        "extraFieldDefs": []
+      "ownQuantity": 0,
+      "wantQuantity": 0,
+      "equipment": {
+        "name": "Men's Zoomie Rain Jacket",
+        "description": "Description 1",
+        "extraFields": [ ],
+        "brand": {
+          "id": 3,
+          "name": "The north face",
+          "uri": "www.thenorthface.com",
+          "description": "The north face desc"
+        },
+        "subCategory": {
+          "id": 2,
+          "name": "Jacket",
+          "extraFieldDefs": { }
+        }
       }
     }
     """
 
-  Scenario: Can delete an ExtraFieldDef
-    Given I request "/api/user/1/equipment/1" using HTTP GET
+  Scenario: Can delete an have
+    Given I am Login As A
+    Then I request "/api/user/1/have/1" using HTTP GET
     Then the response code is 200
-    When I request "/api/user/1/equipment/1" using HTTP DELETE
+    When I request "/api/user/1/have/1" using HTTP DELETE
     Then the response code is 204
-    When I request "/api/user/1/equipment/1" using HTTP GET
+    When I request "/api/user/1/have/1" using HTTP GET
     Then the response code is 404
+    When I request "/api/user/1/equipment/1" using HTTP GET
+    Then the response code is 200
+
+Scenario: Cannot delete an have
+    Given I am Login As B
+    Then I request "/api/user/1/have/1" using HTTP GET
+    Then the response code is 200
+    When I request "/api/user/1/have/1" using HTTP DELETE
+    Then the response code is 403
+    When I request "/api/user/1/have/1" using HTTP GET
+    Then the response code is 200
+    When I request "/api/user/1/equipment/1" using HTTP GET
+    Then the response code is 200
