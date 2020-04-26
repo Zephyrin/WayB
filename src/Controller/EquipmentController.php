@@ -19,7 +19,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
-
+use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Security\Core\Security;
 
 /**
  * Class EquipmentController
@@ -52,12 +53,14 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
     public function __construct(
         EntityManagerInterface $entityManager,
         EquipmentRepository $equipmentRepository,
-        FormErrorSerializer $formErrorSerializer
+        FormErrorSerializer $formErrorSerializer,
+        Security $security
     )
     {
         $this->entityManager = $entityManager;
         $this->equipmentRepository = $equipmentRepository;
         $this->formErrorSerializer = $formErrorSerializer;
+        $this->security = $security;
     }
 
     /**
@@ -74,11 +77,14 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
      *      )
      *    ),
      *    @SWG\Response(
+     *     response=412,
+     *     description="You cannot add an equipment to other user"
+     *    ),
+     *    @SWG\Response(
      *     response=422,
      *     description="The form is not correct<BR/>
      * See the corresponding JSON error to see which field is not correct"
-     *    )
-     *    ,
+     *    ),
      *    @SWG\Parameter(
      *     name="The JSON Equipment",
      *     in="body",
@@ -98,6 +104,16 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
      */
     public function postAction(Request $request)
     {
+        $user = $this->findUserByRequest($request);
+        $connectUser = $this->getUser();
+        if($user !== $connectUser)
+            return new JsonResponse(
+                [ 
+                    'status' => 'error',
+                    'Message' => 'You cannot add an equipment to other user'
+                ],
+                JsonResponse::HTTP_PRECONDITION_FAILED
+            );
         $data = json_decode(
             $request->getContent(),
             true
@@ -120,7 +136,7 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
         }
 
         $equipment = $form->getData();
-        $equipment->setCreatedBy($this->findUserByRequest($request));
+        $equipment->setCreatedBy($user);
         $equipment->setValidate(false);
         if($equipment->getSubCategory() == null
             && is_int(intval($data['subCategory']))
@@ -182,7 +198,8 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
     }
 
     /**
-     * Expose all Equipment belong to the user or has been validate
+     * Expose all Equipment belong to the user or has been validate.
+     * If you are an ambassador, return all equipments.
      *
      * @SWG\Get(
      *     summary="Get all Equipment",
@@ -202,9 +219,13 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
      */
     public function cgetAction(Request $request)
     {
-        return $this->view(
-            $this->equipmentRepository->findByUserOrValidate($this->findUserByRequest($request))
-        );
+        if($this->isGranted("ROLE_AMBASSADOR"))
+            return $this->view(
+                $this->equipmentRepository->findAll()
+            );
+        $user = $this->findUserByRequest($request);
+        $equipments = $this->equipmentRepository->findByUserOrValidate($user);
+        return $this->view($equipments);
     }
 
     /**
@@ -225,6 +246,10 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
      *    @SWG\Response(
      *     response=404,
      *     description="The Equipment based on ID is not found"
+     *    ),
+     *    @SWG\Response(
+     *     response=403,
+     *     description="The Equipment based on ID don't belong to you or you are not an ambassador"
      *    ),
      *    @SWG\Parameter(
      *     name="The full JSON Equipment, the field validate cannot be update.",
@@ -250,6 +275,10 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
      */
     public function putAction(Request $request, string $id)
     {
+        $user = $this->findUserByRequest($request);
+        $connectUser = $this->getUser();
+        if($user !== $connectUser)
+             $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
         $existingEquipment = $this->findEquipmentById($id);
         $form = $this->createForm(EquipmentType::class, $existingEquipment);
         $data = json_decode($request->getContent(), true);
@@ -265,7 +294,9 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
                 JsonResponse::HTTP_UNPROCESSABLE_ENTITY
             );
         }
-        $existingEquipment->setValidate($validate);
+        if($existingEquipment->getValidate() !== $validate) {
+            $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
+        }
         $this->entityManager->flush();
 
         return $this->view(null, Response::HTTP_NO_CONTENT);
@@ -289,6 +320,10 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
      *    @SWG\Response(
      *     response=404,
      *     description="The Equipment based on ID is not found"
+     *    ),
+     *    @SWG\Response(
+     *     response=403,
+     *     description="The Equipment based on ID don't belong to you or you are not an ambassador"
      *    ),
      *    @SWG\Parameter(
      *     name="The full JSON Equipment. The field validate cannot be update by normal user. Should be update by AMBASSADOR users.",
@@ -314,6 +349,10 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
      */
     public function patchAction(Request $request, string $id)
     {
+        $user = $this->findUserByRequest($request);
+        $connectUser = $this->getUser();
+        if($user !== $connectUser)
+             $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
         $existingEquipment = $this->findEquipmentById($id);
         $form = $this->createForm(EquipmentType::class
             , $existingEquipment);
@@ -330,16 +369,7 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
             );
         }
         if($existingEquipment->getValidate() !== $validate) {
-            $user = $this->findUserByRequest($request);
-            if(!$user->hasRole("ROLE_AMBASSADOR")) {
-                return new JsonResponse(
-                    [ 
-                        'status' => 'error',
-                        'errors' => $this->formErrorSerializer->normalize($form)
-                    ],
-                    JsonResponse::HTTP_METHOD_NOT_ALLOWED
-                );
-            }
+            $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
         }
         $existingEquipment->setValidate($validate);
         $this->entityManager->flush();
@@ -349,10 +379,14 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
     }
 
     /**
-     * Delete an Equipment with the id.
+     * Delete an Equipment with the id. Must belong to
+     *  the user and should not be linked with other user
+     *  if the equipment is validate.
      *
      * @SWG\Delete(
-     *     summary="Delete an Equipment based on ID"
+     *     summary="Delete an Equipment based on ID Must belong to
+     *      the user and should not be linked with other user
+     *      if the equipment is validate."
      * )
      * @SWG\Response(
      *     response=204,
@@ -363,6 +397,17 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
      *     response=404,
      *     description="The Equipment based on ID is not found"
      * )
+     * 
+     *  @SWG\Response(
+     *     response=403,
+     *     description="The Equipment based on ID don't belong to you."
+     * )
+     * 
+     *  @SWG\Response(
+     *     response=412,
+     *     description="The Equipment based on ID is linked to too many user.
+     * It cannot be delete yet."
+     * )
      *
      * @SWG\Parameter(
      *     name="id",
@@ -370,18 +415,42 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
      *     type="string",
      *     description="The ID used to find the Equipment"
      * )
+     * 
+     * @param Request $request
      * @param string $id
      * @return \FOS\RestBundle\View\View
      */
-    public function deleteAction(string $id)
+    public function deleteAction(Request $request, string $id)
     {
         $equipment = $this->findEquipmentById($id);
+        if($equipment->getCreatedBy() !== $this->getUser()) 
+            $this->denyAccessUnlessGranted("ROLE_ADMIN"
+                , null
+                , "This equipment don't belong to you and your are not an admin.");
+        if(!$equipment->getValidate() 
+            || count($equipment->getHaves()) < 1) {
+            $this->entityManager->remove($equipment);
+            $this->entityManager->flush();
 
-        $this->entityManager->remove($equipment);
-        $this->entityManager->flush();
-
-        return $this->view(null
-            , Response::HTTP_NO_CONTENT);
+            return $this->view(null
+                , Response::HTTP_NO_CONTENT);
+        }
+        if (count($equipment->getHaves()) > 1) {
+            return new JsonResponse(
+                [ 
+                    'status' => 'error',
+                    'errors' => 'Too many other users use this equipment.'
+                ],
+                JsonResponse::HTTP_PRECONDITION_FAILED
+            );            
+        }
+        return new JsonResponse(
+            [ 
+                'status' => 'error',
+                'errors' => 'This equipment don\'t belong to you'
+            ],
+            JsonResponse::HTTP_METHOD_NOT_ALLOWED
+        );
     }
 
     /**

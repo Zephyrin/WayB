@@ -380,7 +380,8 @@ class SubCategoryController extends AbstractFOSRestController implements ClassRe
      *     type="string",
      *     description="The ID used to find the Sub-Category"
      * )
-     * @Security("has_role('ROLE_ADMIN')")
+     * 
+     * @Security("has_role('ROLE_AMBASSADOR')")
      * @param string $id
      * @return \FOS\RestBundle\View\View
      */

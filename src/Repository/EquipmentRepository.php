@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Equipment;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
@@ -22,12 +23,12 @@ class EquipmentRepository extends ServiceEntityRepository
     // /**
     //  * @return Equipment[] Returns an array of Equipment objects
     //  */
-    public function findByUserOrValidate($value)
+    public function findByUserOrValidate(User $user)
     {
         return $this->createQueryBuilder('e')
-            ->andWhere('e.validate = true')
-            ->andWhere('e.createdBy = :val')
-            ->setParameter('val', $value)
+            ->Where('e.validate = true')
+            ->orWhere('e.createdBy = :val')
+            ->setParameter('val', $user->getId())
             ->orderBy('e.id', 'ASC')
             ->getQuery()
             ->getResult()

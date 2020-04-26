@@ -24,7 +24,7 @@ Feature: Provide a consistent standard JSON API endpoint
 
   Scenario: Can get a single SubCategory
     Given I am Login As B
-    And I request "/api/category/1/subcategory/1" using HTTP GET
+    Then I request "/api/category/1/subcategory/1" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -36,7 +36,7 @@ Feature: Provide a consistent standard JSON API endpoint
 
   Scenario: Can get a collection of SubCategories
     Given I am Login As B
-    And I request "/api/category/1/subcategory" using HTTP GET
+    Then I request "/api/category/1/subcategory" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -54,7 +54,7 @@ Feature: Provide a consistent standard JSON API endpoint
 
   Scenario: Can get a collection of Categories and its Sub Categories
     Given I am Login As B
-    And I request "/api/category" using HTTP GET
+    Then I request "/api/category" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -119,7 +119,7 @@ Feature: Provide a consistent standard JSON API endpoint
 
   Scenario: Cannot add a new SubCategory
     Given I am Login As B
-    And the request body is:
+    Then the request body is:
       """
       {
         "name": "Camera"
@@ -279,12 +279,22 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can delete a Sub Category
-    Given I request "/api/category/3/subcategory/5" using HTTP GET
+    Given I am Login As A 
+    Then I request "/api/category/3/subcategory/5" using HTTP GET
     Then the response code is 200
     When I request "/api/category/3/subcategory/5" using HTTP DELETE
     Then the response code is 204
     When I request "/api/category/3/subcategory/5" using HTTP GET
     Then the response code is 404
+
+  Scenario: Cannot delete a Sub Category
+    Given I am Login As B
+    Then I request "/api/category/3/subcategory/5" using HTTP GET
+    Then the response code is 200
+    When I request "/api/category/3/subcategory/5" using HTTP DELETE
+    Then the response code is 403
+    When I request "/api/category/3/subcategory/5" using HTTP GET
+    Then the response code is 200
 
   Scenario: Must have a non-blank name
     Given I am Login As A
@@ -313,14 +323,15 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can delete a Category and its Sub Category
-    Given I request "/api/category/3" using HTTP DELETE
+    Given I am Login As A
+    Then I request "/api/category/3" using HTTP DELETE
     Then the response code is 204
     When I request "/api/category/3/subcategory/5" using HTTP GET
     Then the response code is 404
 
   Scenario: Can update a Category without its Sub Categories - PUT
     Given I am Login As A
-    And the request body is:
+    Then the request body is:
       """
       {
         "name": "Cooking"
@@ -341,7 +352,7 @@ Feature: Provide a consistent standard JSON API endpoint
 
   Scenario: Can add a Category and all its SubCategories
     Given I am Login As A
-    And the request body is:
+    Then the request body is:
     """
     {
       "name": "Test category",
@@ -377,7 +388,7 @@ Feature: Provide a consistent standard JSON API endpoint
 
   Scenario: Can update a Category and all its SubCategory using PUT
     Given I am Login As A
-    And the request body is:
+    Then the request body is:
     """
     {
       "name": "Clothe 2",
@@ -430,7 +441,7 @@ Feature: Provide a consistent standard JSON API endpoint
 
   Scenario: Can update a Category and one of its SubCategory using PATCH
     Given I am Login As A
-    And the request body is:
+    Then the request body is:
     """
     {
       "subCategories": [
@@ -469,7 +480,7 @@ Feature: Provide a consistent standard JSON API endpoint
 
   Scenario: Can update a Category without its SubCategory using PATCH
     Given I am Login As A
-    And the request body is:
+    Then the request body is:
     """
     {
       "name": "Clothe 2"

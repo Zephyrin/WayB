@@ -5,6 +5,10 @@ Feature: Provide a consistent standard JSON API endpoint
   I need to allow Create, Read, Update, and Delete functionality
 
   Background:
+    Given there are User with the following details:
+      | username | password | email     | gender | ROLE            |
+      | a        | a        | a.b@c.com | MALE   | ROLE_AMBASSADOR |
+      | b        | b        | b.b@c.com | MALE   | ROLE_USER       |
     Given there are Categories with the following details:
       | name     |
       | Clothe    |
@@ -33,7 +37,33 @@ Feature: Provide a consistent standard JSON API endpoint
       | Men's Printed Cyclone Hoodie | Description 2 | 3     | 2           |
 
   Scenario: Can get a single Equipment
-    Given I request "/api/user/1/equipment/1" using HTTP GET
+    Given I am Login As A
+    Then I request "/api/user/1/equipment/1" using HTTP GET
+    Then print last response
+    Then the response body contains JSON:
+    """
+    {
+      "id": 1,
+      "name": "Men's Zoomie Rain Jacket",
+      "description": "Description 1",
+      "extraFields": [ ],
+      "brand": {
+        "id": 3,
+        "name": "The north face",
+        "uri": "www.thenorthface.com",
+        "description": "The north face desc"
+      },
+      "subCategory": {
+        "id": 2,
+        "name": "Jacket",
+        "extraFieldDefs": { }
+      }
+    }
+    """
+    Then print last response
+    And the response code is 200
+    Then I am Login As B
+    Then I request "/api/user/1/equipment/1" using HTTP GET
     Then print last response
     Then the response body contains JSON:
     """
@@ -59,7 +89,8 @@ Feature: Provide a consistent standard JSON API endpoint
     And the response code is 200
 
   Scenario: Can get a collection of Equipment
-    Given I request "/api/user/1/equipment" using HTTP GET
+    Given I am Login As A
+    Then I request "/api/user/1/equipment" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -100,9 +131,18 @@ Feature: Provide a consistent standard JSON API endpoint
       }
     ]
     """
+    Then I am Login As B
+    Then I request "/api/user/2/equipment" using HTTP GET
+    Then the response code is 200
+    And the response body contains JSON:
+    """
+    [
+    ]
+    """
 
   Scenario: Can add a new Equipment using Id for subCategory and brand
-    Given the request body is:
+    Given I am Login As B
+    Then the request body is:
       """
       {
         "name": "Jacket",
@@ -112,7 +152,7 @@ Feature: Provide a consistent standard JSON API endpoint
         "brand": 3
       }
       """
-    When I request "/api/user/1/equipment" using HTTP POST
+    When I request "/api/user/2/equipment" using HTTP POST
     Then the response code is 201
     And the response body contains JSON:
       """
@@ -134,7 +174,7 @@ Feature: Provide a consistent standard JSON API endpoint
         }
       }
       """
-    When I request "/api/user/1/equipment/3" using HTTP GET
+    When I request "/api/user/2/equipment/3" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -156,9 +196,93 @@ Feature: Provide a consistent standard JSON API endpoint
       }
     }
     """
+    Then I request "/api/user/2/equipment" using HTTP GET
+    Then the response code is 200
+    And the response body contains JSON:
+    """
+    [
+      {
+        "id": 3,
+        "name": "Jacket",
+        "description": "Titi",
+        "extraFields": [ ],
+        "subCategory": {
+          "id": 2,
+          "name": "Jacket",
+          "extraFieldDefs": []
+        },
+        "brand": {
+          "id": 3,
+          "name": "The north face",
+          "uri": "www.thenorthface.com",
+          "description": "The north face desc"
+        }
+      }
+    ]
+    """
+    Then I am Login As A
+    Then I request "/api/user/1/equipment" using HTTP GET
+    Then the response code is 200
+    And the response body contains JSON:
+    """
+    [
+      {
+        "id": 1,
+        "name": "Men's Zoomie Rain Jacket",
+        "description": "Description 1",
+        "extraFields": [ ],
+        "brand": {
+          "id": 3,
+          "name": "The north face",
+          "uri": "www.thenorthface.com",
+          "description": "The north face desc"
+        },
+        "subCategory": {
+          "id": 2,
+          "name": "Jacket",
+          "extraFieldDefs": []
+        }
+      },
+      {
+        "id": 2,
+        "name": "Men's Printed Cyclone Hoodie",
+        "description": "Description 2",
+        "extraFields": [ ],
+        "brand": {
+          "id": 3,
+          "name": "The north face",
+          "uri": "www.thenorthface.com",
+          "description": "The north face desc"
+        },
+        "subCategory": {
+          "id": 2,
+          "name": "Jacket",
+          "extraFieldDefs": [ ]
+        }
+      },
+      {
+        "id": 3,
+        "name": "Jacket",
+        "description": "Titi",
+        "extraFields": [ ],
+        "subCategory": {
+          "id": 2,
+          "name": "Jacket",
+          "extraFieldDefs": []
+        },
+        "brand": {
+          "id": 3,
+          "name": "The north face",
+          "uri": "www.thenorthface.com",
+          "description": "The north face desc"
+        }
+      }
+    ]
+    """
 
   Scenario: Cannot add a new Equipment using Entity for subCategory and brand
-    Given the request body is:
+    Given I am Login As B
+    Then the request body is:
       """
       {
         "name": "Jacket",
@@ -177,7 +301,7 @@ Feature: Provide a consistent standard JSON API endpoint
         }
       }
       """
-    When I request "/api/user/1/equipment" using HTTP POST
+    When I request "/api/user/2/equipment" using HTTP POST
     Then the response code is 422
     And the response body contains JSON:
       """
@@ -199,11 +323,71 @@ Feature: Provide a consistent standard JSON API endpoint
         }]
       }
       """
-    When I request "/api/user/1/equipment/3" using HTTP GET
+    When I request "/api/user/2/equipment/3" using HTTP GET
     Then the response code is 404
 
-  Scenario: Can update an existing Equipment - PUT
-    Given the request body is:
+  Scenario: Cannot POST an equipment to other user
+    Given I am Login As A
+    Then the request body is:
+      """
+      {
+        "name": "Jacket",
+        "description": "Titi",
+        "extraFields": [ ],
+        "subCategory": 2,
+        "brand": 3
+      }
+      """
+    When I request "/api/user/2/equipment" using HTTP POST
+    Then the response code is 412
+    And the response body contains JSON:
+      """
+      {
+        "status": "error",
+        "Message": "You cannot add an equipment to other user"
+      }
+      """
+
+  Scenario: Cannot update an existing Equipment if it is not mine - PUT
+    Given I am Login As B
+    Then the request body is:
+      """
+      {
+        "name": "Jacket",
+        "description": "Titi",
+        "extraFields": [ ],
+        "brand": 3,
+        "subCategory": 2
+      }
+      """
+    When I request "/api/user/1/equipment/1" using HTTP PUT
+    Then the response code is 403
+    When I request "/api/user/1/equipment/1" using HTTP GET
+    Then the response code is 200
+    And the response body contains JSON:
+    """
+    {
+      "id": 1,
+      "name": "Men's Zoomie Rain Jacket",
+      "description": "Description 1",
+      "extraFields": [ ],
+      "brand": {
+        "id": 3,
+        "name": "The north face",
+        "uri": "www.thenorthface.com",
+        "description": "The north face desc"
+      },
+      "subCategory": {
+        "id": 2,
+        "name": "Jacket",
+        "extraFieldDefs": [ ]
+      }
+    }
+    """
+
+    Scenario: Can update an existing Equipment - PUT
+    Given I am Login As A
+    Then the request body is:
       """
       {
         "name": "Jacket",
@@ -238,8 +422,80 @@ Feature: Provide a consistent standard JSON API endpoint
     }
     """
 
+  Scenario: Can update an existing Equipment using Id for subCategory and brand as AMBASSADOR
+    Given I am Login As B
+    Then the request body is:
+      """
+      {
+        "name": "Jacket",
+        "description": "Titi",
+        "extraFields": [ ],
+        "subCategory": 2,
+        "brand": 3
+      }
+      """
+    When I request "/api/user/2/equipment" using HTTP POST
+    Then the response code is 201
+    And the response body contains JSON:
+      """
+      {
+        "id": 3,
+        "name": "Jacket",
+        "description": "Titi",
+        "extraFields": [ ],
+        "subCategory": {
+          "id": 2,
+          "name": "Jacket",
+          "extraFieldDefs": []
+        },
+        "brand": {
+          "id": 3,
+          "name": "The north face",
+          "description": "The north face desc",
+          "uri": "www.thenorthface.com"
+        }
+      }
+      """
+    Then I am Login As A
+    Then the request body is:
+      """
+      {
+        "id": 3,
+        "name": "Jacket Update",
+        "description": "Titi",
+        "extraFields": [ ],
+        "brand": 2,
+        "subCategory": 2
+      }
+      """
+    When I request "/api/user/2/equipment/3" using HTTP PUT
+    Then the response code is 204
+    When I request "/api/user/2/equipment/3" using HTTP GET
+    Then the response code is 200
+    And the response body contains JSON:
+    """
+    {
+      "id": 3,
+      "name": "Jacket Update",
+      "description": "Titi",
+      "extraFields": [ ],
+      "brand": {
+        "id": 2,
+        "name": "Mammut",
+        "uri": "www.mammut.com",
+        "description": "Mammut Desc"
+      },
+      "subCategory": {
+        "id": 2,
+        "name": "Jacket",
+        "extraFieldDefs": [ ]
+      }
+    }
+    """
+
   Scenario: Can update an existing Equipment with a new Brand - PUT
-    Given the request body is:
+    Given I am Login As A
+    Then the request body is:
       """
       {
         "id": 1,
@@ -276,7 +532,8 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Cannot update an existing Equipment with empty name - PUT
-    Given the request body is:
+    Given I am Login As A
+    Then the request body is:
       """
       {
         "id": 1,
@@ -329,7 +586,8 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can update an existing Equipment - PATCH
-    Given the request body is:
+    Given I am Login As A
+    Then the request body is:
       """
       {
         "brand": 2
@@ -360,8 +618,42 @@ Feature: Provide a consistent standard JSON API endpoint
     }
     """
 
+  Scenario: Cannot update an existing Equipment that is not mine - PATCH
+    Given I am Login As B
+    Then the request body is:
+      """
+      {
+        "brand": 2
+      }
+      """
+    When I request "/api/user/1/equipment/1" using HTTP PATCH
+    Then the response code is 403
+    When I request "/api/user/1/equipment/1" using HTTP GET
+    Then the response code is 200
+    And the response body contains JSON:
+    """
+    {
+      "id": 1,
+      "name": "Men's Zoomie Rain Jacket",
+      "description": "Description 1",
+      "extraFields": [ ],
+      "brand": {
+        "id": 3,
+        "name": "The north face",
+        "uri": "www.thenorthface.com",
+        "description": "The north face desc"
+      },
+      "subCategory": {
+        "id": 2,
+        "name": "Jacket",
+        "extraFieldDefs": [ ]
+      }
+    }
+    """
+
   Scenario: Cannot update an existing Equipment with empty name - PATCH
-    Given the request body is:
+    Given I am Login As A
+    Then the request body is:
       """
       {
         "name": ""
@@ -407,10 +699,20 @@ Feature: Provide a consistent standard JSON API endpoint
     }
     """
 
-  Scenario: Can delete an ExtraFieldDef
-    Given I request "/api/user/1/equipment/1" using HTTP GET
+  Scenario: Can delete an Equipment
+    Given I am Login As A
+    Then I request "/api/user/1/equipment/1" using HTTP GET
     Then the response code is 200
     When I request "/api/user/1/equipment/1" using HTTP DELETE
     Then the response code is 204
     When I request "/api/user/1/equipment/1" using HTTP GET
     Then the response code is 404
+
+  Scenario: Cannot delete an Equipment that don't belong to the user
+    Given I am Login As B
+    Then I request "/api/user/1/equipment/1" using HTTP GET
+    Then the response code is 200
+    When I request "/api/user/1/equipment/1" using HTTP DELETE
+    Then the response code is 403
+    When I request "/api/user/1/equipment/1" using HTTP GET
+    Then the response code is 200

@@ -516,16 +516,26 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can delete an ExtraFieldDef
-    Given I request "/api/category/1/subcategory/1/extrafielddef/1" using HTTP GET
+    Given I am Login As A
+    Then I request "/api/category/1/subcategory/1/extrafielddef/1" using HTTP GET
     Then the response code is 200
     When I request "/api/category/1/subcategory/1/extrafielddef/1" using HTTP DELETE
     Then the response code is 204
     When I request "/api/category/1/subcategory/1/extrafielddef/1" using HTTP GET
     Then the response code is 404
 
+  Scenario: Cannot delete an ExtraFieldDef
+    Given I am Login As B
+    Then I request "/api/category/1/subcategory/1/extrafielddef/1" using HTTP GET
+    Then the response code is 200
+    When I request "/api/category/1/subcategory/1/extrafielddef/1" using HTTP DELETE
+    Then the response code is 403
+    When I request "/api/category/1/subcategory/1/extrafielddef/1" using HTTP GET
+    Then the response code is 200
+
   Scenario: Cannot add an ExtraFieldDef with a blank name
     Given I am Login As A
-    And the request body is:
+    Then the request body is:
     """
     {
       "id": 1,
@@ -554,7 +564,8 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can delete a Category and its Sub Category and its ExtraFieldDef
-    Given I request "/api/category/1" using HTTP DELETE
+    Given I am Login As A
+    Then I request "/api/category/1" using HTTP DELETE
     Then the response code is 204
     When I request "/api/category/1/subcategory/1" using HTTP GET
     Then the response code is 404

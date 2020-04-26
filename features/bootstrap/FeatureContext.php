@@ -130,6 +130,7 @@ class FeatureContext implements Context
     public function thereAreSubcategoriesWithTheFollowingDetails(TableNode $table)
     {
         $i = 1;
+        $this->iAmLoginAsA();
         foreach ($table->getColumnsHash() as $subCategory) {
 
             $catId = $subCategory['category'];
@@ -156,6 +157,7 @@ class FeatureContext implements Context
                 ));
             $i ++;
         }
+        $this->logout();
     }
 
     /**
@@ -166,6 +168,7 @@ class FeatureContext implements Context
     public function thereAreExtrafielddefsWithTheFollowingDetails(TableNode $table)
     {
         $i = 1;
+        $this->iAmLoginAsA();
         foreach ($table->getColumnsHash() as $extraFieldDef) {
             $isPrice = $extraFieldDef['isPrice'];
             $extraFieldDef['isPrice'] = $extraFieldDef['isPrice'] == 'true';
@@ -212,6 +215,7 @@ class FeatureContext implements Context
 
             $i ++;
         }
+        $this->logout();
     }
 
     /**
@@ -256,6 +260,7 @@ class FeatureContext implements Context
     public function thereAreEquipmentsWithTheFollowingDetails(TableNode $equipments)
     {
         $i = 1;
+        $this->iAmLoginAsA();
         foreach ($equipments->getColumnsHash() as $equipment) {
             $this->apiContext->setRequestBody(
                 json_encode($equipment)
@@ -266,6 +271,7 @@ class FeatureContext implements Context
             );
             $i ++;
         }
+        $this->logout();
     }
 
     /**
