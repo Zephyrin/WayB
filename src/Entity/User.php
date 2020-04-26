@@ -35,6 +35,7 @@ class User extends BaseUser
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Have", mappedBy="user", orphanRemoval=true)
+     * @Exclude()
      * @SWG\Property(
      *     description="The list of what the user has."
      *     , type="array::class")

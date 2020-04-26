@@ -342,6 +342,10 @@ class FeatureContext implements Context
         foreach ($haves->getColumnsHash() as $have) {
             $eqId = $have["user"];
             unset($have["user"]);
+            if($eqId == "1")
+                $this->iAmLoginAsA();
+            else 
+                $this->iAmLoginAsB();
             $this->apiContext->setRequestBody(
                 json_encode($have)
             );
@@ -349,6 +353,7 @@ class FeatureContext implements Context
                 "/api/user/{$eqId}/have",
                 'POST'
             );
+            $this->logout();
         }
     }
 

@@ -72,8 +72,11 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
      *     response=422,
      *     description="The form is not correct<BR/>
      * See the corresponding JSON error to see which field is not correct"
-     *    )
-     *    ,
+     *    ),
+     *    @SWG\Response(
+     *     response=403,
+     *     description="You are not allow to create a link for an another user"
+     *    ),
      *    @SWG\Parameter(
      *     name="userId",
      *     in="path",
@@ -100,6 +103,13 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
      */
     public function postAction(Request $request)
     {
+        $user = $this->findUserByRequest($request);
+        $login_user = $this->getUser();
+        if($user !== $login_user) {
+            $this->denyAccessUnlessGranted("ROLE_ADMIN"
+                , null
+                , "You cannot link an equipment for other user");
+        }
         $data = json_decode(
             $request->getContent(),
             true
@@ -122,7 +132,6 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
         }
 
         $have = $form->getData();
-        $user = $this->findUserByRequest($request);
         $have->setUser($user);
         $this->entityManager->persist($have);
         $this->entityManager->flush();
@@ -170,8 +179,6 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
      */
     public function getAction(string $id, User $user)
     {
-        $this->denyAccessUnlessGranted('view', $user);
-
         return $this->view(
             $this->findHaveById($id)
         );
@@ -209,9 +216,9 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
      */
     public function cgetAction(Request $request)
     {
-
+        $user = $this->findUserByRequest($request);
         return $this->view(
-            $this->haveRepository->findAll()
+            $this->haveRepository->findAllOfUser($user)
         );
     }
 
@@ -264,6 +271,17 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
      */
     public function putAction(Request $request, string $id)
     {
+        $user = $this->findUserByRequest($request);
+        $login_user = $this->getUser();
+        if($user !== $login_user) {
+            return new JsonResponse(
+                [
+                    'status' => 'error',
+                    'message' => 'You are not allowed to change for other user',
+                ],
+                JsonResponse::HTTP_FORBIDDEN
+            );
+        }
         $existingHaveField = $this->findHaveById($id);
         $form = $this->createForm(HaveType::class, $existingHaveField);
         $data = json_decode($request->getContent(), true);

@@ -6,6 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation\SerializedName;
 use Swagger\Annotations as SWG;
 use JMS\Serializer\Annotation\Exclude;
+use Symfony\Component\Validator\Constraints as Asset;
 
 /**
  * @SWG\Definition(
@@ -37,6 +38,8 @@ class Have
     private $user;
 
     /**
+     * @Asset\NotNull()
+     * @Asset\NotBlank()
      * @ORM\Column(type="integer")
      * @SerializedName("ownQuantity")
      * @var integer
@@ -45,6 +48,8 @@ class Have
     private $ownQuantity;
 
     /**
+     * @Asset\NotNull()
+     * @Asset\NotBlank()
      * @ORM\Column(type="integer")
      * @SerializedName("wantQuantity")
      * @var integer
@@ -53,6 +58,7 @@ class Have
     private $wantQuantity;
 
     /**
+     * @Asset\NotNull()
      * @ORM\ManyToOne(targetEntity="App\Entity\Equipment", inversedBy="haves")
      * @ORM\JoinColumn(nullable=false)
      * @SerializedName("equipment")

@@ -35,6 +35,7 @@ Feature: Provide a consistent standard JSON API endpoint
       | name                         | description   | brand | subCategory |
       | Men's Zoomie Rain Jacket     | Description 1 | 3     | 2           |
       | Men's Printed Cyclone Hoodie | Description 2 | 3     | 2           |
+      | Men's Rafale Jacket          | Description 3 | 3     | 2           |
     Given there are Have with the following details:
       | user     | ownQuantity | wantQuantity | equipment |
       | 1        | 0           | 0            | 1         |
@@ -70,19 +71,16 @@ Feature: Provide a consistent standard JSON API endpoint
     """
     And the response code is 200
 
-  Scenario: Cannot get a single Equipment With User B
+  Scenario: Can get a single Equipment With User B belong to A
     Given I am Login As B
     And I request "/api/user/1/have/1" using HTTP GET
-    Then the response code is 403
-
-  Scenario: Can get a collection of Equipment
-    Given I request "/api/user/1/equipment" using HTTP GET
-    Then the response code is 200
-    And the response body contains JSON:
+    Then the response body contains JSON:
     """
-    [
-      {
-        "id": 1,
+    {
+      "id": 1,
+      "ownQuantity": 0,
+      "wantQuantity": 0,
+      "equipment": {
         "name": "Men's Zoomie Rain Jacket",
         "description": "Description 1",
         "extraFields": [ ],
@@ -95,84 +93,248 @@ Feature: Provide a consistent standard JSON API endpoint
         "subCategory": {
           "id": 2,
           "name": "Jacket",
-          "extraFieldDefs": []
+          "extraFieldDefs": { }
+        }
+      }
+    }
+    """
+    And the response code is 200
+
+  Scenario: Can get a collection of have from user A
+    Given I am Login As A
+    Then I request "/api/user/1/have" using HTTP GET
+    Then the response code is 200
+    And the response body contains JSON:
+    """
+    [
+      {
+        "id": 1,
+        "ownQuantity": 0,
+        "wantQuantity": 0,
+        "equipment": {
+          "id": 1,
+          "name": "Men's Zoomie Rain Jacket",
+          "description": "Description 1",
+          "subCategory": {
+            "id": 2,
+            "name": "Jacket",
+            "extraFieldDefs": []
+          },
+          "brand": {
+            "id": 3,
+            "name": "The north face",
+            "description": "The north face desc",
+            "uri": "www.thenorthface.com"
+          },
+          "extraFields": [],
+          "haves": [
+            {
+              "id": 3,
+              "ownQuantity": 1,
+              "wantQuantity": 0
+            }
+          ],
+          "created_by": {
+            "id": 1,
+            "username": "a",
+            "email": "a.b@c.com",
+            "enabled": true,
+            "gender": "MALE"
+          },
+          "validate": false
         }
       },
       {
         "id": 2,
-        "name": "Men's Printed Cyclone Hoodie",
-        "description": "Description 2",
-        "extraFields": [ ],
-        "brand": {
-          "id": 3,
-          "name": "The north face",
-          "uri": "www.thenorthface.com",
-          "description": "The north face desc"
-        },
-        "subCategory": {
+        "ownQuantity": 1,
+        "wantQuantity": 0,
+        "equipment": {
           "id": 2,
-          "name": "Jacket",
-          "extraFieldDefs": [ ]
+          "name": "Men's Printed Cyclone Hoodie",
+          "description": "Description 2",
+          "subCategory": {
+            "id": 2,
+            "name": "Jacket",
+            "extraFieldDefs": []
+          },
+          "brand": {
+            "id": 3,
+            "name": "The north face",
+            "description": "The north face desc",
+            "uri": "www.thenorthface.com"
+          },
+          "extraFields": [],
+          "haves": [],
+          "created_by": {
+            "id": 1,
+            "username": "a",
+            "email": "a.b@c.com",
+            "enabled": true,
+            "gender": "MALE"
+          },
+          "validate": false
         }
       }
     ]
     """
 
-  Scenario: Can add a new Equipment using Id for subCategory and brand
-    Given the request body is:
-      """
-      {
-        "name": "Jacket",
-        "description": "Titi",
-        "extraFields": [ ],
-        "subCategory": 2,
-        "brand": 3
-      }
-      """
-    When I request "/api/user/1/equipment" using HTTP POST
-    Then the response code is 201
-    And the response body contains JSON:
-      """
-      {
-        "id": 3,
-        "name": "Jacket",
-        "description": "Titi",
-        "extraFields": [ ],
-        "subCategory": {
-          "id": 2,
-          "name": "Jacket",
-          "extraFieldDefs": []
-        },
-        "brand": {
-          "id": 3,
-          "name": "The north face",
-          "description": "The north face desc",
-          "uri": "www.thenorthface.com"
-        }
-      }
-      """
-    When I request "/api/user/1/equipment/3" using HTTP GET
+  Scenario: Can get a collection of have from user A as login B
+    Given I am Login As B
+    Then I request "/api/user/1/have" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
-    {
-      "id": 3,
-      "name": "Jacket",
-      "description": "Titi",
-      "extraFields": [ ],
-      "subCategory": {
-        "id": 2,
-        "name": "Jacket",
-        "extraFieldDefs": []
+    [
+      {
+        "id": 1,
+        "ownQuantity": 0,
+        "wantQuantity": 0,
+        "equipment": {
+          "id": 1,
+          "name": "Men's Zoomie Rain Jacket",
+          "description": "Description 1",
+          "subCategory": {
+            "id": 2,
+            "name": "Jacket",
+            "extraFieldDefs": []
+          },
+          "brand": {
+            "id": 3,
+            "name": "The north face",
+            "description": "The north face desc",
+            "uri": "www.thenorthface.com"
+          },
+          "extraFields": [],
+          "haves": [
+            {
+              "id": 3,
+              "ownQuantity": 1,
+              "wantQuantity": 0
+            }
+          ],
+          "created_by": {
+            "id": 1,
+            "username": "a",
+            "email": "a.b@c.com",
+            "enabled": true,
+            "gender": "MALE"
+          },
+          "validate": false
+        }
       },
-      "brand": {
+      {
+        "id": 2,
+        "ownQuantity": 1,
+        "wantQuantity": 0,
+        "equipment": {
+          "id": 2,
+          "name": "Men's Printed Cyclone Hoodie",
+          "description": "Description 2",
+          "subCategory": {
+            "id": 2,
+            "name": "Jacket",
+            "extraFieldDefs": []
+          },
+          "brand": {
+            "id": 3,
+            "name": "The north face",
+            "description": "The north face desc",
+            "uri": "www.thenorthface.com"
+          },
+          "extraFields": [],
+          "haves": [],
+          "created_by": {
+            "id": 1,
+            "username": "a",
+            "email": "a.b@c.com",
+            "enabled": true,
+            "gender": "MALE"
+          },
+          "validate": false
+        }
+      }
+    ]
+    """
+
+  Scenario: Can link an existing equipment to the user A:
+    Given I am Login As A
+    Then the request body is:
+      """
+      {
+        "ownQuantity": 0,
+        "wantQuantity": 1,
+        "equipment": 3
+      }
+      """
+    When I request "/api/user/1/have" using HTTP POST
+    Then the response code is 201
+    And the response body contains JSON:
+    """
+    {
+      "ownQuantity": 0,
+      "wantQuantity": 1,
+      "equipment": {
         "id": 3,
-        "name": "The north face",
-        "uri": "www.thenorthface.com",
-        "description": "The north face desc"
+        "name": "Men's Rafale Jacket",
+        "description": "Description 3",
+        "subCategory": {
+            "id": 2,
+            "name": "Jacket",
+            "extraFieldDefs": []
+          },
+          "brand": {
+            "id": 3,
+            "name": "The north face",
+            "description": "The north face desc",
+            "uri": "www.thenorthface.com"
+          },
+          "extraFields": [],
+          "haves": [],
+          "created_by": {
+            "id": 1,
+            "username": "a",
+            "email": "a.b@c.com",
+            "enabled": true,
+            "gender": "MALE"
+          },
+          "validate": false
       }
     }
     """
+
+  Scenario: Cannot link an not full json to the user A - POST:
+    Given I am Login As A
+    Then the request body is:
+      """
+      {
+        "ownQuantity": 0,
+        "wantQuantity": 1
+      }
+      """
+    When I request "/api/user/1/have" using HTTP POST
+    Then the response code is 422
+    Then the request body is:
+      """
+      {
+        "ownQuantity": 0,
+        "equipment": 3
+      }
+      """
+    When I request "/api/user/1/have" using HTTP POST
+    Then the response code is 422
+  
+   Scenario: Cannot link an existing equipment to the user A with user B:
+    Given I am Login As B
+    Then the request body is:
+      """
+      {
+        "ownQuantity": 0,
+        "wantQuantity": 1,
+        "equipment": 3
+      }
+      """
+    When I request "/api/user/1/have" using HTTP POST
+    Then the response code is 403
 
   Scenario: Cannot add a new Equipment using Entity for subCategory and brand
     Given the request body is:
@@ -219,128 +381,80 @@ Feature: Provide a consistent standard JSON API endpoint
     When I request "/api/user/1/equipment/3" using HTTP GET
     Then the response code is 404
 
-  Scenario: Can update an existing Equipment - PUT
-    Given the request body is:
+  Scenario: Can update an existing Have - PUT
+    Given I am Login As A
+    Then the request body is:
       """
       {
-        "name": "Jacket",
-        "description": "Titi",
-        "extraFields": [ ],
-        "brand": 3,
-        "subCategory": 2
+        "ownQuantity": 0,
+        "wantQuantity": 1,
+        "equipment": 1
       }
       """
-    When I request "/api/user/1/equipment/1" using HTTP PUT
+    When I request "/api/user/1/have/1" using HTTP PUT
     Then the response code is 204
-    When I request "/api/user/1/equipment/1" using HTTP GET
+    When I request "/api/user/1/have/1" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
     {
       "id": 1,
-      "name": "Jacket",
-      "description": "Titi",
-      "extraFields": [ ],
-      "brand": {
-        "id": 3,
-        "name": "The north face",
-        "uri": "www.thenorthface.com",
-        "description": "The north face desc"
-      },
-      "subCategory": {
-        "id": 2,
-        "name": "Jacket",
-        "extraFieldDefs": [ ]
+      "ownQuantity": 0,
+      "wantQuantity": 1,
+      "equipment": {
+        "name": "Men's Zoomie Rain Jacket",
+        "description": "Description 1",
+        "extraFields": [ ],
+        "brand": {
+          "id": 3,
+          "name": "The north face",
+          "uri": "www.thenorthface.com",
+          "description": "The north face desc"
+        },
+        "subCategory": {
+          "id": 2,
+          "name": "Jacket",
+          "extraFieldDefs": { }
+        }
       }
     }
     """
 
-  Scenario: Can update an existing Equipment with a new Brand - PUT
-    Given the request body is:
+  Scenario: Cannot update an existing Have from an another user - PUT
+    Given I am Login As B
+    Then the request body is:
       """
       {
-        "id": 1,
-        "name": "Jacket",
-        "description": "Titi",
-        "extraFields": [ ],
-        "brand": 2,
-        "subCategory": 2
+        "ownQuantity": 0,
+        "wantQuantity": 1,
+        "equipment": 1
       }
       """
-    When I request "/api/user/1/equipment/1" using HTTP PUT
-    Then the response code is 204
-    When I request "/api/user/1/equipment/1" using HTTP GET
+    When I request "/api/user/1/have/1" using HTTP PUT
+    Then the response code is 403
+    When I request "/api/user/1/have/1" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
     {
       "id": 1,
-      "name": "Jacket",
-      "description": "Titi",
-      "extraFields": [ ],
-      "brand": {
-        "id": 2,
-        "name": "Mammut",
-        "uri": "www.mammut.com",
-        "description": "Mammut Desc"
-      },
-      "subCategory": {
-        "id": 2,
-        "name": "Jacket",
-        "extraFieldDefs": [ ]
-      }
-    }
-    """
-
-  Scenario: Cannot update an existing Equipment with empty name - PUT
-    Given the request body is:
-      """
-      {
-        "id": 1,
-        "name": "",
-        "description": "Titi",
+      "ownQuantity": 0,
+      "wantQuantity": 0,
+      "equipment": {
+        "name": "Men's Zoomie Rain Jacket",
+        "description": "Description 1",
         "extraFields": [ ],
-        "brand": 2,
-        "subCategory": 2
-      }
-      """
-    When I request "/api/user/1/equipment/1" using HTTP PUT
-    Then the response code is 422
-    And the response body contains JSON:
-    """
-    {
-        "status": "error",
-        "errors": [{
-            "children": {
-                "name": {
-                    "errors": [
-                        "This value should not be blank."
-                    ]
-                },
-                "description": [],
-                "extraFields": [],
-                "brand": [],
-                "subCategory": []
-            }
-        }]
-    }
-    """
-    When I request "/api/category/1/subcategory/1/extrafielddef/2" using HTTP GET
-    Then the response code is 200
-    And the response body contains JSON:
-    """
-    {
-      "id": 2,
-      "type": "NUMBER",
-      "name": "Price",
-      "isPrice": true,
-      "isWeight": false,
-      "linkTo": {
-        "id": 1,
-        "type": "ARRAY",
-        "name": "Size",
-        "isPrice": false,
-        "isWeight": false
+        "brand": {
+          "id": 3,
+          "name": "The north face",
+          "uri": "www.thenorthface.com",
+          "description": "The north face desc"
+        },
+        "subCategory": {
+          "id": 2,
+          "name": "Jacket",
+          "extraFieldDefs": { }
+        }
       }
     }
     """

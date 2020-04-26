@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Have;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
@@ -19,6 +20,16 @@ class HaveRepository extends ServiceEntityRepository
         parent::__construct($registry, Have::class);
     }
 
+    public function findAllOfUser(User $user) {
+        return $this->createQueryBuilder('h')
+            ->Where('h.user = :val')
+            ->setParameter('val', $user->getId())
+            ->orderBy('h.id', 'ASC')
+            ->setMaxResults(10)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
     // /**
     //  * @return Have[] Returns an array of Have objects
     //  */
