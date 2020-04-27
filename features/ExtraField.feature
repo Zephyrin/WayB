@@ -92,7 +92,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can get a collection of Equipment and its ExtraFields
-    Given I am Login As B
+    Given I am Login As A
     Then I request "/api/equipment" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
@@ -229,7 +229,7 @@ Feature: Provide a consistent standard JSON API endpoint
     }
     """
 
-  Scenario: Cannot update an existing SubCategory with empty name - PUT
+  Scenario: Cannot update an existing ExtraField with empty name - PUT
     Given I am Login As B
     Then the request body is:
       """
@@ -275,7 +275,7 @@ Feature: Provide a consistent standard JSON API endpoint
     }
     """
 
-  Scenario: Can update an existing SubCategory - PATCH
+  Scenario: Can update an existing ExtraField - PATCH
     Given I am Login As B
     Then the request body is:
       """
@@ -299,7 +299,7 @@ Feature: Provide a consistent standard JSON API endpoint
     }
     """
 
-  Scenario: Cannot update an existing SubCategory with empty name - PATCH
+  Scenario: Cannot update an existing ExtraField with empty name - PATCH
     Given I am Login As B
     Then the request body is:
       """
@@ -338,7 +338,7 @@ Feature: Provide a consistent standard JSON API endpoint
     }
     """
 
-  Scenario: Can delete a Sub Category
+  Scenario: Can delete an ExtraField
     Given I am Login As B
     Then I request "/api/equipment/1/extrafield/1" using HTTP GET
     Then the response code is 200
@@ -347,8 +347,8 @@ Feature: Provide a consistent standard JSON API endpoint
     When I request "/api/equipment/1/extrafield/1" using HTTP GET
     Then the response code is 404
 
-  Scenario: Can delete a Category and its Sub Category
-    Given I am Login As B
+  Scenario: Can delete an Equipment and its ExtraField
+    Given I am Login As A
     Then I request "/api/equipment/1" using HTTP DELETE
     Then the response code is 204
     When I request "/api/equipment/1/extrafield/1" using HTTP GET

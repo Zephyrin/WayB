@@ -23,7 +23,7 @@ use Swagger\Annotations as SWG;
  * @package App\Controller
  *
  * @Rest\RouteResource(
- *     "api/user/{userId}/equipment/{equipmentId}/extraField",
+ *     "api/equipment/{equipmentId}/extraField",
  *     pluralize=false
  * )
  * @SWG\Tag(
@@ -40,7 +40,6 @@ class ExtraFieldController extends AbstractFOSRestController implements ClassRes
      * @var ExtraFieldRepository
      */
     private $extraFieldRepository;
-
     /**
      * @var FormErrorSerializer
      */
@@ -50,8 +49,7 @@ class ExtraFieldController extends AbstractFOSRestController implements ClassRes
         EntityManagerInterface $entityManager,
         ExtraFieldRepository $extraFieldRepository,
         FormErrorSerializer $formErrorSerializer
-    )
-    {
+    )     {
         $this->entityManager = $entityManager;
         $this->extraFieldRepository = $extraFieldRepository;
         $this->formErrorSerializer = $formErrorSerializer;

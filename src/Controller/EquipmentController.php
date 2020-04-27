@@ -96,7 +96,6 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
      *
      * )
      *
-     * @IsGranted("ROLE_AMBASSADOR")
      * @param Request $request
      * @return \FOS\RestBundle\View\View|JsonResponse
      * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface

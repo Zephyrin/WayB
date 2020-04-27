@@ -282,21 +282,26 @@ class FeatureContext implements Context
      */
     public function thereAreExtraFieldWithTheFollowingDetails(TableNode $extraFields)
     {
-        $i = 1;
         foreach ($extraFields->getColumnsHash() as $extraField) {
             $eqId = $extraField["equipment"];
             unset($extraField["equipment"]);
+            if($eqId == "1")
+                $this->iAmLoginAsA();
+            else 
+                $this->iAmLoginAsB();
             $extraField['isPrice'] = $extraField['isPrice'] == 'true';
             $extraField['isWeight'] = $extraField['isWeight'] == 'true';
             $this->apiContext->setRequestBody(
                 json_encode($extraField)
             );
+
             $this->apiContext->requestPath(
                 "/api/equipment/{$eqId}/extrafield",
                 'POST'
             );
-            $i ++;
+            $this->logout();
         }
+        
     }
 
     /**
