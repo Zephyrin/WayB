@@ -434,7 +434,9 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
         }
         $this->findUserByRequest($request);
         $have = $this->findHaveById($id);
-
+        $equipment = $have->getEquipment();
+        if(!$equipment->getValidate())
+            $this->entityManager->remove($equipment);
         $this->entityManager->remove($have);
         $this->entityManager->flush();
 

@@ -52,6 +52,7 @@ class EquipmentType extends AbstractType
                     , 'by_reference' => false
                 ]
             )
+            ->add('validate')
             ;
     }
 

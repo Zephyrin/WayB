@@ -38,7 +38,7 @@ Feature: Provide a consistent standard JSON API endpoint
 
   Scenario: Can get a single Equipment
     Given I am Login As A
-    Then I request "/api/user/1/equipment/1" using HTTP GET
+    Then I request "/api/equipment/1" using HTTP GET
     Then print last response
     Then the response body contains JSON:
     """
@@ -60,11 +60,9 @@ Feature: Provide a consistent standard JSON API endpoint
       }
     }
     """
-    Then print last response
     And the response code is 200
     Then I am Login As B
-    Then I request "/api/user/1/equipment/1" using HTTP GET
-    Then print last response
+    Then I request "/api/equipment/1" using HTTP GET
     Then the response body contains JSON:
     """
     {
@@ -85,12 +83,11 @@ Feature: Provide a consistent standard JSON API endpoint
       }
     }
     """
-    Then print last response
     And the response code is 200
 
   Scenario: Can get a collection of Equipment
     Given I am Login As A
-    Then I request "/api/user/1/equipment" using HTTP GET
+    Then I request "/api/equipment" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -132,7 +129,7 @@ Feature: Provide a consistent standard JSON API endpoint
     ]
     """
     Then I am Login As B
-    Then I request "/api/user/2/equipment" using HTTP GET
+    Then I request "/api/equipment" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -141,7 +138,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can add a new Equipment using Id for subCategory and brand
-    Given I am Login As B
+    Given I am Login As A
     Then the request body is:
       """
       {
@@ -152,7 +149,7 @@ Feature: Provide a consistent standard JSON API endpoint
         "brand": 3
       }
       """
-    When I request "/api/user/2/equipment" using HTTP POST
+    When I request "/api/equipment" using HTTP POST
     Then the response code is 201
     And the response body contains JSON:
       """
@@ -174,7 +171,7 @@ Feature: Provide a consistent standard JSON API endpoint
         }
       }
       """
-    When I request "/api/user/2/equipment/3" using HTTP GET
+    When I request "/api/equipment/3" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -196,7 +193,7 @@ Feature: Provide a consistent standard JSON API endpoint
       }
     }
     """
-    Then I request "/api/user/2/equipment" using HTTP GET
+    Then I request "/api/equipment" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -221,7 +218,7 @@ Feature: Provide a consistent standard JSON API endpoint
     ]
     """
     Then I am Login As A
-    Then I request "/api/user/1/equipment" using HTTP GET
+    Then I request "/api/equipment" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -281,7 +278,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Cannot add a new Equipment using Entity for subCategory and brand
-    Given I am Login As B
+    Given I am Login As A
     Then the request body is:
       """
       {
@@ -301,7 +298,7 @@ Feature: Provide a consistent standard JSON API endpoint
         }
       }
       """
-    When I request "/api/user/2/equipment" using HTTP POST
+    When I request "/api/equipment" using HTTP POST
     Then the response code is 422
     And the response body contains JSON:
       """
@@ -323,30 +320,8 @@ Feature: Provide a consistent standard JSON API endpoint
         }]
       }
       """
-    When I request "/api/user/2/equipment/3" using HTTP GET
+    When I request "/api/equipment/3" using HTTP GET
     Then the response code is 404
-
-  Scenario: Cannot POST an equipment to other user
-    Given I am Login As A
-    Then the request body is:
-      """
-      {
-        "name": "Jacket",
-        "description": "Titi",
-        "extraFields": [ ],
-        "subCategory": 2,
-        "brand": 3
-      }
-      """
-    When I request "/api/user/2/equipment" using HTTP POST
-    Then the response code is 412
-    And the response body contains JSON:
-      """
-      {
-        "status": "error",
-        "Message": "You cannot add an equipment to other user"
-      }
-      """
 
   Scenario: Cannot update an existing Equipment if it is not mine - PUT
     Given I am Login As B
@@ -360,9 +335,9 @@ Feature: Provide a consistent standard JSON API endpoint
         "subCategory": 2
       }
       """
-    When I request "/api/user/1/equipment/1" using HTTP PUT
+    When I request "/api/equipment/1" using HTTP PUT
     Then the response code is 403
-    When I request "/api/user/1/equipment/1" using HTTP GET
+    When I request "/api/equipment/1" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -397,9 +372,9 @@ Feature: Provide a consistent standard JSON API endpoint
         "subCategory": 2
       }
       """
-    When I request "/api/user/1/equipment/1" using HTTP PUT
+    When I request "/api/equipment/1" using HTTP PUT
     Then the response code is 204
-    When I request "/api/user/1/equipment/1" using HTTP GET
+    When I request "/api/equipment/1" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -423,7 +398,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can update an existing Equipment using Id for subCategory and brand as AMBASSADOR
-    Given I am Login As B
+    Given I am Login As A
     Then the request body is:
       """
       {
@@ -434,7 +409,7 @@ Feature: Provide a consistent standard JSON API endpoint
         "brand": 3
       }
       """
-    When I request "/api/user/2/equipment" using HTTP POST
+    When I request "/api/equipment" using HTTP POST
     Then the response code is 201
     And the response body contains JSON:
       """
@@ -468,9 +443,9 @@ Feature: Provide a consistent standard JSON API endpoint
         "subCategory": 2
       }
       """
-    When I request "/api/user/2/equipment/3" using HTTP PUT
+    When I request "/api/equipment/3" using HTTP PUT
     Then the response code is 204
-    When I request "/api/user/2/equipment/3" using HTTP GET
+    When I request "/api/equipment/3" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -506,9 +481,9 @@ Feature: Provide a consistent standard JSON API endpoint
         "subCategory": 2
       }
       """
-    When I request "/api/user/1/equipment/1" using HTTP PUT
+    When I request "/api/equipment/1" using HTTP PUT
     Then the response code is 204
-    When I request "/api/user/1/equipment/1" using HTTP GET
+    When I request "/api/equipment/1" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -544,7 +519,7 @@ Feature: Provide a consistent standard JSON API endpoint
         "subCategory": 2
       }
       """
-    When I request "/api/user/1/equipment/1" using HTTP PUT
+    When I request "/api/equipment/1" using HTTP PUT
     Then the response code is 422
     And the response body contains JSON:
     """
@@ -593,9 +568,9 @@ Feature: Provide a consistent standard JSON API endpoint
         "brand": 2
       }
       """
-    When I request "/api/user/1/equipment/1" using HTTP PATCH
+    When I request "/api/equipment/1" using HTTP PATCH
     Then the response code is 204
-    When I request "/api/user/1/equipment/1" using HTTP GET
+    When I request "/api/equipment/1" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -626,9 +601,9 @@ Feature: Provide a consistent standard JSON API endpoint
         "brand": 2
       }
       """
-    When I request "/api/user/1/equipment/1" using HTTP PATCH
+    When I request "/api/equipment/1" using HTTP PATCH
     Then the response code is 403
-    When I request "/api/user/1/equipment/1" using HTTP GET
+    When I request "/api/equipment/1" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -659,7 +634,7 @@ Feature: Provide a consistent standard JSON API endpoint
         "name": ""
       }
       """
-    When I request "/api/user/1/equipment/1" using HTTP PATCH
+    When I request "/api/equipment/1" using HTTP PATCH
     Then the response code is 422
     And the response body contains JSON:
     """
@@ -676,7 +651,7 @@ Feature: Provide a consistent standard JSON API endpoint
         }]
     }
     """
-    When I request "/api/user/1/equipment/1" using HTTP GET
+    When I request "/api/equipment/1" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -701,18 +676,18 @@ Feature: Provide a consistent standard JSON API endpoint
 
   Scenario: Can delete an Equipment
     Given I am Login As A
-    Then I request "/api/user/1/equipment/1" using HTTP GET
+    Then I request "/api/equipment/1" using HTTP GET
     Then the response code is 200
-    When I request "/api/user/1/equipment/1" using HTTP DELETE
+    When I request "/api/equipment/1" using HTTP DELETE
     Then the response code is 204
-    When I request "/api/user/1/equipment/1" using HTTP GET
+    When I request "/api/equipment/1" using HTTP GET
     Then the response code is 404
 
   Scenario: Cannot delete an Equipment that don't belong to the user
     Given I am Login As B
-    Then I request "/api/user/1/equipment/1" using HTTP GET
+    Then I request "/api/equipment/1" using HTTP GET
     Then the response code is 200
-    When I request "/api/user/1/equipment/1" using HTTP DELETE
+    When I request "/api/equipment/1" using HTTP DELETE
     Then the response code is 403
-    When I request "/api/user/1/equipment/1" using HTTP GET
+    When I request "/api/equipment/1" using HTTP GET
     Then the response code is 200

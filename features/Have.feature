@@ -32,17 +32,17 @@ Feature: Provide a consistent standard JSON API endpoint
       | Mammut         | Mammut Desc         | www.mammut.com       |
       | The north face | The north face desc | www.thenorthface.com |
     Given there are Equipments with the following details:
-      | name                         | description   | brand | subCategory |
-      | Men's Zoomie Rain Jacket     | Description 1 | 3     | 2           |
-      | Men's Printed Cyclone Hoodie | Description 2 | 3     | 2           |
-      | Men's Rafale Jacket          | Description 3 | 3     | 2           |
+      | name                         | description   | brand | subCategory | validate |
+      | Men's Zoomie Rain Jacket     | Description 1 | 3     | 2           | true     |
+      | Men's Printed Cyclone Hoodie | Description 2 | 3     | 2           | false    |
+      | Men's Rafale Jacket          | Description 3 | 3     | 2           | false    |
     Given there are Have with the following details:
       | user     | ownQuantity | wantQuantity | equipment |
       | 1        | 0           | 0            | 1         |
       | 1        | 1           | 0            | 2         |
       | 2        | 1           | 0            | 1         |
 
-  Scenario: Can get a single Equipment With User A
+  Scenario: Can get a single Have With User A - GET
     Given I am Login As A
     And I request "/api/user/1/have/1" using HTTP GET
     Then the response body contains JSON:
@@ -71,7 +71,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
     And the response code is 200
 
-  Scenario: Can get a single Equipment With User B belong to A
+  Scenario: Can get a single  With User B belong to A - GET
     Given I am Login As B
     And I request "/api/user/1/have/1" using HTTP GET
     Then the response body contains JSON:
@@ -100,7 +100,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
     And the response code is 200
 
-  Scenario: Can get a collection of have from user A
+  Scenario: Can get a collection of have from user A - GET
     Given I am Login As A
     Then I request "/api/user/1/have" using HTTP GET
     Then the response code is 200
@@ -141,7 +141,7 @@ Feature: Provide a consistent standard JSON API endpoint
             "enabled": true,
             "gender": "MALE"
           },
-          "validate": false
+          "validate": true
         }
       },
       {
@@ -178,7 +178,7 @@ Feature: Provide a consistent standard JSON API endpoint
     ]
     """
 
-  Scenario: Can get a collection of have from user A as login B
+  Scenario: Can get a collection of have from user A as login B - GET
     Given I am Login As B
     Then I request "/api/user/1/have" using HTTP GET
     Then the response code is 200
@@ -219,7 +219,7 @@ Feature: Provide a consistent standard JSON API endpoint
             "enabled": true,
             "gender": "MALE"
           },
-          "validate": false
+          "validate": true
         }
       },
       {
@@ -256,7 +256,7 @@ Feature: Provide a consistent standard JSON API endpoint
     ]
     """
 
-  Scenario: Can link an existing equipment to the user A:
+  Scenario: Can link an existing equipment to the user A - POST:
     Given I am Login As A
     Then the request body is:
       """
@@ -336,52 +336,7 @@ Feature: Provide a consistent standard JSON API endpoint
     When I request "/api/user/1/have" using HTTP POST
     Then the response code is 403
 
-  Scenario: Cannot add a new Equipment using Entity for subCategory and brand
-    Given the request body is:
-      """
-      {
-        "name": "Jacket",
-        "description": "Titi",
-        "extraFields": [ ],
-        "brand": {
-          "id": 3,
-          "name": "The north face",
-          "uri": "www.thenorthface.com",
-          "description": "The north face desc"
-        },
-        "subCategory": {
-          "id": 2,
-          "name": "Jacket",
-          "extraFieldDefs": [ ]
-        }
-      }
-      """
-    When I request "/api/user/1/equipment" using HTTP POST
-    Then the response code is 422
-    And the response body contains JSON:
-      """
-      {
-        "status": "error",
-        "Message": "Validation error",
-        "errors": [{
-          "children": {
-            "name": [],
-            "description": [],
-            "brand": {
-              "errors": ["This value is not valid."]
-            },
-            "subCategory": {
-              "errors": ["This value is not valid."]
-            },
-            "extraFields": []
-          }
-        }]
-      }
-      """
-    When I request "/api/user/1/equipment/3" using HTTP GET
-    Then the response code is 404
-
-  Scenario: Can update an existing Have - PUT
+   Scenario: Can update an existing Have - PUT
     Given I am Login As A
     Then the request body is:
       """
@@ -537,14 +492,16 @@ Feature: Provide a consistent standard JSON API endpoint
     Given I am Login As A
     Then I request "/api/user/1/have/1" using HTTP GET
     Then the response code is 200
+    When I request "/api/equipment/1" using HTTP GET
+    Then the response code is 200
     When I request "/api/user/1/have/1" using HTTP DELETE
     Then the response code is 204
     When I request "/api/user/1/have/1" using HTTP GET
     Then the response code is 404
-    When I request "/api/user/1/equipment/1" using HTTP GET
+    When I request "/api/equipment/1" using HTTP GET
     Then the response code is 200
 
-Scenario: Cannot delete an have
+  Scenario: Cannot delete an have
     Given I am Login As B
     Then I request "/api/user/1/have/1" using HTTP GET
     Then the response code is 200
@@ -552,5 +509,19 @@ Scenario: Cannot delete an have
     Then the response code is 403
     When I request "/api/user/1/have/1" using HTTP GET
     Then the response code is 200
-    When I request "/api/user/1/equipment/1" using HTTP GET
+    When I request "/api/equipment/1" using HTTP GET
     Then the response code is 200
+
+  Scenario: Can delete an have and equipment if this one is not link and not validate
+    Given I am Login As A
+    Then I request "/api/user/1/have/2" using HTTP GET
+    Then the response code is 200
+    When I request "/api/equipment/2" using HTTP GET
+    Then the response code is 200
+    When I request "/api/user/1/have/2" using HTTP DELETE
+    Then the response code is 204
+    When I request "/api/user/1/have/2" using HTTP GET
+    Then the response code is 404
+    When I request "/api/equipment/2" using HTTP GET
+    Then the response code is 404
+  

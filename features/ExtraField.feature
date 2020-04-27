@@ -5,6 +5,10 @@ Feature: Provide a consistent standard JSON API endpoint
   I need to allow Create, Read, Update, and Delete functionality
 
   Background:
+    Given there are User with the following details:
+      | username | password | email     | gender | ROLE            |
+      | a        | a        | a.b@c.com | MALE   | ROLE_AMBASSADOR |
+      | b        | b        | b.b@c.com | MALE   | ROLE_USER       |
     Given there are Categories with the following details:
       | name     |
       | Clothe    |
@@ -29,8 +33,8 @@ Feature: Provide a consistent standard JSON API endpoint
       | The north face | The north face desc | www.thenorthface.com |
     Given there are Equipments with the following details:
       | name                         | description   | brand | subCategory |
-      | Men's Zoomie Rain Jacket     | Description 1 | 3     | 2             |
-      | Men's Printed Cyclone Hoodie | Description 2 | 3     | 2             |
+      | Men's Zoomie Rain Jacket     | Description 1 | 3     | 2           |
+      | Men's Printed Cyclone Hoodie | Description 2 | 3     | 2           |
     Given there are ExtraField with the following details:
       | type   | value | name   | isPrice | isWeight | equipment |
       | ARRAY  | M     | Size   | false   | false    | 1         |
@@ -38,7 +42,8 @@ Feature: Provide a consistent standard JSON API endpoint
       | NUMBER | 500   | Weight | false   | true     | 1         |
 
   Scenario: Can get a single ExtraField
-    Given I request "/api/user/1/equipment/1/extrafield/1" using HTTP GET
+    Given I am Login As B
+    Then I request "/api/equipment/1/extrafield/1" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -52,8 +57,9 @@ Feature: Provide a consistent standard JSON API endpoint
     }
     """
 
-  Scenario: Can get a collection of SubCategories
-    Given I request "/api/user/1/equipment/1/extrafield" using HTTP GET
+  Scenario: Can get a collection of ExtraField
+    Given I am Login As B
+    Then I request "/api/equipment/1/extrafield" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -86,7 +92,8 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can get a collection of Equipment and its ExtraFields
-    Given I request "/api/user/1/equipment" using HTTP GET
+    Given I am Login As B
+    Then I request "/api/equipment" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -154,7 +161,8 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can add a new ExtraField
-    Given the request body is:
+    Given I am Login As B
+    Then the request body is:
       """
       {
         "type": "ARRAY",
@@ -164,7 +172,7 @@ Feature: Provide a consistent standard JSON API endpoint
         "value": "7"
       }
       """
-    When I request "/api/user/1/equipment/1/extrafield" using HTTP POST
+    When I request "/api/equipment/1/extrafield" using HTTP POST
     Then the response code is 201
     And the response body contains JSON:
     """
@@ -179,7 +187,8 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Cannot add a new ExtraField on unknown Equipment
-    Given the request body is:
+    Given I am Login As B
+    Then the request body is:
       """
       {
         "type": "ARRAY",
@@ -189,11 +198,12 @@ Feature: Provide a consistent standard JSON API endpoint
         "value": "7"
       }
       """
-    When I request "/api/user/1/equipment/3/extrafield" using HTTP POST
+    When I request "/api/equipment/3/extrafield" using HTTP POST
     Then the response code is 404
 
   Scenario: Can update an existing ExtraField - PUT
-    Given the request body is:
+    Given I am Login As B
+    Then the request body is:
       """
       {
         "type": "ARRAY",
@@ -203,9 +213,9 @@ Feature: Provide a consistent standard JSON API endpoint
         "value": "S"
       }
       """
-    When I request "/api/user/1/equipment/1/extrafield/1" using HTTP PUT
+    When I request "/api/equipment/1/extrafield/1" using HTTP PUT
     Then the response code is 204
-    When I request "/api/user/1/equipment/1/extrafield/1" using HTTP GET
+    When I request "/api/equipment/1/extrafield/1" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -220,7 +230,8 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Cannot update an existing SubCategory with empty name - PUT
-    Given the request body is:
+    Given I am Login As B
+    Then the request body is:
       """
       {
         "type": "ARRAY",
@@ -230,7 +241,7 @@ Feature: Provide a consistent standard JSON API endpoint
         "value": "S"
       }
       """
-    When I request "/api/user/1/equipment/1/extrafield/1" using HTTP PUT
+    When I request "/api/equipment/1/extrafield/1" using HTTP PUT
     Then the response code is 422
     And the response body contains JSON:
     """
@@ -250,7 +261,7 @@ Feature: Provide a consistent standard JSON API endpoint
         }]
     }
     """
-    When I request "/api/user/1/equipment/1/extrafield/1" using HTTP GET
+    When I request "/api/equipment/1/extrafield/1" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -265,15 +276,16 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can update an existing SubCategory - PATCH
-    Given the request body is:
+    Given I am Login As B
+    Then the request body is:
       """
       {
         "name": "Video"
       }
       """
-    When I request "/api/user/1/equipment/1/extrafield/1" using HTTP PATCH
+    When I request "/api/equipment/1/extrafield/1" using HTTP PATCH
     Then the response code is 204
-    When I request "/api/user/1/equipment/1/extrafield/1" using HTTP GET
+    When I request "/api/equipment/1/extrafield/1" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -288,13 +300,14 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Cannot update an existing SubCategory with empty name - PATCH
-    Given the request body is:
+    Given I am Login As B
+    Then the request body is:
       """
       {
         "name": ""
       }
       """
-    When I request "/api/user/1/equipment/1/extrafield/1" using HTTP PATCH
+    When I request "/api/equipment/1/extrafield/1" using HTTP PATCH
     Then the response code is 422
     And the response body contains JSON:
     """
@@ -311,7 +324,7 @@ Feature: Provide a consistent standard JSON API endpoint
         }]
     }
     """
-    When I request "/api/user/1/equipment/1/extrafield/1" using HTTP GET
+    When I request "/api/equipment/1/extrafield/1" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
     """
@@ -326,21 +339,24 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can delete a Sub Category
-    Given I request "/api/user/1/equipment/1/extrafield/1" using HTTP GET
+    Given I am Login As B
+    Then I request "/api/equipment/1/extrafield/1" using HTTP GET
     Then the response code is 200
-    When I request "/api/user/1/equipment/1/extrafield/1" using HTTP DELETE
+    When I request "/api/equipment/1/extrafield/1" using HTTP DELETE
     Then the response code is 204
-    When I request "/api/user/1/equipment/1/extrafield/1" using HTTP GET
+    When I request "/api/equipment/1/extrafield/1" using HTTP GET
     Then the response code is 404
 
   Scenario: Can delete a Category and its Sub Category
-    Given I request "/api/user/1/equipment/1" using HTTP DELETE
+    Given I am Login As B
+    Then I request "/api/equipment/1" using HTTP DELETE
     Then the response code is 204
-    When I request "/api/user/1/equipment/1/extrafield/1" using HTTP GET
+    When I request "/api/equipment/1/extrafield/1" using HTTP GET
     Then the response code is 404
 
   Scenario: Can add an Equipment and all its ExtraFields
-    Given the request body is:
+    Given I am Login As B
+    Then the request body is:
     """
     {
       "name": "Jacket",
@@ -372,7 +388,7 @@ Feature: Provide a consistent standard JSON API endpoint
       "brand": 3
     }
     """
-    When I request "/api/user/1/equipment" using HTTP POST
+    When I request "/api/equipment" using HTTP POST
     Then the response code is 201
     And the response body contains JSON:
     """

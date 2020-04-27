@@ -262,11 +262,13 @@ class FeatureContext implements Context
         $i = 1;
         $this->iAmLoginAsA();
         foreach ($equipments->getColumnsHash() as $equipment) {
+            if(array_key_exists("validate", $equipment))
+                $equipment['validate'] = $equipment['validate'] == 'true';
             $this->apiContext->setRequestBody(
                 json_encode($equipment)
             );
             $this->apiContext->requestPath(
-                '/api/user/1/equipment',
+                '/api/equipment',
                 'POST'
             );
             $i ++;
@@ -290,7 +292,7 @@ class FeatureContext implements Context
                 json_encode($extraField)
             );
             $this->apiContext->requestPath(
-                "/api/user/1/equipment/{$eqId}/extrafield",
+                "/api/equipment/{$eqId}/extrafield",
                 'POST'
             );
             $i ++;
@@ -403,5 +405,19 @@ class FeatureContext implements Context
     public function printLastResponse()
     {
 
+    }
+    
+    /**
+    * @When a demo scenario sends a request to :arg1
+    */
+    public function aDemoScenarioSendsARequestTo($arg1)
+    {
+    }
+
+    /**
+    * @Then the response should be received
+    */
+    public function theResponseShouldBeReceived()
+    {
     }
 }

@@ -21,13 +21,14 @@ use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Security\Core\Security;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 
 /**
  * Class EquipmentController
  * @package App\Controller
  *
  * @Rest\RouteResource(
- *     "api/User/{userId}/Equipment",
+ *     "api/Equipment",
  *     pluralize=false
  * )
  * @SWG\Tag(
@@ -44,7 +45,6 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
      * @var EquipmentRepository
      */
     private $equipmentRepository;
-
     /**
      * @var FormErrorSerializer
      */
@@ -55,8 +55,7 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
         EquipmentRepository $equipmentRepository,
         FormErrorSerializer $formErrorSerializer,
         Security $security
-    )
-    {
+    ) {
         $this->entityManager = $entityManager;
         $this->equipmentRepository = $equipmentRepository;
         $this->formErrorSerializer = $formErrorSerializer;
@@ -77,8 +76,8 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
      *      )
      *    ),
      *    @SWG\Response(
-     *     response=412,
-     *     description="You cannot add an equipment to other user"
+     *     response=403,
+     *     description="You don't have enought right"
      *    ),
      *    @SWG\Response(
      *     response=422,
@@ -97,6 +96,7 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
      *
      * )
      *
+     * @IsGranted("ROLE_AMBASSADOR")
      * @param Request $request
      * @return \FOS\RestBundle\View\View|JsonResponse
      * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
@@ -104,16 +104,7 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
      */
     public function postAction(Request $request)
     {
-        $user = $this->findUserByRequest($request);
         $connectUser = $this->getUser();
-        if($user !== $connectUser)
-            return new JsonResponse(
-                [ 
-                    'status' => 'error',
-                    'Message' => 'You cannot add an equipment to other user'
-                ],
-                JsonResponse::HTTP_PRECONDITION_FAILED
-            );
         $data = json_decode(
             $request->getContent(),
             true
@@ -136,8 +127,7 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
         }
 
         $equipment = $form->getData();
-        $equipment->setCreatedBy($user);
-        $equipment->setValidate(false);
+        $equipment->setCreatedBy($connectUser);
         if($equipment->getSubCategory() == null
             && is_int(intval($data['subCategory']))
         ) {
@@ -154,6 +144,10 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
                 ->find($data['brand']);
             $equipment->setBrand($brand);
         }
+        if(!$this->isGranted("ROLE_AMBASSADOR")
+            || $equipment->getValidate() === null)
+            $equipment->setValidate(false);
+
         $this->entityManager->persist($equipment);
         $this->entityManager->flush();
 
@@ -223,7 +217,7 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
             return $this->view(
                 $this->equipmentRepository->findAll()
             );
-        $user = $this->findUserByRequest($request);
+        $user = $this->getUser();
         $equipments = $this->equipmentRepository->findByUserOrValidate($user);
         return $this->view($equipments);
     }
@@ -275,11 +269,11 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
      */
     public function putAction(Request $request, string $id)
     {
-        $user = $this->findUserByRequest($request);
         $connectUser = $this->getUser();
-        if($user !== $connectUser)
-             $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
         $existingEquipment = $this->findEquipmentById($id);
+        if($existingEquipment->getCreatedBy() !== $connectUser)
+            $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
+
         $form = $this->createForm(EquipmentType::class, $existingEquipment);
         $data = json_decode($request->getContent(), true);
         $validate = $existingEquipment->getValidate();
@@ -349,11 +343,11 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
      */
     public function patchAction(Request $request, string $id)
     {
-        $user = $this->findUserByRequest($request);
         $connectUser = $this->getUser();
-        if($user !== $connectUser)
-             $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
         $existingEquipment = $this->findEquipmentById($id);
+        if($existingEquipment->getCreatedBy() !== $connectUser)
+             $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
+
         $form = $this->createForm(EquipmentType::class
             , $existingEquipment);
         $validate = $existingEquipment->getValidate();
