@@ -9,7 +9,10 @@ use JMS\Serializer\Annotation\SerializedName;
 use App\Enum\GenderEnum;
 use Swagger\Annotations as SWG;
 use JMS\Serializer\Annotation\Exclude;
-
+// Contraints for BaseUser class
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Mapping\ClassMetadata;
 /**
  * @ORM\Entity
  * @ORM\Table(name="fos_user")
@@ -56,6 +59,30 @@ class User extends BaseUser
         parent::__construct();
         $this->haves = new ArrayCollection();
         // your own logic
+    }
+
+    /**
+     * Set constrainte on BaseUser class
+     */
+    public static function loadValidatorMetadata(ClassMetadata $metadata)
+    {
+        //$metadata->addPropertyConstraint('username', new Assert\Unique());
+        $metadata->addConstraint(new UniqueEntity([
+            'fields' => 'username',
+        ]));
+        $metadata->addPropertyConstraint('username', new Assert\NotBlank([
+            'payload' => ['severity' => 'error'],
+        ]));
+        $metadata->addPropertyConstraint('email', new Assert\NotBlank([
+            'payload' => ['severity' => 'error'],
+        ]));
+        $metadata->addConstraint(new UniqueEntity([
+            'fields' => 'email',
+        ]));
+        $metadata->addPropertyConstraint('email', new Assert\Email());
+        $metadata->addPropertyConstraint('password', new Assert\NotBlank([
+            'payload' => ['severity' => 'error'],
+        ]));
     }
 
     public function getGender(): ?string

@@ -86,7 +86,7 @@ class ApiAuthController extends AbstractController
         $user->setPassword(null);
         $user->setPlainPassword($data['password']);
 
-        $user->setRoles(['ROLE_USER'/* , 'ROLE_ADMIN' */]);
+        $user->setRoles(['ROLE_USER']);
         $user->setSuperAdmin(false);
         $user->setEnabled(true);
         try {
