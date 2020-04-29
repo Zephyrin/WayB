@@ -75,7 +75,7 @@ class ApiAuthController extends AbstractController
             return new JsonResponse(
                 [
                     'status' => 'error',
-                    'Message' => 'Validation error',
+                    'message' => 'Validation error',
                     'errors' => $this->formErrorSerializer->normalize($form),
                 ],
                 JsonResponse::HTTP_UNPROCESSABLE_ENTITY
