@@ -425,4 +425,14 @@ class FeatureContext implements Context
     public function theResponseShouldBeReceived()
     {
     }
+
+    /**
+     * @Then the response header contains:
+     */
+    public function theResponseHeaderContains(PyStringNode $string)
+    {
+        $response = $this->apiContext->getResponseHeader();
+        
+    }
+
 }

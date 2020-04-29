@@ -176,9 +176,12 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
      */
     public function cgetAction()
     {
-        return $this->view(
-            $this->categoryRepository->findAll()
+        $result = $this->categoryRepository->findAll();
+        $view = $this->view(
+            $result
         );
+        $view->setHeader('X-Total-Count', count($result));
+        return $view;
     }
 
     /**
