@@ -181,6 +181,7 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
             $result
         );
         $view->setHeader('X-Total-Count', count($result));
+        $view->setHeader('Access-Control-Expose-Headers', 'X-Total-Count');
         return $view;
     }
 
