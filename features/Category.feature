@@ -265,3 +265,10 @@ Feature: Provide a consistent standard JSON API endpoint
     """
     And the "X-Total-Count" response header exists
     And the "X-Total-Count" response header is "3"
+  
+  Scenario: Count categories
+    Given I am Login As A
+    When I request "/api/category" using HTTP HEAD
+    Then the response code is 200
+    And the "X-Total-Count" response header exists
+    And the "X-Total-Count" response header is "3"
