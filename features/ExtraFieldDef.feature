@@ -571,3 +571,38 @@ Feature: Provide a consistent standard JSON API endpoint
     Then the response code is 404
     When I request "/api/category/1/subcategory/1/extrafielddef/1" using HTTP GET
     Then the response code is 404
+
+  Scenario: Can add a Sub Category with extraFields
+    Given I am Login As A
+    Then the request body is:
+    """
+    {
+      "name": "Camera",
+      "extraFieldDefs": [
+        {
+          "type": "ARRAY",
+          "name": "Test add with sub",
+          "isPrice": false,
+          "isWeight": false
+        }
+      ]
+    }
+    """
+    When I request "/api/category/3/subcategory" using HTTP POST
+    Then the response code is 201
+    And the response body contains JSON:
+    """
+    {
+      "id": 6,
+      "name": "Camera",
+      "extraFieldDefs": [ 
+        {
+          "id": 4,
+          "type": "ARRAY",
+          "name": "Test add with sub",
+          "isPrice": false,
+          "isWeight": false
+        } 
+      ]
+    }
+    """

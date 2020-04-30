@@ -49,7 +49,10 @@ class SubCategory
     private $category;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\ExtraFieldDef", mappedBy="subCategory", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="App\Entity\ExtraFieldDef",
+     *  mappedBy="subCategory",
+     *  orphanRemoval=true,
+     *  cascade={"persist"})
      * @SerializedName("extraFieldDefs")
      * @SWG\Property(description="The list of all ExtraFieldDefs link to this Sub-Category.",
      *     readOnly=true)
