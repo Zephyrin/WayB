@@ -84,7 +84,10 @@ class ExtraFieldDef
     private $linkTo;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\ExtraFieldDef", mappedBy="linkTo")
+     * @ORM\OneToMany(targetEntity="App\Entity\ExtraFieldDef",
+     *   mappedBy="linkTo",
+     *   orphanRemoval=true,
+     *   cascade={"persist"})
      * @Exclude
      * @SWG\Property(type="integer",
      *     readOnly=true,

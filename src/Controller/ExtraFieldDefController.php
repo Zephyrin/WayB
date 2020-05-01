@@ -277,21 +277,22 @@ class ExtraFieldDefController extends AbstractFOSRestController implements Class
      * )
      * @Security("has_role('ROLE_AMBASSADOR')")
      * @param Request $request
-     * @param string $id of the Category to update
+     * @param string $id of the ExtraFieldDef to update
      * @return \FOS\RestBundle\View\View|JsonResponse
      * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
      */
     public function putAction(Request $request, string $id)
     {
         $existingExtraFieldDef = $this->findExtraFieldDefById($id);
-        $data = json_decode($request->getContent(), true);
 
+        $data = json_decode($request->getContent(), true);
+        
         $form = $this->createForm(
             ExtraFieldDefType::class,
             $existingExtraFieldDef);
 
         $form->submit($data);
-
+        
         if (false === $form->isValid()) {
             return new JsonResponse(
                 [
@@ -423,7 +424,9 @@ class ExtraFieldDefController extends AbstractFOSRestController implements Class
     public function deleteAction(string $id)
     {
         $extraFieldDef = $this->findExtraFieldDefById($id);
-
+        foreach($extraFieldDef->getExtraFieldDefs() as $extra) {
+            $extraFieldDef->removeExtraFieldDef($extra);
+        }
         $this->entityManager->remove($extraFieldDef);
         $this->entityManager->flush();
 

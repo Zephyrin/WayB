@@ -311,6 +311,62 @@ Feature: Provide a consistent standard JSON API endpoint
       "isWeight": false
     }
     """
+  
+  Scenario: Can update an existing ExtraFieldDef with LinkTo Field - PUT
+    Given I am Login As A
+    And the request body is:
+      """
+      {
+        "type": "NUMBER",
+        "name": "Price 2",
+        "isPrice": true,
+        "isWeight": false,
+        "linkTo": 
+        {
+          "id": 3,
+          "type": "NUMBER",
+          "name": "Weight",
+          "isPrice": false,
+          "isWeight": true,
+          "linkTo": {
+            "id": 1,
+            "type": "ARRAY",
+            "name": "Size",
+            "isPrice": false,
+            "isWeight": false
+        }
+      }
+      }
+      """
+    When I request "/api/category/1/subcategory/1/extrafielddef/2" using HTTP PUT
+    Then the response code is 204
+    When I request "/api/category/1/subcategory/1/extrafielddef/2" using HTTP GET
+    Then the response code is 200
+    And the response body contains JSON:
+    """
+    {
+      "id": 2,
+      "type": "NUMBER",
+      "name": "Price 2",
+      "isPrice": true,
+      "isWeight": false,
+      "linkTo":
+      {
+        "id": 3,
+        "type": "NUMBER",
+        "name": "Weight",
+        "isPrice": false,
+        "isWeight": true,
+        "linkTo": {
+          "id": 1,
+          "type": "ARRAY",
+          "name": "Size",
+          "isPrice": false,
+          "isWeight": false
+        }
+      }
+    }
+    """
 
   Scenario: Can update an existing ExtraFieldDef with LinkTo - PUT
     Given I am Login As A
@@ -606,3 +662,35 @@ Feature: Provide a consistent standard JSON API endpoint
       ]
     }
     """
+  
+  Scenario: Cannot delete extraFields 1 because it is used by other
+    Given I am Login As A
+    Then I request "/api/category/1/subcategory/1/extrafielddef/1" using HTTP GET
+    Then the response code is 200
+    When I request "/api/category/1/subcategory/1/extrafielddef/1" using HTTP DELETE
+    Then the response code is 204
+    When I request "/api/category/1/subcategory/1/extrafielddef/1" using HTTP GET
+    Then the response code is 404
+    Then I request "/api/category/1/subcategory/1/extrafielddef" using HTTP GET
+    Then the response code is 200
+    And the response body contains JSON:
+    """
+    [
+      {
+        "id": 2,
+        "type": "NUMBER",
+        "name": "Price",
+        "isPrice": true,
+        "isWeight": false
+      },
+      {
+        "id": 3,
+        "type": "NUMBER",
+        "name": "Weight",
+        "isPrice": false,
+        "isWeight": true
+      }
+    ]
+    """
+
+
