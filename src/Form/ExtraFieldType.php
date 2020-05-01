@@ -22,6 +22,17 @@ class ExtraFieldType extends AbstractType
             ->add('isPrice')
             ->add('isWeight')
             ->add('value')
+            ->add('referTo'
+                , EntityType::class
+                , [
+                    'class' => ExtraFieldDef::class
+                    , 'required' => true
+                    , 'query_builder' => function(ExtraFieldDefRepository $er) {
+                        return $er
+                            ->createQueryBuilder('u')
+                            ->orderBy('u.name', 'ASC');
+                    }
+                ])
             ;
     }
 

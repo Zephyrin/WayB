@@ -95,9 +95,22 @@ class ExtraFieldDef
      */
     private $extraFieldDefs;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\ExtraField",
+     *   mappedBy="referTo",
+     *   orphanRemoval=true,
+     *   cascade={"persist"})
+     * @Exclude
+     * @SWG\Property(type="integer",
+     *     readOnly=true,
+     *     description="Not used, leave it empty. Swagger problem, not abble to remove this field form the documentation...")
+     */
+    private $extraFields;
+
     public function __construct()
     {
         $this->extraFieldDefs = new ArrayCollection();
+        $this->extraFields = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -205,6 +218,37 @@ class ExtraFieldDef
             // set the owning side to null (unless already changed)
             if ($extraFieldDef->getLinkTo() === $this) {
                 $extraFieldDef->setLinkTo(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|ExtraField[]
+     */
+    public function getExtraFields(): Collection
+    {
+        return $this->extraFields;
+    }
+
+    public function addExtraField(ExtraField $extraField): self
+    {
+        if (!$this->extraFields->contains($extraField)) {
+            $this->extraFields[] = $extraField;
+            $extraField->setReferTo($this);
+        }
+
+        return $this;
+    }
+
+    public function removeExtraField(ExtraField $extraField): self
+    {
+        if ($this->extraFields->contains($extraField)) {
+            $this->extraFields->removeElement($extraField);
+            // set the owning side to null (unless already changed)
+            if ($extraField->getReferTo() === $this) {
+                $extraField->setReferTo(null);
             }
         }
 

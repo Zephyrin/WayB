@@ -118,7 +118,7 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
             return new JsonResponse(
                 [
                     'status' => 'error',
-                    'Message' => 'Validation error',
+                    'message' => 'Validation error',
                     'errors' => $this->formErrorSerializer->normalize($form),
                 ],
                 JsonResponse::HTTP_UNPROCESSABLE_ENTITY
@@ -127,21 +127,35 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
 
         $equipment = $form->getData();
         $equipment->setCreatedBy($connectUser);
-        if($equipment->getSubCategory() == null
-            && is_int(intval($data['subCategory']))
-        ) {
-            $subCat = $this->entityManager
-                ->getRepository(SubCategory::class)
-                ->find($data['subCategory']);
-            $equipment->setSubCategory($subCat);
+        if($equipment->getSubCategory() == null) {
+            if (isset($data['subCategory'])) {
+                if (is_int(intval($data['subCategory']))) {
+                    $subCat = $this->entityManager
+                        ->getRepository(SubCategory::class)
+                        ->find($data['subCategory']);
+                    $equipment->setSubCategory($subCat);
+                }
+            } else {
+                $json_resp = new JsonResponse(
+                    [
+                        'status' => 'error',
+                        'message' => 'Validation error',
+                        'errors' => $this->formErrorSerializer->normalize($form),
+                    ],
+                    JsonResponse::HTTP_UNPROCESSABLE_ENTITY
+                );
+               // $json_resp['errors'][0]['children']['subCategory']['errors'] = "This value is required.";
+                return $json_resp;
+            }
         }
         if($equipment->getBrand() == null
-            && is_int(intval($data['brand']))
-        ) {
-            $brand = $this->entityManager
-                ->getRepository(Brand::class)
-                ->find($data['brand']);
-            $equipment->setBrand($brand);
+            && isset($data['brand'])) {
+            if(is_int(intval($data['brand']))) {
+                $brand = $this->entityManager
+                    ->getRepository(Brand::class)
+                    ->find($data['brand']);
+                $equipment->setBrand($brand);
+            }
         }
         if(!$this->isGranted("ROLE_AMBASSADOR")
             || $equipment->getValidate() === null)

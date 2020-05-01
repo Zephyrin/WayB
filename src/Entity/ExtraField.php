@@ -74,6 +74,19 @@ class ExtraField
      */
     private $equipment;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\ExtraFieldDef",
+     *     inversedBy="extraFields")
+     * @ORM\JoinColumn(name="refer_to_id", referencedColumnName="id")
+     * @SerializedName("referTo")
+     * @SWG\Property(
+     *     type="#/definitions/ExtraFieldDef",
+     *     description="Give the extra field definition which it is refer on.")
+     *
+     * @var ExtraFieldDef
+     */
+    private $referTo;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -147,6 +160,18 @@ class ExtraField
     public function setEquipment(?Equipment $equipment): self
     {
         $this->equipment = $equipment;
+
+        return $this;
+    }
+
+    public function getReferTo(): ?ExtraFieldDef
+    {
+        return $this->referTo;
+    }
+
+    public function setReferTo(?ExtraFieldDef $referTo): self
+    {
+        $this->referTo = $referTo;
 
         return $this;
     }

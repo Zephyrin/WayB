@@ -427,6 +427,9 @@ class ExtraFieldDefController extends AbstractFOSRestController implements Class
         foreach($extraFieldDef->getExtraFieldDefs() as $extra) {
             $extraFieldDef->removeExtraFieldDef($extra);
         }
+        foreach($extraFieldDef->getExtraFields() as $extra) {
+            $extraFieldDef->removeExtraField($extra);
+        }
         $this->entityManager->remove($extraFieldDef);
         $this->entityManager->flush();
 
