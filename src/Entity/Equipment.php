@@ -61,14 +61,14 @@ class Equipment
     private $brand;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\ExtraField",
+     * @ORM\OneToMany(targetEntity="App\Entity\Characteristic",
      *     mappedBy="equipment",
      *     orphanRemoval=true,
      *     cascade={"persist"})
      * @SWG\Property(description="Specific fields of the Equipment.")
-     * @SerializedName("extraFields")
+     * @SerializedName("characteristics")
      */
-    private $extraFields;
+    private $characteristics;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Have", mappedBy="equipment")
@@ -93,7 +93,7 @@ class Equipment
 
     public function __construct()
     {
-        $this->extraFields = new ArrayCollection();
+        $this->characteristics = new ArrayCollection();
         $this->haves = new ArrayCollection();
     }
 
@@ -151,30 +151,30 @@ class Equipment
     }
 
     /**
-     * @return Collection|ExtraField[]
+     * @return Collection|Characteristic[]
      */
-    public function getExtraFields(): Collection
+    public function getCharacteristics(): Collection
     {
-        return $this->extraFields;
+        return $this->characteristics;
     }
 
-    public function addExtraField(ExtraField $extraField): self
+    public function addCharacteristic($characteristic): self
     {
-        if (!$this->extraFields->contains($extraField)) {
-            $this->extraFields[] = $extraField;
-            $extraField->setEquipment($this);
+        if (!$this->characteristics->contains($characteristic)) {
+            $this->characteristics[] = $characteristic;
+            $characteristic->setEquipment($this);
         }
 
         return $this;
     }
 
-    public function removeExtraField(ExtraField $extraField): self
+    public function removeCharacteristic($characteristic): self
     {
-        if ($this->extraFields->contains($extraField)) {
-            $this->extraFields->removeElement($extraField);
+        if ($this->characteristics->contains($characteristic)) {
+            $this->characteristics->removeElement($characteristic);
             // set the owning side to null (unless already changed)
-            if ($extraField->getEquipment() === $this) {
-                $extraField->setEquipment(null);
+            if ($characteristic->getEquipment() === $this) {
+                $characteristic->setEquipment(null);
             }
         }
 

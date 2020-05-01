@@ -21,11 +21,6 @@ Feature: Provide a consistent standard JSON API endpoint
       | Sleeping Bag | 2         |
       | Mattress     | 2         |
       | Flash Light  | 3         |
-    Given there are ExtraFieldDefs with the following details:
-      | type   | name   | isPrice | isWeight | subcategory | linkTo | category |
-      | ARRAY  | Size   | false   | false    | 1           |        | 1        |
-      | NUMBER | Price  | true    | false    | 1           | 1      | 1        |
-      | NUMBER | Weight | false   | true     | 1           | 1      | 1        |
     Given there are Brands with the following details:
       | name           | description         | uri                  |
       | MSR            | MSR Desc            | www.msr.com          |
@@ -46,7 +41,7 @@ Feature: Provide a consistent standard JSON API endpoint
       "id": 1,
       "name": "Men's Zoomie Rain Jacket",
       "description": "Description 1",
-      "extraFields": [ ],
+      "characteristics": [ ],
       "brand": {
         "id": 3,
         "name": "The north face",
@@ -55,8 +50,7 @@ Feature: Provide a consistent standard JSON API endpoint
       },
       "subCategory": {
         "id": 2,
-        "name": "Jacket",
-        "extraFieldDefs": { }
+        "name": "Jacket"
       }
     }
     """
@@ -69,7 +63,7 @@ Feature: Provide a consistent standard JSON API endpoint
       "id": 1,
       "name": "Men's Zoomie Rain Jacket",
       "description": "Description 1",
-      "extraFields": [ ],
+      "characteristics": [ ],
       "brand": {
         "id": 3,
         "name": "The north face",
@@ -78,8 +72,7 @@ Feature: Provide a consistent standard JSON API endpoint
       },
       "subCategory": {
         "id": 2,
-        "name": "Jacket",
-        "extraFieldDefs": { }
+        "name": "Jacket"
       }
     }
     """
@@ -96,7 +89,7 @@ Feature: Provide a consistent standard JSON API endpoint
         "id": 1,
         "name": "Men's Zoomie Rain Jacket",
         "description": "Description 1",
-        "extraFields": [ ],
+        "characteristics": [ ],
         "brand": {
           "id": 3,
           "name": "The north face",
@@ -106,14 +99,13 @@ Feature: Provide a consistent standard JSON API endpoint
         "subCategory": {
           "id": 2,
           "name": "Jacket",
-          "extraFieldDefs": []
         }
       },
       {
         "id": 2,
         "name": "Men's Printed Cyclone Hoodie",
         "description": "Description 2",
-        "extraFields": [ ],
+        "characteristics": [ ],
         "brand": {
           "id": 3,
           "name": "The north face",
@@ -122,8 +114,7 @@ Feature: Provide a consistent standard JSON API endpoint
         },
         "subCategory": {
           "id": 2,
-          "name": "Jacket",
-          "extraFieldDefs": [ ]
+          "name": "Jacket"
         }
       }
     ]
@@ -144,7 +135,7 @@ Feature: Provide a consistent standard JSON API endpoint
       {
         "name": "Jacket",
         "description": "Titi",
-        "extraFields": [ ],
+        "characteristics": [ ],
         "subCategory": 2,
         "brand": 3
       }
@@ -157,11 +148,10 @@ Feature: Provide a consistent standard JSON API endpoint
         "id": 3,
         "name": "Jacket",
         "description": "Titi",
-        "extraFields": [ ],
+        "characteristics": [ ],
         "subCategory": {
           "id": 2,
-          "name": "Jacket",
-          "extraFieldDefs": []
+          "name": "Jacket"
         },
         "brand": {
           "id": 3,
@@ -179,11 +169,10 @@ Feature: Provide a consistent standard JSON API endpoint
       "id": 3,
       "name": "Jacket",
       "description": "Titi",
-      "extraFields": [ ],
+      "characteristics": [ ],
       "subCategory": {
         "id": 2,
-        "name": "Jacket",
-        "extraFieldDefs": []
+        "name": "Jacket"
       },
       "brand": {
         "id": 3,
@@ -202,11 +191,10 @@ Feature: Provide a consistent standard JSON API endpoint
         "id": 3,
         "name": "Jacket",
         "description": "Titi",
-        "extraFields": [ ],
+        "characteristics": [ ],
         "subCategory": {
           "id": 2,
-          "name": "Jacket",
-          "extraFieldDefs": []
+          "name": "Jacket"
         },
         "brand": {
           "id": 3,
@@ -227,7 +215,7 @@ Feature: Provide a consistent standard JSON API endpoint
         "id": 1,
         "name": "Men's Zoomie Rain Jacket",
         "description": "Description 1",
-        "extraFields": [ ],
+        "characteristics": [ ],
         "brand": {
           "id": 3,
           "name": "The north face",
@@ -236,15 +224,14 @@ Feature: Provide a consistent standard JSON API endpoint
         },
         "subCategory": {
           "id": 2,
-          "name": "Jacket",
-          "extraFieldDefs": []
+          "name": "Jacket"
         }
       },
       {
         "id": 2,
         "name": "Men's Printed Cyclone Hoodie",
         "description": "Description 2",
-        "extraFields": [ ],
+        "characteristics": [ ],
         "brand": {
           "id": 3,
           "name": "The north face",
@@ -253,19 +240,17 @@ Feature: Provide a consistent standard JSON API endpoint
         },
         "subCategory": {
           "id": 2,
-          "name": "Jacket",
-          "extraFieldDefs": [ ]
+          "name": "Jacket"
         }
       },
       {
         "id": 3,
         "name": "Jacket",
         "description": "Titi",
-        "extraFields": [ ],
+        "characteristics": [ ],
         "subCategory": {
           "id": 2,
-          "name": "Jacket",
-          "extraFieldDefs": []
+          "name": "Jacket"
         },
         "brand": {
           "id": 3,
@@ -284,7 +269,7 @@ Feature: Provide a consistent standard JSON API endpoint
       {
         "name": "Jacket",
         "description": "Titi",
-        "extraFields": [ ],
+        "characteristics": [ ],
         "brand": {
           "id": 3,
           "name": "The north face",
@@ -293,8 +278,7 @@ Feature: Provide a consistent standard JSON API endpoint
         },
         "subCategory": {
           "id": 2,
-          "name": "Jacket",
-          "extraFieldDefs": [ ]
+          "name": "Jacket"
         }
       }
       """
@@ -315,7 +299,7 @@ Feature: Provide a consistent standard JSON API endpoint
             "subCategory": {
               "errors": ["This value is not valid."]
             },
-            "extraFields": []
+            "characteristics": []
           }
         }]
       }
@@ -330,7 +314,7 @@ Feature: Provide a consistent standard JSON API endpoint
       {
         "name": "Jacket",
         "description": "Titi",
-        "extraFields": [ ],
+        "characteristics": [ ],
         "brand": 3,
         "subCategory": 2
       }
@@ -345,7 +329,7 @@ Feature: Provide a consistent standard JSON API endpoint
       "id": 1,
       "name": "Men's Zoomie Rain Jacket",
       "description": "Description 1",
-      "extraFields": [ ],
+      "characteristics": [ ],
       "brand": {
         "id": 3,
         "name": "The north face",
@@ -354,8 +338,7 @@ Feature: Provide a consistent standard JSON API endpoint
       },
       "subCategory": {
         "id": 2,
-        "name": "Jacket",
-        "extraFieldDefs": [ ]
+        "name": "Jacket"
       }
     }
     """
@@ -367,7 +350,7 @@ Feature: Provide a consistent standard JSON API endpoint
       {
         "name": "Jacket",
         "description": "Titi",
-        "extraFields": [ ],
+        "characteristics": [ ],
         "brand": 3,
         "subCategory": 2
       }
@@ -382,7 +365,7 @@ Feature: Provide a consistent standard JSON API endpoint
       "id": 1,
       "name": "Jacket",
       "description": "Titi",
-      "extraFields": [ ],
+      "characteristics": [ ],
       "brand": {
         "id": 3,
         "name": "The north face",
@@ -391,8 +374,7 @@ Feature: Provide a consistent standard JSON API endpoint
       },
       "subCategory": {
         "id": 2,
-        "name": "Jacket",
-        "extraFieldDefs": [ ]
+        "name": "Jacket"
       }
     }
     """
@@ -404,7 +386,7 @@ Feature: Provide a consistent standard JSON API endpoint
       {
         "name": "Jacket",
         "description": "Titi",
-        "extraFields": [ ],
+        "characteristics": [ ],
         "subCategory": 2,
         "brand": 3
       }
@@ -417,11 +399,10 @@ Feature: Provide a consistent standard JSON API endpoint
         "id": 3,
         "name": "Jacket",
         "description": "Titi",
-        "extraFields": [ ],
+        "characteristics": [ ],
         "subCategory": {
           "id": 2,
-          "name": "Jacket",
-          "extraFieldDefs": []
+          "name": "Jacket"
         },
         "brand": {
           "id": 3,
@@ -438,7 +419,7 @@ Feature: Provide a consistent standard JSON API endpoint
         "id": 3,
         "name": "Jacket Update",
         "description": "Titi",
-        "extraFields": [ ],
+        "characteristics": [ ],
         "brand": 2,
         "subCategory": 2
       }
@@ -453,7 +434,7 @@ Feature: Provide a consistent standard JSON API endpoint
       "id": 3,
       "name": "Jacket Update",
       "description": "Titi",
-      "extraFields": [ ],
+      "characteristics": [ ],
       "brand": {
         "id": 2,
         "name": "Mammut",
@@ -462,8 +443,7 @@ Feature: Provide a consistent standard JSON API endpoint
       },
       "subCategory": {
         "id": 2,
-        "name": "Jacket",
-        "extraFieldDefs": [ ]
+        "name": "Jacket"
       }
     }
     """
@@ -476,7 +456,7 @@ Feature: Provide a consistent standard JSON API endpoint
         "id": 1,
         "name": "Jacket",
         "description": "Titi",
-        "extraFields": [ ],
+        "characteristics": [ ],
         "brand": 2,
         "subCategory": 2
       }
@@ -491,7 +471,7 @@ Feature: Provide a consistent standard JSON API endpoint
       "id": 1,
       "name": "Jacket",
       "description": "Titi",
-      "extraFields": [ ],
+      "characteristics": [ ],
       "brand": {
         "id": 2,
         "name": "Mammut",
@@ -500,8 +480,7 @@ Feature: Provide a consistent standard JSON API endpoint
       },
       "subCategory": {
         "id": 2,
-        "name": "Jacket",
-        "extraFieldDefs": [ ]
+        "name": "Jacket"
       }
     }
     """
@@ -514,7 +493,7 @@ Feature: Provide a consistent standard JSON API endpoint
         "id": 1,
         "name": "",
         "description": "Titi",
-        "extraFields": [ ],
+        "characteristics": [ ],
         "brand": 2,
         "subCategory": 2
       }
@@ -533,30 +512,11 @@ Feature: Provide a consistent standard JSON API endpoint
                     ]
                 },
                 "description": [],
-                "extraFields": [],
+                "characteristics": [],
                 "brand": [],
                 "subCategory": []
             }
         }]
-    }
-    """
-    When I request "/api/category/1/subcategory/1/extrafielddef/2" using HTTP GET
-    Then the response code is 200
-    And the response body contains JSON:
-    """
-    {
-      "id": 2,
-      "type": "NUMBER",
-      "name": "Price",
-      "isPrice": true,
-      "isWeight": false,
-      "linkTo": {
-        "id": 1,
-        "type": "ARRAY",
-        "name": "Size",
-        "isPrice": false,
-        "isWeight": false
-      }
     }
     """
 
@@ -578,7 +538,7 @@ Feature: Provide a consistent standard JSON API endpoint
       "id": 1,
       "name": "Men's Zoomie Rain Jacket",
       "description": "Description 1",
-      "extraFields": [ ],
+      "characteristics": [ ],
       "brand": {
         "id": 2,
         "name": "Mammut",
@@ -587,8 +547,7 @@ Feature: Provide a consistent standard JSON API endpoint
       },
       "subCategory": {
         "id": 2,
-        "name": "Jacket",
-        "extraFieldDefs": [ ]
+        "name": "Jacket"
       }
     }
     """
@@ -611,7 +570,7 @@ Feature: Provide a consistent standard JSON API endpoint
       "id": 1,
       "name": "Men's Zoomie Rain Jacket",
       "description": "Description 1",
-      "extraFields": [ ],
+      "characteristics": [ ],
       "brand": {
         "id": 3,
         "name": "The north face",
@@ -620,8 +579,7 @@ Feature: Provide a consistent standard JSON API endpoint
       },
       "subCategory": {
         "id": 2,
-        "name": "Jacket",
-        "extraFieldDefs": [ ]
+        "name": "Jacket"
       }
     }
     """
@@ -659,7 +617,7 @@ Feature: Provide a consistent standard JSON API endpoint
       "id": 1,
       "name": "Men's Zoomie Rain Jacket",
       "description": "Description 1",
-      "extraFields": [ ],
+      "characteristics": [ ],
       "brand": {
         "id": 3,
         "name": "The north face",
@@ -668,8 +626,7 @@ Feature: Provide a consistent standard JSON API endpoint
       },
       "subCategory": {
         "id": 2,
-        "name": "Jacket",
-        "extraFieldDefs": []
+        "name": "Jacket"
       }
     }
     """

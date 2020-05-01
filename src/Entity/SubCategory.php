@@ -49,17 +49,6 @@ class SubCategory
     private $category;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\ExtraFieldDef",
-     *  mappedBy="subCategory",
-     *  orphanRemoval=true,
-     *  cascade={"persist"})
-     * @SerializedName("extraFieldDefs")
-     * @SWG\Property(description="The list of all ExtraFieldDefs link to this Sub-Category.",
-     *     readOnly=true)
-     */
-    private $extraFieldDefs;
-
-    /**
      * @ORM\OneToMany(targetEntity="App\Entity\Equipment",
      *     mappedBy="subCategory",
      *     orphanRemoval=true)
@@ -69,7 +58,6 @@ class SubCategory
 
     public function __construct()
     {
-        $this->extraFieldDefs = new ArrayCollection();
         $this->equipments = new ArrayCollection();
     }
 
@@ -98,37 +86,6 @@ class SubCategory
     public function setCategory(?Category $category): self
     {
         $this->category = $category;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|ExtraFieldDef[]
-     */
-    public function getExtraFieldDefs(): Collection
-    {
-        return $this->extraFieldDefs;
-    }
-
-    public function addExtraFieldDef(ExtraFieldDef $extraFieldDef): self
-    {
-        if (!$this->extraFieldDefs->contains($extraFieldDef)) {
-            $this->extraFieldDefs[] = $extraFieldDef;
-            $extraFieldDef->setSubCategory($this);
-        }
-
-        return $this;
-    }
-
-    public function removeExtraFieldDef(ExtraFieldDef $extraFieldDef): self
-    {
-        if ($this->extraFieldDefs->contains($extraFieldDef)) {
-            $this->extraFieldDefs->removeElement($extraFieldDef);
-            // set the owning side to null (unless already changed)
-            if ($extraFieldDef->getSubCategory() === $this) {
-                $extraFieldDef->setSubCategory(null);
-            }
-        }
 
         return $this;
     }

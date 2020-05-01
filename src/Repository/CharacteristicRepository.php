@@ -2,25 +2,25 @@
 
 namespace App\Repository;
 
-use App\Entity\ExtraFieldDef;
+use App\Entity\Characteristic;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
 /**
- * @method ExtraFieldDef|null find($id, $lockMode = null, $lockVersion = null)
- * @method ExtraFieldDef|null findOneBy(array $criteria, array $orderBy = null)
- * @method ExtraFieldDef[]    findAll()
- * @method ExtraFieldDef[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method Characteristic|null find($id, $lockMode = null, $lockVersion = null)
+ * @method Characteristic|null findOneBy(array $criteria, array $orderBy = null)
+ * @method Characteristic[]    findAll()
+ * @method Characteristic[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class ExtraFieldDefRepository extends ServiceEntityRepository
+class CharacteristicRepository extends ServiceEntityRepository
 {
     public function __construct(RegistryInterface $registry)
     {
-        parent::__construct($registry, ExtraFieldDef::class);
+        parent::__construct($registry, Characteristic::class);
     }
 
     // /**
-    //  * @return ExtraFieldDef[] Returns an array of ExtraFieldDef objects
+    //  * @return Characteristic[] Returns an array of Characteristic objects
     //  */
     /*
     public function findByExampleField($value)
@@ -37,7 +37,7 @@ class ExtraFieldDefRepository extends ServiceEntityRepository
     */
 
     /*
-    public function findOneBySomeField($value): ?ExtraFieldDef
+    public function findOneBySomeField($value): ?Characteristic
     {
         return $this->createQueryBuilder('e')
             ->andWhere('e.exampleField = :val')

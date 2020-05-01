@@ -7,9 +7,6 @@ categories:
 subcategories:
      type:     rest
      resource: App\Controller\SubCategoryController
-extrafielddef:
-     type:     rest
-     resource: App\Controller\ExtraFieldDefController
 brands:
      type:     rest
      resource: App\Controller\BrandController
@@ -18,7 +15,7 @@ equipment:
      resource: App\Controller\EquipmentController
 extrafield:
      type:     rest
-     resource: App\Controller\ExtraFieldController
+     resource: App\Controller\CharacteristicController
 have:
      type:     rest
      resource: App\Controller\HaveController

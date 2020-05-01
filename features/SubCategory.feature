@@ -112,8 +112,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
     {
       "id": 6,
-      "name": "Camera",
-      "extraFieldDefs": [ ]
+      "name": "Camera"
     }
     """
 
@@ -418,22 +417,15 @@ Feature: Provide a consistent standard JSON API endpoint
       "subCategories": [
         {
           "id": 1,
-          "name": "Pants 2",
-          "extraFieldDefs": [
-
-          ]
+          "name": "Pants 2"
         },
         {
           "id": 2,
-          "name": "T-Shirt",
-          "extraFieldDefs": [
-
-          ]
+          "name": "T-Shirt"
         },
         {
           "id": 6,
-          "name": "New Type",
-          "extraFieldDefs": [ ]
+          "name": "New Type"
         }
       ]
     }
@@ -466,13 +458,11 @@ Feature: Provide a consistent standard JSON API endpoint
       "subCategories": [
         {
           "id": 1,
-          "name": "Pants 2",
-          "extraFieldDefs": [ ]
+          "name": "Pants 2"
         },
         {
           "id": 2,
-          "name": "New Type",
-          "extraFieldDefs": [ ]
+          "name": "New Type"
         }
       ]
     }
@@ -497,15 +487,11 @@ Feature: Provide a consistent standard JSON API endpoint
       "subCategories": [
         {
           "id": 1,
-          "name": "Pants",
-          "extraFieldDefs": [
-
-          ]
+          "name": "Pants"
         },
         {
           "id": 2,
-          "name": "T-shirt",
-          "extraFieldDefs": [ ]
+          "name": "T-shirt"
         }
       ]
     }

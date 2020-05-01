@@ -43,10 +43,10 @@ class EquipmentType extends AbstractType
                             ->orderBy('u.name', 'ASC');
                     }
                 ])
-            ->add('extraFields'
+            ->add('characteristics'
                 , CollectionType::class
                 , [
-                    'entry_type' => ExtraFieldType::class
+                    'entry_type' => CharacteristicType::class
                     , 'allow_add' => true
                     , 'allow_delete' => true
                     , 'by_reference' => false

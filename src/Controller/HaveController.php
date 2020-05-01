@@ -86,13 +86,13 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
      *     description="The ID used to find the User"
      *    ),
      *    @SWG\Parameter(
-     *     name="The JSON ExtraField",
+     *     name="The JSON Characteristic",
      *     in="body",
      *     required=true,
      *     @SWG\Schema(
      *       ref=@Model(type=Have::class)
      *     ),
-     *     description="The JSon ExtraField"
+     *     description="The JSon Characteristic"
      *    )
      *
      * )

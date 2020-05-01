@@ -2,16 +2,15 @@
 
 namespace App\Controller;
 
-use App\Entity\ExtraFieldDef;
-use App\Entity\SubCategory;
-use App\Form\ExtraFieldDefType;
-use App\Repository\ExtraFieldDefRepository;
+use App\Entity\Equipment;
+use App\Entity\Characteristic;
+use App\Form\CharacteristicType;
+use App\Repository\CharacteristicRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Serializer\FormErrorSerializer;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Routing\ClassResourceInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,25 +19,27 @@ use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 
 /**
+ * Class CharacteristicController
+ * @package App\Controller
+ *
  * @Rest\RouteResource(
- *     "api/Category/{CategoryId}/SubCategory/{SubCategoryId}/ExtraFieldDef",
+ *     "api/equipment/{equipmentId}/characteristic",
  *     pluralize=false
  * )
- *
  * @SWG\Tag(
- *     name="Extra Field Definition"
+ *     name="Characteristic"
  * )
  */
-class ExtraFieldDefController extends AbstractFOSRestController implements ClassResourceInterface
+class CharacteristicController extends AbstractFOSRestController implements ClassResourceInterface
 {
     /**
      * @var EntityManagerInterface
      */
     private $entityManager;
     /**
-     * @var ExtraFieldDefRepository
+     * @var CharacteristicRepository
      */
-    private $extraFieldDefRepository;
+    private $characteristicRepository;
     /**
      * @var FormErrorSerializer
      */
@@ -46,61 +47,53 @@ class ExtraFieldDefController extends AbstractFOSRestController implements Class
 
     public function __construct(
         EntityManagerInterface $entityManager,
-        ExtraFieldDefRepository $extraFieldDefRepository,
+        CharacteristicRepository $characteristicRepository,
         FormErrorSerializer $formErrorSerializer
-    )
-    {
+    )     {
         $this->entityManager = $entityManager;
-        $this->extraFieldDefRepository = $extraFieldDefRepository;
+        $this->characteristicRepository = $characteristicRepository;
         $this->formErrorSerializer = $formErrorSerializer;
     }
 
     /**
-     * Create a new ExtraFieldDef.
-     *
-     * The field LinkTo can be fill with the Id of the other ExtraFieldDef or using the full entity.
+     * Create a new Characteristic link to an Equipment
      *
      * @SWG\Post(
      *     consumes={"application/json"},
      *     produces={"application/json"},
      *     @SWG\Response(
      *      response=200,
-     *      description="Successful operation"
+     *      description="Successful operation with the new value insert",
+     *      @SWG\Schema(
+     *       ref=@Model(type=Characteristic::class)
+     *      )
      *    ),
      *    @SWG\Response(
      *     response=422,
      *     description="The form is not correct<BR/>
      * See the corresponding JSON error to see which field is not correct"
-     *    ),
+     *    )
+     *    ,
      *    @SWG\Parameter(
-     *     name="categoryid",
+     *     name="equipmentid",
      *     in="path",
      *     type="string",
      *     required=true,
      *     allowEmptyValue=false,
-     *     description="The ID used to find the Category"
+     *     description="The ID used to find the Equipment"
      *    ),
      *    @SWG\Parameter(
-     *     name="subcategoryid",
-     *     in="path",
-     *     type="string",
-     *     required=true,
-     *     allowEmptyValue=false,
-     *     description="The ID used to find the Sub-Category"
-     *    ),
-     *    @SWG\Parameter(
-     *     name="The JSON Category",
+     *     name="The JSON Characteristic",
      *     in="body",
      *     required=true,
      *     @SWG\Schema(
-     *       ref=@Model(type=ExtraFieldDef::class)
+     *       ref=@Model(type=Characteristic::class)
      *     ),
-     *     description="The JSon ExtraFieldDef"
+     *     description="The JSon Characteristic"
      *    )
      *
      * )
      *
-     * @Security("has_role('ROLE_AMBASSADOR')")
      * @param Request $request
      * @return \FOS\RestBundle\View\View|JsonResponse
      * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
@@ -112,8 +105,8 @@ class ExtraFieldDefController extends AbstractFOSRestController implements Class
             true
         );
         $form = $this->createForm(
-            ExtraFieldDefType::class,
-            new ExtraFieldDef());
+            CharacteristicType::class,
+            new Characteristic());
         $form->submit(
             $data
         );
@@ -121,60 +114,57 @@ class ExtraFieldDefController extends AbstractFOSRestController implements Class
             return new JsonResponse(
                 [
                     'status' => 'error',
-                    'message' => 'Validation error',
+                    'Message' => 'Validation error',
                     'errors' => $this->formErrorSerializer->normalize($form),
                 ],
                 JsonResponse::HTTP_UNPROCESSABLE_ENTITY
             );
         }
-        $extraFieldDef = $form->getData();
-        $subCategory = $this->entityManager->find(
-            SubCategory::class,
-            $request->attributes->get('subcategoryid'));
-        $extraFieldDef->setSubCategory($subCategory);
-        $this->entityManager->persist($extraFieldDef);
+
+        $characteristic = $form->getData();
+        $equipment = $this->entityManager->find(
+            Equipment::class,
+            $request->attributes->get('equipmentid'));
+        if($equipment == null)
+            throw new NotFoundHttpException();
+        $characteristic->setEquipment($equipment);
+        $this->entityManager->persist($characteristic);
         $this->entityManager->flush();
 
         return  $this->view(
-            $extraFieldDef
-            ,Response::HTTP_CREATED);
+            $characteristic,
+            Response::HTTP_CREATED);
     }
 
     /**
-     * Expose the ExtraFieldDef with the id.
+     * Expose the Characteristic with the id.
      *
      * @SWG\Get(
-     *     summary="Get the ExtraFieldDef based on its ID, the CategoryId of the category and the SubCategoryId of the sub-category",
+     *     summary="Get the Characteristic based on its ID and the EquipmentId of the equipment",
      *     produces={"application/json"}
      * )
      * @SWG\Response(
      *     response=200,
-     *     description="Return the ExtraFieldDef based on its ID, the CategoryId of the category and the SubCategoryId of the sub-category",
-     *     @SWG\Schema(ref=@Model(type=ExtraFieldDef::class))
+     *     description="Return the Characteristic based on ID and the EquipmentId of the equipment",
+     *     @SWG\Schema(ref=@Model(type=Characteristic::class))
      * )
      *
      * @SWG\Response(
      *     response=404,
-     *     description="The ExtraFieldDef based on its ID or Category based on CategoryId or the Sub-Category based on SubCategoryId is not found"
+     *     description="The Equipment based on EquipmentId or the Characteristic based on ID is not found"
      * )
      *
      * @SWG\Parameter(
-     *     name="categoryid",
+     *     name="equipmentid",
      *     in="path",
      *     type="string",
-     *     description="The ID used to find the Category"
-     * )
-     * @SWG\Parameter(
-     *     name="subcategoryid",
-     *     in="path",
-     *     type="string",
-     *     description="The ID used to find the Sub-Category"
+     *     description="The ID used to find the Equipment"
      * )
      * @SWG\Parameter(
      *     name="id",
      *     in="path",
      *     type="string",
-     *     description="The ID used to find the Extra Field Def"
+     *     description="The ID used to find the Characteristic"
      * )
      *
      * @var $id
@@ -183,40 +173,35 @@ class ExtraFieldDefController extends AbstractFOSRestController implements Class
     public function getAction(string $id)
     {
         return $this->view(
-            $this->findExtraFieldDefById($id)
+            $this->findCharacteristicById($id)
         );
     }
 
     /**
-     * Expose all Extra Field Def
+     * Expose all Characteristic
      *
      * @SWG\Get(
-     *     summary="Get all Extra Field Def belong to Sub-Categories that belong to CategoryId",
+     *     summary="Get all Characteristics belong to EquipmentId",
      *     produces={"application/json"}
      * )
      * @SWG\Response(
      *     response=200,
-     *     description="Return all the ExtraFieldDef",
+     *     description="Return all the Characteristics",
      *     @SWG\Schema(
      *      type="array",
-     *      @SWG\Items(ref=@Model(type=ExtraFieldDef::class))
+     *      @SWG\Items(ref=@Model(type=Characteristic::class))
      *     )
      * )
      * @SWG\Parameter(
-     *     name="categoryid",
+     *     name="equipmentid",
      *     in="path",
      *     type="string",
-     *     description="The ID of the Category which Sub-Categories belong to"
+     *     description="The ID of the Equipment which Characteristics belong to"
      * )
-     * @SWG\Parameter(
-     *     name="subcategoryid",
-     *     in="path",
-     *     type="string",
-     *     description="The ID used to find the Sub-Category"
-     * )
+     *
      * @SWG\Response(
      *     response=404,
-     *     description="The Category based on CategoryId or the Sub-Category based on SubCategoryId is not found"
+     *     description="The Equipment based on EquipmentId is not found"
      * )
      *
      * @return \FOS\RestBundle\View\View
@@ -224,12 +209,12 @@ class ExtraFieldDefController extends AbstractFOSRestController implements Class
     public function cgetAction()
     {
         return $this->view(
-            $this->extraFieldDefRepository->findAll()
+            $this->characteristicRepository->findAll()
         );
     }
 
     /**
-     * Update an ExtraFieldDef
+     * Update an Characteristic
      *
      * @SWG\Put(
      *     consumes={"application/json"},
@@ -245,54 +230,44 @@ class ExtraFieldDefController extends AbstractFOSRestController implements Class
      *    ),
      *    @SWG\Response(
      *     response=404,
-     *     description="The Category based on CategoryId or the Sub-Category based on SubCategoryId or the ExtraFieldDef based on ID is not found"
+     *     description="The Equipment based on EquipmentId or the Characteristic based on ID is not found"
      *    ),
      *    @SWG\Parameter(
-     *     name="The full JSON ExtraFieldDef",
+     *     name="The full JSON Characteristic",
      *     in="body",
      *     required=true,
      *     @SWG\Schema(
-     *       ref=@Model(type=ExtraFieldDef::class)
+     *       ref=@Model(type=Characteristic::class)
      *     ),
-     *     description="The JSon ExtraFieldDef"
+     *     description="The JSon Characteristic"
      *    ),
      *    @SWG\Parameter(
-     *     name="categoryid",
+     *     name="equipmentid",
      *     in="path",
      *     type="string",
-     *     description="The ID used to find the Category"
-     *    ),
-     *    @SWG\Parameter(
-     *     name="subcategoryid",
-     *     in="path",
-     *     type="string",
-     *     description="The SubCategoryId used to find the Sub-Category"
+     *     description="The ID used to find the Equipment"
      *    ),
      *    @SWG\Parameter(
      *     name="id",
      *     in="path",
      *     type="string",
-     *     description="The ID used to find the ExtraFieldDef"
+     *     description="The ID used to find the Characteristic"
      *    )
      * )
-     * @Security("has_role('ROLE_AMBASSADOR')")
+     *
      * @param Request $request
-     * @param string $id of the ExtraFieldDef to update
+     * @param string $id of the Category to update
      * @return \FOS\RestBundle\View\View|JsonResponse
      * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
      */
     public function putAction(Request $request, string $id)
     {
-        $existingExtraFieldDef = $this->findExtraFieldDefById($id);
-
+        $existingCharacteristic = $this->findCharacteristicById($id);
+        $form = $this->createForm(CharacteristicType::class, $existingCharacteristic);
         $data = json_decode($request->getContent(), true);
-        
-        $form = $this->createForm(
-            ExtraFieldDefType::class,
-            $existingExtraFieldDef);
 
+        $data['equipment'] = $request->attributes->get('equipmentid');
         $form->submit($data);
-        
         if (false === $form->isValid()) {
             return new JsonResponse(
                 [
@@ -306,11 +281,11 @@ class ExtraFieldDefController extends AbstractFOSRestController implements Class
 
         $this->entityManager->flush();
 
-        return $this->view(null, JsonResponse::HTTP_NO_CONTENT);
+        return $this->view(null, Response::HTTP_NO_CONTENT);
     }
 
     /**
-     * Update a part of an ExtraFieldDef
+     * Update a part of an Characteristic
      *
      * @SWG\Patch(
      *     consumes={"application/json"},
@@ -326,53 +301,47 @@ class ExtraFieldDefController extends AbstractFOSRestController implements Class
      *    ),
      *    @SWG\Response(
      *     response=404,
-     *     description="The Category based on CategoryId or the Sub-Category based on SubCategoryId or the ExtraFieldDef based on ID is not found"
+     *     description="The Equipment based on EquipmentId or the Characteristic based on ID is not found"
      *    ),
      *    @SWG\Parameter(
-     *     name="The full JSON ExtraFieldDef",
+     *     name="The full JSON Characteristic",
      *     in="body",
      *     required=true,
      *     @SWG\Schema(
-     *       ref=@Model(type=ExtraFieldDef::class)
+     *       ref=@Model(type=Characteristic::class)
      *     ),
-     *     description="The JSon Category"
+     *     description="The JSon Characteristic"
      *    ),
      *    @SWG\Parameter(
-     *     name="categoryid",
+     *     name="equipmentid",
      *     in="path",
      *     type="string",
-     *     description="The ID used to find the Category"
-     *    ),
-     *    @SWG\Parameter(
-     *     name="subcategoryid",
-     *     in="path",
-     *     type="string",
-     *     description="The SubCategoryId used to find the Sub-Category"
+     *     description="The ID used to find the Equipment"
      *    ),
      *    @SWG\Parameter(
      *     name="id",
      *     in="path",
      *     type="string",
-     *     description="The ID used to find the ExtraFieldDef"
+     *     description="The ID used to find the Characteristic"
      *    )
      * )
-     * @Security("has_role('ROLE_AMBASSADOR')")
+     *
      * @param Request $request
-     * @param string $id of the Category to update
+     * @param string $id of the Characteristic to update
      * @return \FOS\RestBundle\View\View|JsonResponse
      * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
      */
     public function patchAction(Request $request, string $id)
     {
-        $existingExtraFieldDef = $this->findExtraFieldDefById($id);
-        $form = $this->createForm(ExtraFieldDefType::class, $existingExtraFieldDef);
-        $data = json_decode($request->getContent(), true);
-        $form->submit($data, false);
+        $existingCharacteristic = $this->findCharacteristicById($id);
+        $form = $this->createForm(CharacteristicType::class, $existingCharacteristic);
+
+        $form->submit($request->request->all(), false);
         if (false === $form->isValid()) {
+            //return $this->view($form);
             return new JsonResponse(
                 [
                     'status' => 'error',
-                    'message' => 'Validation error',
                     'errors' => $this->formErrorSerializer->normalize($form),
                 ],
                 JsonResponse::HTTP_UNPROCESSABLE_ENTITY
@@ -380,57 +349,46 @@ class ExtraFieldDefController extends AbstractFOSRestController implements Class
         }
 
         $this->entityManager->flush();
+
         return $this->view(null, Response::HTTP_NO_CONTENT);
     }
 
     /**
-     * Delete an ExtraFieldDef with the id.
+     * Delete an Characteristic with the id.
      *
      * @SWG\Delete(
-     *     summary="Delete an ExtraFieldDef based on ID"
+     *     summary="Delete an Characteristic based on ID"
      * )
      * @SWG\Response(
      *     response=204,
-     *     description="The ExtraFieldDef is correctly delete",
+     *     description="The Characteristic is correctly delete",
      * )
      *
      * @SWG\Response(
      *     response=404,
-     *     description="The category based on CategoryId or the sub-category based on SubCategoryId or the ExtraFieldDef based on ID is not found"
+     *     description="The Equipement based on EquipmentId or the Characteristic based on ID is not found"
      * )
      *
      * @SWG\Parameter(
-     *     name="categoryid",
+     *     name="equipmentid",
      *     in="path",
      *     type="string",
-     *     description="The ID used to find the Category"
-     * )
-     * @SWG\Parameter(
-     *     name="subcategoryid",
-     *     in="path",
-     *     type="string",
-     *     description="The SubCategoryId used to find the Sub-Category"
+     *     description="The ID used to find the Equipment"
      * )
      * @SWG\Parameter(
      *     name="id",
      *     in="path",
      *     type="string",
-     *     description="The ID used to find the ExtraFieldDef"
+     *     description="The ID used to find the Characteristic"
      * )
-     * @Security("has_role('ROLE_AMBASSADOR')")
      * @param string $id
      * @return \FOS\RestBundle\View\View
      */
     public function deleteAction(string $id)
     {
-        $extraFieldDef = $this->findExtraFieldDefById($id);
-        foreach($extraFieldDef->getExtraFieldDefs() as $extra) {
-            $extraFieldDef->removeExtraFieldDef($extra);
-        }
-        foreach($extraFieldDef->getExtraFields() as $extra) {
-            $extraFieldDef->removeExtraField($extra);
-        }
-        $this->entityManager->remove($extraFieldDef);
+        $characteristic = $this->findCharacteristicById($id);
+
+        $this->entityManager->remove($characteristic);
         $this->entityManager->flush();
 
         return $this->view(null, Response::HTTP_NO_CONTENT);
@@ -439,16 +397,15 @@ class ExtraFieldDefController extends AbstractFOSRestController implements Class
     /**
      * @param string $id
      *
-     * @return ExtraFieldDef
+     * @return Characteristic
      * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
      */
-    private function findExtraFieldDefById(string $id)
+    private function findCharacteristicById(string $id)
     {
-        $existingExtraFieldDef = $this->extraFieldDefRepository->find($id);
-        if (null === $existingExtraFieldDef) {
+        $existingCharacteristic = $this->characteristicRepository->find($id);
+        if (null === $existingCharacteristic) {
             throw new NotFoundHttpException();
         }
-        return $existingExtraFieldDef;
+        return $existingCharacteristic;
     }
-
 }

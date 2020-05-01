@@ -161,64 +161,6 @@ class FeatureContext implements Context
     }
 
     /**
-     * @Given there are ExtraFieldDefs with the following details:
-     * @param TableNode $table
-     * @throws \Imbo\BehatApiExtension\Exception\AssertionFailedException
-     */
-    public function thereAreExtrafielddefsWithTheFollowingDetails(TableNode $table)
-    {
-        $i = 1;
-        $this->iAmLoginAsA();
-        foreach ($table->getColumnsHash() as $extraFieldDef) {
-            $isPrice = $extraFieldDef['isPrice'];
-            $extraFieldDef['isPrice'] = $extraFieldDef['isPrice'] == 'true';
-            $isWeight = $extraFieldDef['isWeight'];
-            $extraFieldDef['isWeight'] = $extraFieldDef['isWeight'] == 'true';
-            $catId = $extraFieldDef["category"];
-            unset($extraFieldDef["category"]);
-            $subCatId = $extraFieldDef["subcategory"];
-            unset($extraFieldDef["subcategory"]);
-            $this->apiContext->setRequestBody(
-                json_encode($extraFieldDef)
-            );
-            $this->apiContext->requestPath(
-                "/api/category/{$catId}/subcategory/{$subCatId}/extrafielddef",
-                'POST'
-            );
-
-            $expectedResult = [
-                "{"
-                , "\"id\": {$i}"
-                , ",\"type\": \"{$extraFieldDef['type']}\""
-                , ",\"name\": \"{$extraFieldDef['name']}\""
-                , ",\"isPrice\": {$isPrice}"
-                , ",\"isWeight\": {$isWeight}"
-            ];
-            if(isset($extraFieldDef['linkTo']) && $extraFieldDef['linkTo'] !== '')
-            {
-                $linkToRef = (int)$extraFieldDef['linkTo'];
-                $linkTo = $table->getColumnsHash()[$linkToRef - 1];
-                $expectedResult[] = ",\"linkTo\": {";
-                $expectedResult[] = "\"id\": {$linkToRef}";
-                $expectedResult[] = ", \"type\": \"{$linkTo['type']}\"";
-                $expectedResult[] = ", \"name\": \"{$linkTo['name']}\"";
-                $expectedResult[] = ", \"isPrice\": {$linkTo['isPrice']}";
-                $expectedResult[] = ", \"isWeight\": {$linkTo['isWeight']}";
-                $expectedResult[] = "}";
-            }
-            $expectedResult[] = "}";
-
-            $this->apiContext->assertResponseBodyContainsJson(
-                new \Behat\Gherkin\Node\PyStringNode(
-                    $expectedResult,0
-                ));
-
-            $i ++;
-        }
-        $this->logout();
-    }
-
-    /**
      * @Given there are Brands with the following details:
      * @param TableNode $brands
      * @throws \Imbo\BehatApiExtension\Exception\AssertionFailedException
@@ -277,26 +219,28 @@ class FeatureContext implements Context
     }
 
     /**
-     * @Given /^there are ExtraField with the following details:$/
-     * @param TableNode $extraFields
+     * @Given /^there are Characteristic with the following details:$/
+     * @param TableNode $characteristics
      */
-    public function thereAreExtraFieldWithTheFollowingDetails(TableNode $extraFields)
+    public function thereAreCharacteristicWithTheFollowingDetails(TableNode $characteristics)
     {
-        foreach ($extraFields->getColumnsHash() as $extraField) {
-            $eqId = $extraField["equipment"];
-            unset($extraField["equipment"]);
+        foreach ($characteristics->getColumnsHash() as $characteristic) {
+            $eqId = $characteristic["equipment"];
+            unset($characteristic["equipment"]);
             if($eqId == "1")
                 $this->iAmLoginAsA();
             else 
                 $this->iAmLoginAsB();
-            $extraField['isPrice'] = $extraField['isPrice'] == 'true';
-            $extraField['isWeight'] = $extraField['isWeight'] == 'true';
+            $price = $characteristic["price"];
+            $characteristic["price"] = intval($price);
+            $weight = $characteristic["weight"];
+            $characteristic["weight"] = intval($weight);
             $this->apiContext->setRequestBody(
-                json_encode($extraField)
+                json_encode($characteristic)
             );
 
             $this->apiContext->requestPath(
-                "/api/equipment/{$eqId}/extrafield",
+                "/api/equipment/{$eqId}/characteristic",
                 'POST'
             );
             $this->logout();
