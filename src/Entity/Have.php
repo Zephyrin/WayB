@@ -66,6 +66,14 @@ class Have
      */
     private $equipment;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\Characteristic", inversedBy="haves")
+     * @SerializedName("characteristic")
+     * @SWG\Property(description="The characteristic linked to the equipment that the user want or have")
+     */
+    private $characteristic;
+
+
     public function getId(): ?int
     {
         return $this->id;
@@ -116,6 +124,17 @@ class Have
     {
         $this->equipment = $equipment;
 
+        return $this;
+    }
+
+    public function getCharacteristic(): ?Characteristic
+    {
+        return $this->characteristic;
+    }
+
+    public function setCharacteristic(?Characteristic $characteristic): self
+    {
+        $this->characteristic = $characteristic;
         return $this;
     }
 }

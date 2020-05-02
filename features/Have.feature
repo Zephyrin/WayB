@@ -31,11 +31,18 @@ Feature: Provide a consistent standard JSON API endpoint
       | Men's Zoomie Rain Jacket     | Description 1 | 3     | 2           | true     |
       | Men's Printed Cyclone Hoodie | Description 2 | 3     | 2           | false    |
       | Men's Rafale Jacket          | Description 3 | 3     | 2           | false    |
+    Given there are Characteristic with the following details:
+      | size | price | weight | gender | equipment |
+      | M    | 300   | 400    | MALE   | 1         |
+      | 12   | 350   | 350    | MALE   | 1         |
+      | 500  | 440   | 700    | MALE   | 1         |
+      | 500  | 440   | 700    | MALE   | 2         |
+      | 500  | 440   | 700    | MALE   | 3         |
     Given there are Have with the following details:
-      | user     | ownQuantity | wantQuantity | equipment |
-      | 1        | 0           | 0            | 1         |
-      | 1        | 1           | 0            | 2         |
-      | 2        | 1           | 0            | 1         |
+      | user     | ownQuantity | wantQuantity | equipment | characteristic | 
+      | 1        | 0           | 0            | 1         | 1              |
+      | 1        | 1           | 0            | 2         | 4              |
+      | 2        | 1           | 0            | 3         | 5              |
 
   Scenario: Can get a single Have With User A - GET
     Given I am Login As A
@@ -60,6 +67,13 @@ Feature: Provide a consistent standard JSON API endpoint
           "id": 2,
           "name": "Jacket"
         }
+      },
+      "characteristic": {
+        "id": 1,
+        "size": "M",
+        "price": 300,
+        "weight": 400,
+        "gender": "MALE"
       }
     }
     """

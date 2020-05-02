@@ -8,6 +8,8 @@ use Symfony\Component\Validator\Constraints as Asset;
 use Swagger\Annotations as SWG;
 use App\Enum\GenderEnum;
 use JMS\Serializer\Annotation\Exclude;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\CharacteristicRepository")
@@ -46,10 +48,10 @@ class Characteristic
     /**
      * @Asset\NotNull()
      * @Asset\NotBlank()
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="float")
      * @SerializedName("price")
      * @SWG\Property(description="The price of the Characteristic.")
-     * @var integer
+     * @var float
      */
     private $price;
 
@@ -72,6 +74,22 @@ class Characteristic
      *     description="Not used, leave it empty. Swagger problem, not abble to remove this field form the documentation...")
      */
     private $equipment;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Have",
+     *     mappedBy="characteristic",
+     *     orphanRemoval=true,
+     *     cascade={"persist"})
+     * @Exclude
+     * @SWG\Property(description="List of all users that own this equipment characteristic.")
+     * @SerializedName("haves")
+     */
+    private $haves;
+
+    public function __construct()
+    {
+        $this->haves = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -100,12 +118,12 @@ class Characteristic
         return $this;
     }
 
-    public function getPrice(): ?int
+    public function getPrice(): ?float
     {
         return $this->price;
     }
 
-    public function setPrice(int $price): self
+    public function setPrice(float $price): self
     {
         $this->price = $price;
         return $this;
@@ -132,4 +150,36 @@ class Characteristic
         $this->equipment = $equipment;
         return $this;
     }
+
+    /**
+     * @return Collection|Have[]
+     */
+    public function getHaves(): Collection
+    {
+        return $this->haves;
+    }
+
+    public function addHave($have): self
+    {
+        if (!$this->haves->contains($have)) {
+            $this->haves[] = $have;
+            $have->setCharacteristic($this);
+        }
+
+        return $this;
+    }
+
+    public function removeHave($have): self
+    {
+        if ($this->haves->contains($have)) {
+            $this->haves->removeElement($have);
+            // set the owning side to null (unless already changed)
+            if ($have->getCharacteristic() === $this) {
+                $have->setCharacteristic(null);
+            }
+        }
+
+        return $this;
+    }
+
 }
