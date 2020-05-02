@@ -9,6 +9,7 @@ use Swagger\Annotations as SWG;
 use JMS\Serializer\Annotation\SerializedName;
 use phpDocumentor\Reflection\Types\Boolean;
 use Symfony\Component\Validator\Constraints as Asset;
+use JMS\Serializer\Annotation\Exclude;
 
 /**
  * @SWG\Definition(
@@ -72,6 +73,7 @@ class Equipment
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Have", mappedBy="equipment")
+     * @Exclude()
      */
     private $haves;
 
