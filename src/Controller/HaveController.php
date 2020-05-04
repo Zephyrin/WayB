@@ -114,6 +114,7 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
             $request->getContent(),
             true
         );
+        $data = $this->manageObjectToId($data);
         $form = $this->createForm(
             HaveType::class,
             new Have());
@@ -124,8 +125,9 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
             return new JsonResponse(
                 [
                     'status' => 'error',
-                    'Message' => 'Validation error',
+                    'message' => 'Validation error',
                     'errors' => $this->formErrorSerializer->normalize($form),
+                    'data' => $data
                 ],
                 JsonResponse::HTTP_UNPROCESSABLE_ENTITY
             );
@@ -285,7 +287,7 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
         $existingHaveField = $this->findHaveById($id);
         $form = $this->createForm(HaveType::class, $existingHaveField);
         $data = json_decode($request->getContent(), true);
-
+        $data = $this->manageObjectToId($data);
         $data['user'] = $request->attributes->get('userid');
         $form->submit($data);
         if (false === $form->isValid()) {
@@ -371,7 +373,9 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
         $existingHave = $this->findHaveById($id);
         $equipment = $existingHave->getEquipment();
         $form = $this->createForm(HaveType::class, $existingHave);
-        $form->submit($request->request->all(), false);
+        $data = json_decode($request->getContent(), true);
+        $data = $this->manageObjectToId($data);
+        $form->submit($data, false);
         if (false === $form->isValid()) {
             return new JsonResponse(
                 [
@@ -456,6 +460,22 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
             throw new NotFoundHttpException();
         }
         return $existingHave;
+    }
+
+    private function manageObjectToId($data) {
+        if(isset($data['characteristic'])) {
+            if(isset($data['characteristic']['id'])) {
+                $data['characteristic'] = $data['characteristic']['id'];
+            } else if (!is_int($data['characteristic'])) {
+                unset($data['characteristic']);
+            }
+        }
+        if(isset($data['equipment'])) {
+            if(isset($data['equipment']['id'])) {
+                $data['equipment'] = $data['equipment']['id'];
+            }
+        }
+        return $data;
     }
     /**
      * @param Request $request
