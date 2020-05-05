@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Brand;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -19,6 +20,20 @@ class BrandRepository extends ServiceEntityRepository
         parent::__construct($registry, Brand::class);
     }
 
+    // /**
+    //  * @return Equipment[] Returns an array of Equipment objects
+    //  */
+    public function findByUserOrValidate(User $user)
+    {
+        return $this->createQueryBuilder('e')
+            ->Where('e.validate = true')
+            ->orWhere('e.createdBy = :val')
+            ->setParameter('val', $user->getId())
+            ->orderBy('e.name', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
     // /**
     //  * @return Brand[] Returns an array of Brand objects
     //  */

@@ -15,7 +15,7 @@ class BrandType extends AbstractType
     {
         $builder
             ->add('name')
-            ->add('description')
+            ->add('validate')
             ->add('uri')
             ;
     }

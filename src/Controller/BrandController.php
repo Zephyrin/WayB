@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Brand;
+use App\Entity\User;
 use App\Form\BrandType;
 use App\Repository\BrandRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -51,8 +52,7 @@ class BrandController extends AbstractFOSRestController implements ClassResource
         EntityManagerInterface $entityManager,
         BrandRepository $brandRepository,
         FormErrorSerializer $formErrorSerializer
-    )
-    {
+    ) {
         $this->entityManager = $entityManager;
         $this->brandRepository = $brandRepository;
         $this->formErrorSerializer = $formErrorSerializer;
@@ -95,6 +95,8 @@ class BrandController extends AbstractFOSRestController implements ClassResource
      */
     public function postAction(Request $request)
     {
+        $connectUser = $this->getUser();
+
         $data = json_decode(
             $request->getContent(),
             true
@@ -113,13 +115,22 @@ class BrandController extends AbstractFOSRestController implements ClassResource
                 JsonResponse::HTTP_UNPROCESSABLE_ENTITY
             );
         }
+        
         $insertData = $form->getData();
+        $insertData->setCreatedBy($connectUser);
+        if (
+            !$this->isGranted("ROLE_AMBASSADOR")
+            || $insertData->getValidate() === null
+        )
+            $insertData->setValidate(false);
+
         $this->entityManager->persist($insertData);
 
         $this->entityManager->flush();
         return  $this->view(
             $insertData,
-            Response::HTTP_CREATED);
+            Response::HTTP_CREATED
+        );
     }
 
     /**
@@ -178,9 +189,13 @@ class BrandController extends AbstractFOSRestController implements ClassResource
      */
     public function cgetAction()
     {
-        return $this->view(
-            $this->brandRepository->findAll()
-        );
+        if ($this->isGranted("ROLE_AMBASSADOR"))
+            return $this->view(
+                $this->brandRepository->findAll()
+            );
+        $user = $this->getUser();
+        $brands = $this->brandRepository->findByUserOrValidate($user);
+        return $this->view($brands);
     }
 
     /**
@@ -228,7 +243,7 @@ class BrandController extends AbstractFOSRestController implements ClassResource
     {
         $existingBrand = $this->findBrandById($id);
         $form = $this->createForm(BrandType::class, $existingBrand);
-
+        $validate = $existingBrand->getValidate();
         $form->submit($request->request->all());
 
         if (false === $form->isValid()) {
@@ -240,9 +255,10 @@ class BrandController extends AbstractFOSRestController implements ClassResource
                 ],
                 JsonResponse::HTTP_UNPROCESSABLE_ENTITY
             );
-
         }
-
+        if ($existingBrand->getValidate() !== $validate) {
+            $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
+        }
         $this->entityManager->flush();
 
         return $this->view(null, Response::HTTP_NO_CONTENT);
@@ -296,10 +312,10 @@ class BrandController extends AbstractFOSRestController implements ClassResource
         $existingBrand = $this->findBrandById($id);
 
         $form = $this->createForm(BrandType::class, $existingBrand);
-
-        $form->submit(
-            $request->request->all()
-            , false);
+        $validate = $existingBrand->getValidate();
+        $data = json_decode($request->getContent());
+        
+        $form->submit($data, false);
 
         if (false === $form->isValid()) {
             return new JsonResponse(
@@ -311,7 +327,9 @@ class BrandController extends AbstractFOSRestController implements ClassResource
                 JsonResponse::HTTP_UNPROCESSABLE_ENTITY
             );
         }
-
+        if ($existingBrand->getValidate() !== $validate) {
+            $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
+        }
         $this->entityManager->flush();
 
         return $this->view(null, Response::HTTP_NO_CONTENT);
@@ -341,18 +359,47 @@ class BrandController extends AbstractFOSRestController implements ClassResource
      *     description="The ID used to find the Brand"
      * )
      * 
-     * @IsGranted("ROLE_AMBASSADOR")
      * @param string $id
      * @return \FOS\RestBundle\View\View
      */
     public function deleteAction(string $id)
     {
         $brand = $this->findBrandById($id);
+        if ($brand->getCreatedBy() !== $this->getUser())
+            $this->denyAccessUnlessGranted(
+                "ROLE_ADMIN",
+                null,
+                "This brand don't belong to you and your are not an admin."
+            );
 
-        $this->entityManager->remove($brand);
-        $this->entityManager->flush();
+        if (
+            !$brand->getValidate()
+            || count($brand->getEquipments()) < 1
+        ) {
+            $this->entityManager->remove($brand);
+            $this->entityManager->flush();
 
-        return $this->view(null, Response::HTTP_NO_CONTENT);
+            return $this->view(
+                null,
+                Response::HTTP_NO_CONTENT
+            );
+        }
+        if (count($brand->getEquipments()) > 1) {
+            return new JsonResponse(
+                [
+                    'status' => 'error',
+                    'errors' => 'Too many other equipments use this brand.'
+                ],
+                JsonResponse::HTTP_PRECONDITION_FAILED
+            );
+        }
+        return new JsonResponse(
+            [
+                'status' => 'error',
+                'errors' => 'This brand don\'t belong to you'
+            ],
+            JsonResponse::HTTP_METHOD_NOT_ALLOWED
+        );
     }
 
     /**
@@ -370,5 +417,21 @@ class BrandController extends AbstractFOSRestController implements ClassResource
         }
 
         return $existingBrand;
+    }
+
+        /**
+     * @param Request $request
+     *
+     * @return User
+     * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+     */
+    private function findUserByRequest(Request $request)
+    {
+        $user = $this->entityManager->find(
+            User::class,
+            $request->attributes->get('userid'));
+        if($user == null)
+            throw new NotFoundHttpException();
+        return $user;
     }
 }

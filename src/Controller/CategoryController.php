@@ -98,6 +98,7 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
             true
         );
         $form = $this->createForm(CategoryType::class, new Category());
+
         $form->submit(
             $data
             );
@@ -234,8 +235,8 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
     {
         $existingCategory = $this->findCategoryById($id);
         $form = $this->createForm(CategoryType::class, $existingCategory);
-
-        $form->submit($request->request->all());
+        $data = $request->request->all();
+        $form->submit($data);
 
         if (false === $form->isValid()) {
             return new JsonResponse(
@@ -307,10 +308,8 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
         $existingCategory = $this->findCategoryById($id);
 
         $form = $this->createForm(CategoryType::class, $existingCategory);
-
-        $form->submit(
-            $request->request->all()
-            , false);
+        $data = $request->request->all();
+        $form->submit($data, false);
 
         if (false === $form->isValid()) {
             return new JsonResponse(

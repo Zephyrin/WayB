@@ -10,10 +10,10 @@ Feature: Provide a consistent standard JSON API endpoint
       | a        | a        | a.b@c.com | MALE   | ROLE_AMBASSADOR |
       | b        | b        | b.b@c.com | MALE   | ROLE_USER       |
     Given there are Brands with the following details:
-      | name           | description         | uri                 |
-      | MSR            | MSR Desc            | www.msr.com         |
-      | Mammut         | Mammut Desc         | www.mammut.com      |
-      | The north face | The north face desc | www.thenorthface.fr |
+      | name           | validate | uri                 |
+      | MSR            | true     | www.msr.com         |
+      | Mammut         | false    | www.mammut.com      |
+      | The north face | false    | www.thenorthface.fr |
 
   Scenario: Can get a single Brand if I am connected
     Given I am Login As A
@@ -24,7 +24,7 @@ Feature: Provide a consistent standard JSON API endpoint
     {
       "id": 1,
       "name": "MSR",
-      "description": "MSR Desc",
+      "validate": true,
       "uri": "www.msr.com"
     }
     """
@@ -43,19 +43,19 @@ Feature: Provide a consistent standard JSON API endpoint
       {
         "id": 1,
         "name": "MSR",
-        "description": "MSR Desc",
+        "validate": true,
         "uri": "www.msr.com"
       },
       {
         "id": 2,
         "name": "Mammut",
-        "description": "Mammut Desc",
+        "validate": false,
         "uri": "www.mammut.com"
       },
       {
         "id": 3,
         "name": "The north face",
-        "description": "The north face desc",
+        "validate": false,
         "uri": "www.thenorthface.fr"
       }
     ]
@@ -67,7 +67,7 @@ Feature: Provide a consistent standard JSON API endpoint
       """
       {
         "name": "Rab",
-        "description": "Rab desc",
+        "validate": false,
         "uri": "www.rab.fr"
       }
       """
@@ -78,23 +78,32 @@ Feature: Provide a consistent standard JSON API endpoint
       {
         "id": 4,
         "name": "Rab",
-        "description": "Rab desc",
+        "validate": false,
         "uri": "www.rab.fr"
       }
     """
   
-  Scenario: Cannot add a new Brand (ROLE_USER)
+  Scenario: Can add a new Brand (ROLE_USER)
     Given I am Login As B
     Then the request body is:
       """
       {
         "name": "Rab",
-        "description": "Rab desc",
+        "validate": true,
         "uri": "www.rab.fr"
       }
       """
     When I request "/api/brand" using HTTP POST
-    Then the response code is 403
+    Then the response code is 201
+    And the response body contains JSON:
+    """
+      {
+        "id": 4,
+        "name": "Rab",
+        "validate": false,
+        "uri": "www.rab.fr"
+      }
+    """    
 
   Scenario: Cannot add a new Brand with an existing name
     Given I am Login As A
@@ -102,7 +111,6 @@ Feature: Provide a consistent standard JSON API endpoint
       """
       {
         "name": "MSR",
-        "description": "MSR descr 2",
         "uri": "www.msr2.fr"
       }
       """
@@ -119,7 +127,7 @@ Feature: Provide a consistent standard JSON API endpoint
                         "This brand name is already in use."
                     ]
                 },
-                "description": { },
+                "validate": { },
                 "uri": { }
             }
         }]
@@ -133,7 +141,7 @@ Feature: Provide a consistent standard JSON API endpoint
       """
       {
         "name": "MSR",
-        "description": "MSR description",
+        "validate": true,
         "uri": "www.MSR.com"
       }
       """
@@ -146,7 +154,7 @@ Feature: Provide a consistent standard JSON API endpoint
       """
       {
         "name": "MSR",
-        "description": "MSR description",
+        "validate": false,
         "uri": "www.MSR.com"
       }
       """
@@ -159,7 +167,7 @@ Feature: Provide a consistent standard JSON API endpoint
       """
       {
         "name": "MSR",
-        "description": "MSR description",
+        "validate": false,
         "uri": "www.MSR.com"
       }
       """
@@ -176,7 +184,7 @@ Feature: Provide a consistent standard JSON API endpoint
                         "This brand name is already in use."
                     ]
                 },
-                "description": { },
+                "validate": { },
                 "uri": { }
             }
         }]
@@ -189,7 +197,7 @@ Feature: Provide a consistent standard JSON API endpoint
       """
       {
         "name": "Brand",
-        "description": "toto",
+        "validate": false,
         "uri": "uri"
       }
       """
@@ -202,19 +210,19 @@ Feature: Provide a consistent standard JSON API endpoint
       """
       {
         "name": "MSR 2",
-        "description": "Description MSR"
+        "validate": true
       }
       """
     When I request "/api/brand/1" using HTTP PATCH
     Then the response code is 204
   
-  Scenario: Can update an existing Brand - PATCH ROLE_USER
+  Scenario: Cannot update an existing Brand - PATCH ROLE_USER
     Given I am Login As B
     Then the request body is:
       """
       {
         "name": "MSR 2",
-        "description": "Description MSR"
+        "validate": true
       }
       """
     When I request "/api/brand/1" using HTTP PATCH
@@ -244,7 +252,7 @@ Feature: Provide a consistent standard JSON API endpoint
       """
       {
         "name": "",
-        "description": "blank desc",
+        "validate": false,
         "uri": "blank desc"
       }
       """
@@ -273,7 +281,7 @@ Feature: Provide a consistent standard JSON API endpoint
       """
       {
         "name": "",
-        "description": "blank desc",
+        "validate": false,
         "uri": "blank desc"
       }
       """

@@ -9,6 +9,7 @@ use JMS\Serializer\Annotation\Exclude;
 use Symfony\Component\Validator\Constraints as Asset;
 use Swagger\Annotations as SWG;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use JMS\Serializer\Annotation\SerializedName;
 
 /**
  * @SWG\Definition(
@@ -38,10 +39,12 @@ class Brand
     private $name;
 
     /**
-     * @ORM\Column(type="text")
-     * @SWG\Property(description="The description of the Brand.")
+     * @ORM\Column(type="boolean")
+     * @SerializedName("validate")
+     * @var boolean
+     * @SWG\Property(description="The brand is validate by ambassador's user and can be used by other user.")
      */
-    private $description;
+    private $validate;
 
     /**
      * @ORM\Column(type="string", length=255, unique=true)
@@ -54,6 +57,14 @@ class Brand
      * @Exclude
      */
     private $equipments;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="brands")
+     * @ORM\JoinColumn(name="created_by", referencedColumnName="id")
+     * @SWG\Property(description="The User",
+     *     type="Object::class")
+     */
+    private $createdBy;
 
     public function __construct()
     {
@@ -77,14 +88,14 @@ class Brand
         return $this;
     }
 
-    public function getDescription(): ?string
+    public function getValidate(): ?bool
     {
-        return $this->description;
+        return $this->validate;
     }
 
-    public function setDescription(string $description): self
+    public function setValidate(bool $validate): self
     {
-        $this->description = $description;
+        $this->validate = $validate;
 
         return $this;
     }
@@ -128,6 +139,18 @@ class Brand
                 $equipment->setBrand(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getCreatedBy(): ?User
+    {
+        return $this->createdBy;
+    }
+
+    public function setCreatedBy(?User $createdBy): self
+    {
+        $this->createdBy = $createdBy;
 
         return $this;
     }

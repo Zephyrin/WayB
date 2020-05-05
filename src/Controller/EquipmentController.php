@@ -108,6 +108,7 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
             $request->getContent(),
             true
         );
+        $data = $this->manageObjectToId($data);
         $form = $this->createForm(
             EquipmentType::class,
             new Equipment());
@@ -289,6 +290,7 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
 
         $form = $this->createForm(EquipmentType::class, $existingEquipment);
         $data = json_decode($request->getContent(), true);
+        $data = $this->manageObjectToId($data);
         $validate = $existingEquipment->getValidate();
         $form->submit($data);
         if (false === $form->isValid()) {
@@ -364,8 +366,9 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
         $form = $this->createForm(EquipmentType::class
             , $existingEquipment);
         $validate = $existingEquipment->getValidate();
-        $form->submit($request->request->all()
-            , false);
+
+        $data = $this->manageObjectToId($request->request->all());
+        $form->submit($data, false);
         if (false === $form->isValid()) {
             return new JsonResponse(
                 [
@@ -378,7 +381,6 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
         if($existingEquipment->getValidate() !== $validate) {
             $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
         }
-        $existingEquipment->setValidate($validate);
         $this->entityManager->flush();
 
         return $this->view(null
@@ -489,5 +491,16 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
         if($user == null)
             throw new NotFoundHttpException();
         return $user;
+    }
+
+    private function manageObjectToId($data) {
+        if(isset($data['brand'])) {
+            if(isset($data['brand']['id'])) {
+                $data['brand'] = $data['brand']['id'];
+            } else if (!is_int($data['brand'])) {
+                unset($data['brand']);
+            }
+        }
+        return $data;
     }
 }
