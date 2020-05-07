@@ -44,24 +44,6 @@ class User extends BaseUser
      */
     private $haves;
 
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Equipment", mappedBy="createdBy", orphanRemoval=true)
-     * @Exclude()
-     * @SWG\Property(
-     *     description="The list of what the user created."
-     *     , type="array::class")
-     */
-    private $equipments;
-
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Brand", mappedBy="createdBy", orphanRemoval=true)
-     * @Exclude()
-     * @SWG\Property(
-     *     description="The list of what the user created."
-     *     , type="array::class")
-     */
-    private $brands;
-
     public function __construct()
     {
         parent::__construct();
@@ -133,68 +115,6 @@ class User extends BaseUser
             // set the owning side to null (unless already changed)
             if ($have->getUser() === $this) {
                 $have->setUser(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|Equipment[]
-     */
-    public function getEquimpents(): Collection
-    {
-        return $this->equipments;
-    }
-
-    public function addEquipment(Equipment $equipment): self
-    {
-        if (!$this->equipments->contains($equipment)) {
-            $this->equipments[] = $equipment;
-            $equipment->setCreatedBy($this);
-        }
-
-        return $this;
-    }
-
-    public function removeEquipment(Equipment $equipment): self
-    {
-        if ($this->haves->contains($equipment)) {
-            $this->haves->removeElement($equipment);
-            // set the owning side to null (unless already changed)
-            if ($equipment->getCreatedBy() === $this) {
-                $equipment->setCreatedBy(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|Brand[]
-     */
-    public function getBrands(): Collection
-    {
-        return $this->brands;
-    }
-
-    public function addBrand(Brand $brand): self
-    {
-        if (!$this->brands->contains($brand)) {
-            $this->brands[] = $brand;
-            $brand->setCreatedBy($this);
-        }
-
-        return $this;
-    }
-
-    public function removeBrand(Brand $brand): self
-    {
-        if ($this->haves->contains($brand)) {
-            $this->haves->removeElement($brand);
-            // set the owning side to null (unless already changed)
-            if ($brand->getCreatedBy() === $this) {
-                $brand->setCreatedBy(null);
             }
         }
 

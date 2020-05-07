@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Category;
+use App\Entity\SubCategory;
 use App\Form\CategoryType;
 use App\Repository\CategoryRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -17,6 +18,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+use Doctrine\Common\Collections\Collection;
 
 /**
  * @Rest\RouteResource(
@@ -86,13 +88,13 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
      *
      * )
      * 
-     * @IsGranted("ROLE_AMBASSADOR")
      * @param Request $request
      * @return \FOS\RestBundle\View\View|JsonResponse
      * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
      */
     public function postAction(Request $request)
     {
+        $connectUser = $this->getUser();
         $data = json_decode(
             $request->getContent(),
             true
@@ -112,7 +114,13 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
                 JsonResponse::HTTP_UNPROCESSABLE_ENTITY
             );
         }
+
         $insertData = $form->getData();
+        $insertData->setCreatedBy($connectUser);
+        if (!$this->isGranted("ROLE_AMBASSADOR")
+        || $insertData->getValidate() === null)
+            $insertData->setValidate(false);
+
         $this->entityManager->persist($insertData);
 
         $this->entityManager->flush();
@@ -177,7 +185,22 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
      */
     public function cgetAction()
     {
-        $result = $this->categoryRepository->findAll();
+        $result = null;
+        if($this->isGranted("ROLE_AMBASSADOR")) {
+            $result = $this->categoryRepository->findAll();
+            
+        } else {
+            $user = $this->getUser();
+            $result = $this->categoryRepository->findByUserOrValidate($user);
+            foreach($result as $cat) {
+                $subs = $cat->getSubCategories();
+                for($i = count($subs) - 1; $i >= 0; $i--) {
+                    if(!($subs[$i]->getValidate() || $subs[$i]->getCreatedBy() == $user)) {
+                        $cat->removeSubCategory($subs[$i]);
+                    }
+                }
+            }
+        }
         $view = $this->view(
             $result
         );
@@ -225,7 +248,6 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
      *    )
      * )
      *
-     * @IsGranted("ROLE_AMBASSADOR")
      * @param Request $request
      * @param string $id of the Category to update
      * @return \FOS\RestBundle\View\View|JsonResponse
@@ -233,9 +255,13 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
      */
     public function putAction(Request $request, string $id)
     {
+        $connectUser = $this->getUser();
         $existingCategory = $this->findCategoryById($id);
+        if($existingCategory->getCreatedBy() !== $connectUser)
+            $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
         $form = $this->createForm(CategoryType::class, $existingCategory);
         $data = $request->request->all();
+        $validate = $existingCategory->getValidate();
         $form->submit($data);
 
         if (false === $form->isValid()) {
@@ -249,7 +275,9 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
             );
 
         }
-
+        if($existingCategory->getValidate() !== $validate) {
+            $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
+        }
         $this->entityManager->flush();
 
         return $this->view(null, Response::HTTP_NO_CONTENT);
@@ -297,7 +325,6 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
      *    )
      * )
      *
-     * @IsGranted("ROLE_AMBASSADOR")
      * @param Request $request
      * @param string $id of the Category to update
      * @return \FOS\RestBundle\View\View|JsonResponse
@@ -305,10 +332,16 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
      */
     public function patchAction(Request $request, string $id)
     {
+        $connectUser = $this->getUser();
         $existingCategory = $this->findCategoryById($id);
+        if($existingCategory->getCreatedBy() !== $connectUser)
+            $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
+
+        $validate = $existingCategory->getValidate();
 
         $form = $this->createForm(CategoryType::class, $existingCategory);
         $data = $request->request->all();
+
         $form->submit($data, false);
 
         if (false === $form->isValid()) {
@@ -320,6 +353,9 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
                 ],
                 JsonResponse::HTTP_UNPROCESSABLE_ENTITY
             );
+        }
+        if($existingCategory->getValidate() !== $validate) {
+            $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
         }
 
         $this->entityManager->flush();
@@ -353,18 +389,30 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
      *     description="The ID used to find the Category"
      * )
      *
-     * @IsGranted("ROLE_AMBASSADOR")
      * @param string $id
      * @return \FOS\RestBundle\View\View
      */
     public function deleteAction(string $id)
     {
         $category = $this->findCategoryById($id);
-
-        $this->entityManager->remove($category);
-        $this->entityManager->flush();
-
-        return $this->view(null, Response::HTTP_NO_CONTENT);
+        if($category->getCreatedBy() !== $this->getUser()) 
+            $this->denyAccessUnlessGranted("ROLE_ADMIN"
+                , null
+                , "This category don't belong to you and your are not an admin.");
+        if (count($category->getSubCategories()) < 1) {
+            $this->entityManager->remove($category);    
+            $this->entityManager->flush();
+            return $this->view(null, Response::HTTP_NO_CONTENT);   
+        }
+        if(count($category->getSubCategories()) > 0) {
+            return new JsonResponse(
+                [
+                    'status' => 'error',
+                    'message' => 'There are sub categories link to this category.'
+                ],
+                JsonResponse::HTTP_PRECONDITION_FAILED
+            );
+        }
     }
 
     /**
@@ -376,7 +424,6 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
     private function findCategoryById(string $id)
     {
         $existingCategory = $this->categoryRepository->find($id);
-
         if (null === $existingCategory) {
             throw new NotFoundHttpException();
         }

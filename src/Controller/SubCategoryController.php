@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Category;
 use App\Entity\SubCategory;
 use App\Form\SubCategoryType;
+use App\Repository\CategoryRepository;
 use App\Repository\SubCategoryRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Serializer\FormErrorSerializer;
@@ -45,14 +46,21 @@ class SubCategoryController extends AbstractFOSRestController implements ClassRe
      */
     private $formErrorSerializer;
 
+    /**
+     * @var CategoryRepository
+     */
+    private $categoryRepository;
+
     public function __construct(
         EntityManagerInterface $entityManager,
         SubCategoryRepository $subCategoryRepository,
+        CategoryRepository $categoryRepository,
         FormErrorSerializer $formErrorSerializer
     )
     {
         $this->entityManager = $entityManager;
         $this->subCategoryRepository = $subCategoryRepository;
+        $this->categoryRepository = $categoryRepository;
         $this->formErrorSerializer = $formErrorSerializer;
     }
 
@@ -94,23 +102,37 @@ class SubCategoryController extends AbstractFOSRestController implements ClassRe
      *    )
      *
      * )
-     * @Security("has_role('ROLE_AMBASSADOR')")
      * @param Request $request
      * @return \FOS\RestBundle\View\View|JsonResponse
      * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
      */
     public function postAction(Request $request)
     {
+        $connectUser = $this->getUser();
+
         $data = json_decode(
             $request->getContent(),
             true
         );
+        $data = $this->manageObjectToId($data);
+        $category = $this->findCategoryByRequest($request);
         $form = $this->createForm(
             SubCategoryType::class,
             new SubCategory());
         $form->submit(
             $data
         );
+
+        if(isset($data['category']) && $data['category'] != $category->getId()) {
+            return new JsonResponse(
+                [
+                    'status' => 'error',
+                    'message' => 'Validation error request parameters do not correspond with the category of the sub-category',
+                    'errors' => $this->formErrorSerializer->normalize($form),
+                ],
+                JsonResponse::HTTP_UNPROCESSABLE_ENTITY
+            );
+        }
         if (false === $form->isValid()) {
             return new JsonResponse(
                 [
@@ -123,9 +145,10 @@ class SubCategoryController extends AbstractFOSRestController implements ClassRe
         }
 
         $subCat = $form->getData();
-        $category = $this->entityManager->find(
-            Category::class,
-            $request->attributes->get('categoryid'));
+        if(!$this->isGranted("ROLE_AMBASSADOR")
+            || $subCat->getValidate() === null)
+            $subCat->setValidate(false);
+        $subCat->setCreatedBy($connectUser);
         $subCat->setCategory($category);
         $this->entityManager->persist($subCat);
         $this->entityManager->flush();
@@ -169,11 +192,13 @@ class SubCategoryController extends AbstractFOSRestController implements ClassRe
      * @var $id
      * @return \FOS\RestBundle\View\View
      */
-    public function getAction(string $id)
+    public function getAction(Request $request, string $id)
     {
-        return $this->view(
-            $this->findSubCategoryById($id)
-        );
+        $category = $this->findCategoryByRequest($request);
+        $subCat = $this->findSubCategoryById($id);
+        if($subCat->getCategory()->getId() == $category->getId())
+            throw new NotFoundHttpException();
+        return $this->view($category);
     }
 
     /**
@@ -205,11 +230,10 @@ class SubCategoryController extends AbstractFOSRestController implements ClassRe
      *
      * @return \FOS\RestBundle\View\View
      */
-    public function cgetAction()
+    public function cgetAction(Request $request)
     {
-        return $this->view(
-            $this->subCategoryRepository->findAll()
-        );
+        $category = $this->findCategoryByRequest($request);
+        return $this->view($category->getSubCategories());
     }
 
     /**
@@ -261,26 +285,7 @@ class SubCategoryController extends AbstractFOSRestController implements ClassRe
      */
     public function putAction(Request $request, string $id)
     {
-        $existingSubCategory = $this->findSubCategoryById($id);
-        $form = $this->createForm(SubCategoryType::class, $existingSubCategory);
-        $data = json_decode($request->getContent(), true);
-
-        $data['category'] = $request->attributes->get('categoryid');
-        $form->submit($data);
-        if (false === $form->isValid()) {
-            return new JsonResponse(
-                [
-                    'status' => 'error',
-                    'message' => 'Validation error',
-                    'errors' => $this->formErrorSerializer->normalize($form),
-                ],
-                JsonResponse::HTTP_UNPROCESSABLE_ENTITY
-            );
-        }
-
-        $this->entityManager->flush();
-
-        return $this->view(null, Response::HTTP_NO_CONTENT);
+        $this->managePutOrPatch($request, $id, true);
     }
 
     /**
@@ -332,26 +337,40 @@ class SubCategoryController extends AbstractFOSRestController implements ClassRe
      */
     public function patchAction(Request $request, string $id)
     {
-        $existingSubCategory = $this->findSubCategoryById($id);
-        $form = $this->createForm(SubCategoryType::class, $existingSubCategory);
+        $this->managePutOrPatch($request, $id, false);
+    }
 
-        $form->submit($request->request->all(), false);
+    private function managePutOrPatch(Request $request, string $id, bool $clearMissing) {
+        $existingSubCategory = $this->findSubCategoryById($id);
+        $validate = $existingSubCategory->getValidate();
+        $category = $this->findCategoryByRequest($request);
+        if($category->getId() != $existingSubCategory->getCategory()->getId())
+        {
+            throw new NotFoundHttpException();
+        }
+        $form = $this->createForm(SubCategoryType::class, $existingSubCategory);
+        $data = json_decode($request->getContent(), true);
+        $data = $this->manageObjectToId($data);
+
+        $form->submit($data, $clearMissing);
         if (false === $form->isValid()) {
             //return $this->view($form);
             return new JsonResponse(
                 [
                     'status' => 'error',
+                    'message' => 'Validation error',
                     'errors' => $this->formErrorSerializer->normalize($form),
                 ],
                 JsonResponse::HTTP_UNPROCESSABLE_ENTITY
             );
         }
-
+        if($existingSubCategory->getValidate() !== $validate) {
+            $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
+        }
         $this->entityManager->flush();
 
         return $this->view(null, Response::HTTP_NO_CONTENT);
     }
-
     /**
      * Delete a SubCategory with the id.
      *
@@ -385,10 +404,23 @@ class SubCategoryController extends AbstractFOSRestController implements ClassRe
      * @param string $id
      * @return \FOS\RestBundle\View\View
      */
-    public function deleteAction(string $id)
+    public function deleteAction(Request $request, string $id)
     {
         $subCategory = $this->findSubCategoryById($id);
-
+        $category = $this->findCategoryByRequest($request);
+        if($category->getId() != $subCategory->getCategory()->getId())
+        {
+            throw new NotFoundHttpException();
+        }
+        if(count($subCategory->getEquipments()) > 0) {
+            return new JsonResponse(
+                [
+                    'status' => 'error',
+                    'message' => 'To many equipments are linked to this sub-category'
+                ],
+                JsonResponse::HTTP_UNPROCESSABLE_ENTITY
+            );
+        }
         $this->entityManager->remove($subCategory);
         $this->entityManager->flush();
 
@@ -408,5 +440,33 @@ class SubCategoryController extends AbstractFOSRestController implements ClassRe
             throw new NotFoundHttpException();
         }
         return $existingSubCategory;
+    }
+
+    /**
+     * @param Request $request
+     *
+     * @return Category
+     * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+     */
+    private function findCategoryByRequest(Request $request)
+    {
+        /* $category = $this->entityManager->find(
+            Category::class, */
+        $category = $this->categoryRepository->findById(
+            $request->attributes->get('categoryid'));
+        if($category == null)
+            throw new NotFoundHttpException();
+        return $category;
+    }
+
+    private function manageObjectToId($data) {
+        if(isset($data['category'])) {
+            if(isset($data['category']['id'])) {
+                $data['category'] = $data['category']['id'];
+            } else if (!is_int($data['category'])) {
+                unset($data['category']);
+            }
+        }
+        return $data;
     }
 }

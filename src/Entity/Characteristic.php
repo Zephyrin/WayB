@@ -14,18 +14,8 @@ use Doctrine\Common\Collections\Collection;
 /**
  * @ORM\Entity(repositoryClass="App\Repository\CharacteristicRepository")
  */
-class Characteristic
+class Characteristic extends Base
 {
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     * @SerializedName("id")
-     * @SWG\Property(description="The unique identifier of the Characteristic.",
-     *     readOnly=true)
-     */
-    private $id;
-
     /**
      * @ORM\Column(type="string", length=6)
      * @SerializedName("gender")
@@ -89,11 +79,6 @@ class Characteristic
     public function __construct()
     {
         $this->haves = new ArrayCollection();
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     public function getGender(): ?string
@@ -178,8 +163,6 @@ class Characteristic
                 $have->setCharacteristic(null);
             }
         }
-
         return $this;
     }
-
 }

@@ -20,31 +20,14 @@ use JMS\Serializer\Annotation\SerializedName;
  * @UniqueEntity(fields="name", message="This brand name is already in use.")
  * @UniqueEntity(fields="uri", message="This brand URI is already in use.")
  */
-class Brand
+class Brand extends Base
 {
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     * @SWG\Property(description="The unique identifier of the Category.",
-     *     readOnly=true)
-     */
-    private $id;
-
     /**
      * @Asset\NotBlank()
      * @ORM\Column(type="string", length=255, unique=true)
      * @SWG\Property(description="The name of the Brand.")
      */
     private $name;
-
-    /**
-     * @ORM\Column(type="boolean")
-     * @SerializedName("validate")
-     * @var boolean
-     * @SWG\Property(description="The brand is validate by ambassador's user and can be used by other user.")
-     */
-    private $validate;
 
     /**
      * @ORM\Column(type="string", length=255, unique=true)
@@ -58,22 +41,9 @@ class Brand
      */
     private $equipments;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="brands")
-     * @ORM\JoinColumn(name="created_by", referencedColumnName="id")
-     * @SWG\Property(description="The User",
-     *     type="Object::class")
-     */
-    private $createdBy;
-
     public function __construct()
     {
         $this->equipments = new ArrayCollection();
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     public function getName(): ?string
@@ -84,18 +54,6 @@ class Brand
     public function setName(string $name): self
     {
         $this->name = $name;
-
-        return $this;
-    }
-
-    public function getValidate(): ?bool
-    {
-        return $this->validate;
-    }
-
-    public function setValidate(bool $validate): self
-    {
-        $this->validate = $validate;
 
         return $this;
     }
@@ -139,18 +97,6 @@ class Brand
                 $equipment->setBrand(null);
             }
         }
-
-        return $this;
-    }
-
-    public function getCreatedBy(): ?User
-    {
-        return $this->createdBy;
-    }
-
-    public function setCreatedBy(?User $createdBy): self
-    {
-        $this->createdBy = $createdBy;
 
         return $this;
     }

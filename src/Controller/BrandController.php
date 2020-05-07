@@ -15,9 +15,9 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+use Nelmio\ApiDocBundle\Annotation\Model;
 
 /**
  * Class BrandController
@@ -59,7 +59,7 @@ class BrandController extends AbstractFOSRestController implements ClassResource
     }
 
     /**
-     * Create a new Brand if user is AMBASSADOR.
+     * Create a new Brand if user.
      *
      *
      * @SWG\Post(
@@ -89,7 +89,6 @@ class BrandController extends AbstractFOSRestController implements ClassResource
      *
      * )
      * 
-     * @IsGranted("ROLE_AMBASSADOR")
      * @param Request $request
      * @return \FOS\RestBundle\View\View|JsonResponse
      */
@@ -118,10 +117,8 @@ class BrandController extends AbstractFOSRestController implements ClassResource
         
         $insertData = $form->getData();
         $insertData->setCreatedBy($connectUser);
-        if (
-            !$this->isGranted("ROLE_AMBASSADOR")
-            || $insertData->getValidate() === null
-        )
+        if (!$this->isGranted("ROLE_AMBASSADOR")
+            || $insertData->getValidate() === null)
             $insertData->setValidate(false);
 
         $this->entityManager->persist($insertData);
@@ -234,14 +231,16 @@ class BrandController extends AbstractFOSRestController implements ClassResource
      *    )
      * )
      *
-     * @IsGranted("ROLE_AMBASSADOR")
      * @param Request $request
      * @param string $id of the Brand to update
      * @return \FOS\RestBundle\View\View|JsonResponse
      */
     public function putAction(Request $request, string $id)
     {
+        $connectUser = $this->getUser();
         $existingBrand = $this->findBrandById($id);
+        if($existingBrand->getCreatedBy() !== $connectUser)
+            $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
         $form = $this->createForm(BrandType::class, $existingBrand);
         $validate = $existingBrand->getValidate();
         $form->submit($request->request->all());
@@ -302,15 +301,16 @@ class BrandController extends AbstractFOSRestController implements ClassResource
      *    )
      * )
      *
-     * @IsGranted("ROLE_AMBASSADOR")
      * @param Request $request
      * @param string $id of the Brand to update
      * @return \FOS\RestBundle\View\View|JsonResponse
      */
     public function patchAction(Request $request, string $id)
     {
+        $connectUser = $this->getUser();
         $existingBrand = $this->findBrandById($id);
-
+        if($existingBrand->getCreatedBy() !== $connectUser)
+            $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
         $form = $this->createForm(BrandType::class, $existingBrand);
         $validate = $existingBrand->getValidate();
         $data = json_decode($request->getContent());
@@ -371,11 +371,8 @@ class BrandController extends AbstractFOSRestController implements ClassResource
                 null,
                 "This brand don't belong to you and your are not an admin."
             );
-
-        if (
-            !$brand->getValidate()
-            || count($brand->getEquipments()) < 1
-        ) {
+        if (!$brand->getValidate()
+            || count($brand->getEquipments()) < 1) {
             $this->entityManager->remove($brand);
             $this->entityManager->flush();
 
@@ -385,16 +382,14 @@ class BrandController extends AbstractFOSRestController implements ClassResource
             );
         }
         if (count($brand->getEquipments()) > 1) {
-            return new JsonResponse(
-                [
+            return new JsonResponse([
                     'status' => 'error',
                     'errors' => 'Too many other equipments use this brand.'
                 ],
                 JsonResponse::HTTP_PRECONDITION_FAILED
             );
         }
-        return new JsonResponse(
-            [
+        return new JsonResponse([
                 'status' => 'error',
                 'errors' => 'This brand don\'t belong to you'
             ],

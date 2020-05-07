@@ -25,6 +25,8 @@ class CategoryType extends AbstractType
                     , 'by_reference' => false
                 ]
             )
+            ->add('validate')
+            ->add('askValidate')
             ;
     }
 

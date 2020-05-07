@@ -18,18 +18,8 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
  * @ORM\Entity(repositoryClass="App\Repository\SubCategoryRepository")
  * @UniqueEntity(fields="name", message="This sub-category name is already in use.")
  */
-class SubCategory
+class SubCategory extends Base
 {
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     * @SerializedName("id")
-     * @SWG\Property(description="The unique identifier of the Sub-Category.",
-     *     readOnly=true)
-     */
-    private $id;
-
     /**
      * @Asset\NotBlank()
      * @ORM\Column(type="string", length=255)
@@ -59,11 +49,6 @@ class SubCategory
     public function __construct()
     {
         $this->equipments = new ArrayCollection();
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     public function getName(): ?string

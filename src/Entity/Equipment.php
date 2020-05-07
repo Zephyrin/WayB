@@ -17,19 +17,8 @@ use JMS\Serializer\Annotation\Exclude;
  * )
  * @ORM\Entity(repositoryClass="App\Repository\EquipmentRepository")
  */
-class Equipment
+class Equipment extends Base
 {
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     * @SerializedName("id")
-     * @var int
-     * @SWG\Property(description="The unique identifier of the Equipment.",
-     *     readOnly=true)
-     */
-    private $id;
-
     /**
      * @Asset\NotBlank()
      * @ORM\Column(type="string", length=255)
@@ -77,31 +66,10 @@ class Equipment
      */
     private $haves;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="equipments")
-     * @ORM\JoinColumn(name="created_by", referencedColumnName="id")
-     * @SWG\Property(description="The User",
-     *     type="Object::class")
-     */
-    private $createdBy;
-
-    /**
-     * @ORM\Column(type="boolean")
-     * @SerializedName("validate")
-     * @var boolean
-     * @SWG\Property(description="The equipment is validate by ambassador's user and can be used by other user")
-     */
-    private $validate;
-
     public function __construct()
     {
         $this->characteristics = new ArrayCollection();
         $this->haves = new ArrayCollection();
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     public function getName(): ?string
@@ -210,30 +178,6 @@ class Equipment
                 $have->setEquipment(null);
             }
         }
-
-        return $this;
-    }
-
-    public function getCreatedBy(): ?User
-    {
-        return $this->createdBy;
-    }
-
-    public function setCreatedBy(?User $createdBy): self
-    {
-        $this->createdBy = $createdBy;
-
-        return $this;
-    }
-
-    public function getValidate(): ?bool
-    {
-        return $this->validate;
-    }
-
-    public function setValidate(bool $validate): self
-    {
-        $this->validate = $validate;
 
         return $this;
     }

@@ -6,7 +6,6 @@ use App\Entity\Brand;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 
 class BrandType extends AbstractType
 {
@@ -15,8 +14,9 @@ class BrandType extends AbstractType
     {
         $builder
             ->add('name')
-            ->add('validate')
             ->add('uri')
+            ->add('validate')
+            ->add('askValidate')
             ;
     }
 

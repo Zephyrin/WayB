@@ -100,10 +100,13 @@ class CharacteristicController extends AbstractFOSRestController implements Clas
      */
     public function postAction(Request $request)
     {
+        $connectUser = $this->getUser();
+
         $data = json_decode(
             $request->getContent(),
             true
         );
+        $data = $this->manageObjectToId($data);
         $form = $this->createForm(
             CharacteristicType::class,
             new Characteristic());
@@ -122,11 +125,11 @@ class CharacteristicController extends AbstractFOSRestController implements Clas
         }
 
         $characteristic = $form->getData();
-        $equipment = $this->entityManager->find(
-            Equipment::class,
-            $request->attributes->get('equipmentid'));
-        if($equipment == null)
-            throw new NotFoundHttpException();
+        if(!$this->isGranted("ROLE_AMBASSADOR")
+            || $characteristic->getValidate() === null)
+            $characteristic->setValidate(false);
+        $characteristic->setCreatedBy($connectUser);
+        $equipment = $this->findEquipmentByRequest($request);
         $characteristic->setEquipment($equipment);
         $this->entityManager->persist($characteristic);
         $this->entityManager->flush();
@@ -170,10 +173,14 @@ class CharacteristicController extends AbstractFOSRestController implements Clas
      * @var $id
      * @return \FOS\RestBundle\View\View
      */
-    public function getAction(string $id)
+    public function getAction($request, string $id)
     {
+        $equipment = $this->findEquipmentByRequest($request);
+        $characteristic = $this->findCharacteristicById($id);
+        if($characteristic->getEquipment()->getId() != $equipment->getId())
+            throw new NotFoundHttpException();
         return $this->view(
-            $this->findCharacteristicById($id)
+            $characteristic
         );
     }
 
@@ -206,8 +213,13 @@ class CharacteristicController extends AbstractFOSRestController implements Clas
      *
      * @return \FOS\RestBundle\View\View
      */
-    public function cgetAction()
+    public function cgetAction($request)
     {
+        $this->findEquipmentByRequest($request);
+        if($this->isGranted("ROLE_AMBASSADOR"))
+            return $this->view(
+                $this->characteristicRepository->findAll()
+            );
         return $this->view(
             $this->characteristicRepository->findAll()
         );
@@ -262,11 +274,23 @@ class CharacteristicController extends AbstractFOSRestController implements Clas
      */
     public function putAction(Request $request, string $id)
     {
+        $equipment = $this->findEquipmentByRequest($request);
         $existingCharacteristic = $this->findCharacteristicById($id);
         $form = $this->createForm(CharacteristicType::class, $existingCharacteristic);
         $data = json_decode($request->getContent(), true);
-
-        $data['equipment'] = $request->attributes->get('equipmentid');
+        $data = $this->manageObjectToId($data);
+        $validate = $existingCharacteristic->getValidate();
+        if($equipment->getId() != $request->attributes->get('equipmentId'))
+        {
+            return new JsonResponse(
+                [
+                    'status' => 'error',
+                    'message' => 'Validation error',
+                    'errors' => $this->formErrorSerializer->normalize($form),
+                ],
+                JsonResponse::HTTP_UNPROCESSABLE_ENTITY
+            );
+        }
         $form->submit($data);
         if (false === $form->isValid()) {
             return new JsonResponse(
@@ -278,7 +302,9 @@ class CharacteristicController extends AbstractFOSRestController implements Clas
                 JsonResponse::HTTP_UNPROCESSABLE_ENTITY
             );
         }
-
+        if($existingCharacteristic->getValidate() !== $validate) {
+            $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
+        }
         $this->entityManager->flush();
 
         return $this->view(null, Response::HTTP_NO_CONTENT);
@@ -333,10 +359,24 @@ class CharacteristicController extends AbstractFOSRestController implements Clas
      */
     public function patchAction(Request $request, string $id)
     {
+        $equipment = $this->findEquipmentByRequest($request);
         $existingCharacteristic = $this->findCharacteristicById($id);
+        $validate = $existingCharacteristic->getValidate();
         $form = $this->createForm(CharacteristicType::class, $existingCharacteristic);
-
-        $form->submit($request->request->all(), false);
+        $data = $request->request->all();
+        $data = $this->manageObjectToId($data);
+        if($equipment->getId() != $request->attributes->get('equipmentId'))
+        {
+            return new JsonResponse(
+                [
+                    'status' => 'error',
+                    'message' => 'Validation error request parameters do not correspond with the equipment of the characteristics',
+                    'errors' => $this->formErrorSerializer->normalize($form),
+                ],
+                JsonResponse::HTTP_UNPROCESSABLE_ENTITY
+            );
+        }
+        $form->submit($data, false);
         if (false === $form->isValid()) {
             //return $this->view($form);
             return new JsonResponse(
@@ -347,7 +387,9 @@ class CharacteristicController extends AbstractFOSRestController implements Clas
                 JsonResponse::HTTP_UNPROCESSABLE_ENTITY
             );
         }
-
+        if($existingCharacteristic->getValidate() !== $validate) {
+            $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
+        }
         $this->entityManager->flush();
 
         return $this->view(null, Response::HTTP_NO_CONTENT);
@@ -384,10 +426,20 @@ class CharacteristicController extends AbstractFOSRestController implements Clas
      * @param string $id
      * @return \FOS\RestBundle\View\View
      */
-    public function deleteAction(string $id)
+    public function deleteAction($request, string $id)
     {
-        $characteristic = $this->findCharacteristicById($id);
+        $equipment = $this->findEquipmentByRequest($request);
 
+        $characteristic = $this->findCharacteristicById($id);
+        if(count($characteristic->getHaves()) > 1) {
+            return new JsonResponse(
+                [
+                    'status' => 'error',
+                    'message' => 'To many user use this equipment'
+                ],
+                JsonResponse::HTTP_UNPROCESSABLE_ENTITY
+            );
+        }
         $this->entityManager->remove($characteristic);
         $this->entityManager->flush();
 
@@ -407,5 +459,32 @@ class CharacteristicController extends AbstractFOSRestController implements Clas
             throw new NotFoundHttpException();
         }
         return $existingCharacteristic;
+    }
+
+    /**
+     * @param Request $request
+     *
+     * @return User
+     * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+     */
+    private function findEquipmentByRequest(Request $request)
+    {
+        $equipment = $this->entityManager->find(
+            Equipment::class,
+            $request->attributes->get('equipmentId'));
+        if($equipment == null)
+            throw new NotFoundHttpException();
+        return $equipment;
+    }
+
+    private function manageObjectToId($data) {
+        if(isset($data['equipment'])) {
+            if(isset($data['equipment']['id'])) {
+                $data['equipment'] = $data['equipment']['id'];
+            } else if (!is_int($data['equipment'])) {
+                unset($data['equipment']);
+            }
+        }
+        return $data;
     }
 }

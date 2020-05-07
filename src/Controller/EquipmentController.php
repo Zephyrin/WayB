@@ -373,6 +373,7 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
             return new JsonResponse(
                 [
                     'status' => 'error',
+                    'message' => 'Validation failed',
                     'errors' => $this->formErrorSerializer->normalize($form),
                 ],
                 JsonResponse::HTTP_UNPROCESSABLE_ENTITY

@@ -21,6 +21,8 @@ class CharacteristicType extends AbstractType
             ->add('size')
             ->add('price')
             ->add('weight')
+            ->add('validate')
+            ->add('askValidate')
             ;
     }
 

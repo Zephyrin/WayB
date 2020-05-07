@@ -6,7 +6,6 @@ use App\Entity\SubCategory;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 
 class SubCategoryType extends AbstractType
 {
@@ -15,6 +14,8 @@ class SubCategoryType extends AbstractType
     {
         $builder
             ->add('name')
+            ->add('validate')
+            ->add('askValidate')
         ;
     }
 

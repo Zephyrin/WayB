@@ -53,6 +53,7 @@ class EquipmentType extends AbstractType
                 ]
             )
             ->add('validate')
+            ->add('askValidate')
             ;
     }
 

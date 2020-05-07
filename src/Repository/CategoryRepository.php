@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Category;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -19,22 +20,38 @@ class CategoryRepository extends ServiceEntityRepository
         parent::__construct($registry, Category::class);
     }
 
+
     // /**
     //  * @return Category[] Returns an array of Category objects
     //  */
-    /*
-    public function findByExampleField($value)
+    public function findByUserOrValidate(User $user)
+    {
+        return $this->createQueryBuilder('e')
+            ->Where('e.validate = true')
+            ->orWhere('e.createdBy = :val')
+            ->setParameter('val', $user->getId())
+            /* ->innerJoin('e.subCategories', 'c')
+            ->andWhere('c.validate = true')
+            ->andWhere('c.createdBy = :createdBy')
+            ->setParameter('createdBy', $user->getId()) */
+            ->orderBy('e.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    // /**
+    //  * @return Category[] Returns an array of Category objects
+    //  */
+
+    public function findById($value)
     {
         return $this->createQueryBuilder('c')
-            ->andWhere('c.exampleField = :val')
+            ->andWhere('c.id = :val')
             ->setParameter('val', $value)
-            ->orderBy('c.id', 'ASC')
-            ->setMaxResults(10)
             ->getQuery()
-            ->getResult()
-        ;
+            ->getOneOrNullResult();
     }
-    */
+
 
     /*
     public function findOneBySomeField($value): ?Category
