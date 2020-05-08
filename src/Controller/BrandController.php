@@ -114,11 +114,13 @@ class BrandController extends AbstractFOSRestController implements ClassResource
                 JsonResponse::HTTP_UNPROCESSABLE_ENTITY
             );
         }
-        
+
         $insertData = $form->getData();
         $insertData->setCreatedBy($connectUser);
-        if (!$this->isGranted("ROLE_AMBASSADOR")
-            || $insertData->getValidate() === null)
+        if (
+            !$this->isGranted("ROLE_AMBASSADOR")
+            || $insertData->getValidate() === null
+        )
             $insertData->setValidate(false);
 
         $this->entityManager->persist($insertData);
@@ -239,7 +241,7 @@ class BrandController extends AbstractFOSRestController implements ClassResource
     {
         $connectUser = $this->getUser();
         $existingBrand = $this->findBrandById($id);
-        if($existingBrand->getCreatedBy() !== $connectUser)
+        if ($existingBrand->getCreatedBy() !== $connectUser)
             $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
         $form = $this->createForm(BrandType::class, $existingBrand);
         $validate = $existingBrand->getValidate();
@@ -309,12 +311,12 @@ class BrandController extends AbstractFOSRestController implements ClassResource
     {
         $connectUser = $this->getUser();
         $existingBrand = $this->findBrandById($id);
-        if($existingBrand->getCreatedBy() !== $connectUser)
+        if ($existingBrand->getCreatedBy() !== $connectUser)
             $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
         $form = $this->createForm(BrandType::class, $existingBrand);
         $validate = $existingBrand->getValidate();
         $data = json_decode($request->getContent());
-        
+
         $form->submit($data, false);
 
         if (false === $form->isValid()) {
@@ -371,8 +373,7 @@ class BrandController extends AbstractFOSRestController implements ClassResource
                 null,
                 "This brand don't belong to you and your are not an admin."
             );
-        if (!$brand->getValidate()
-            || count($brand->getEquipments()) < 1) {
+        if (count($brand->getEquipments()) < 1) {
             $this->entityManager->remove($brand);
             $this->entityManager->flush();
 
@@ -381,19 +382,12 @@ class BrandController extends AbstractFOSRestController implements ClassResource
                 Response::HTTP_NO_CONTENT
             );
         }
-        if (count($brand->getEquipments()) > 1) {
-            return new JsonResponse([
-                    'status' => 'error',
-                    'errors' => 'Too many other equipments use this brand.'
-                ],
-                JsonResponse::HTTP_PRECONDITION_FAILED
-            );
-        }
-        return new JsonResponse([
+        return new JsonResponse(
+            [
                 'status' => 'error',
-                'errors' => 'This brand don\'t belong to you'
+                'message' => 'Too many equipments use this brand.'
             ],
-            JsonResponse::HTTP_METHOD_NOT_ALLOWED
+            JsonResponse::HTTP_PRECONDITION_FAILED
         );
     }
 
@@ -414,7 +408,7 @@ class BrandController extends AbstractFOSRestController implements ClassResource
         return $existingBrand;
     }
 
-        /**
+    /**
      * @param Request $request
      *
      * @return User
@@ -424,8 +418,9 @@ class BrandController extends AbstractFOSRestController implements ClassResource
     {
         $user = $this->entityManager->find(
             User::class,
-            $request->attributes->get('userid'));
-        if($user == null)
+            $request->attributes->get('userid')
+        );
+        if ($user == null)
             throw new NotFoundHttpException();
         return $user;
     }

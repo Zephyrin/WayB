@@ -227,12 +227,21 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
      */
     public function cgetAction(Request $request)
     {
+        $equipments = null;
         if($this->isGranted("ROLE_AMBASSADOR"))
-            return $this->view(
-                $this->equipmentRepository->findAll()
-            );
-        $user = $this->getUser();
-        $equipments = $this->equipmentRepository->findByUserOrValidate($user);
+            $equipments = $this->equipmentRepository->findAll();
+        else {
+            $user = $this->getUser();
+            $equipments = $this->equipmentRepository->findByUserOrValidate($user);
+            foreach($equipments as $eq) {
+                $cha = $eq->getCharacteristics();
+                for($i = count($cha) - 1; $i >= 0; $i--) {
+                    if (!($cha[$i]->getValidate() || $cha[$i]->getCreatedBy() == $user)) {
+                        $cha->removeCharacteristic($cha);
+                    }
+                }
+            }
+        }
         return $this->view($equipments);
     }
 

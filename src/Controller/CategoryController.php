@@ -188,7 +188,6 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
         $result = null;
         if($this->isGranted("ROLE_AMBASSADOR")) {
             $result = $this->categoryRepository->findAll();
-            
         } else {
             $user = $this->getUser();
             $result = $this->categoryRepository->findByUserOrValidate($user);
