@@ -511,6 +511,13 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
                 unset($data['brand']);
             }
         }
+        if(isset($data['subCategory'])) {
+            if(isset($data['subCategory']['id'])) {
+                $data['subCategory'] = $data['subCategory']['id'];
+            } else if(!is_int($data['subCategory'])) {
+                unset($data['subCategory']);
+            }
+        }
         return $data;
     }
 }
