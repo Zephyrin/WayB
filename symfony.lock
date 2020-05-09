@@ -200,8 +200,11 @@
             "repo": "github.com/symfony/recipes",
             "branch": "master",
             "version": "2.5",
-            "ref": "509b1542f3180a1cfe248ade8b7bf5092c2d4127"
-        }
+            "ref": "5b2157bcd5778166a5696e42f552ad36529a07a6"
+        },
+        "files": [
+            "config/packages/lexik_jwt_authentication.yaml"
+        ]
     },
     "monolog/monolog": {
         "version": "1.24.0"
