@@ -4,6 +4,12 @@ jms_serializer:
             format_output: '%kernel.debug%'
     property_naming:
         lower_case: true
+    metadata:
+        auto_detection: true
+        directories:
+            FOSUB:
+                namespace_prefix: 'FOS\UserBundle'
+                path: '%kernel.root_dir%/Serializer'
 #    metadata:
 #        auto_detection: false
 #        directories:
