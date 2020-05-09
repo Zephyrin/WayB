@@ -32,8 +32,8 @@ class Base
   /**
    * @ORM\ManyToOne(targetEntity="App\Entity\User")
    * @ORM\JoinColumn(name="created_by", referencedColumnName="id")
-   * @SWG\Property(description="The User",
-   *     type="Object::class")
+   * @SWG\Property(description="The user creator")
+   * @SerializedName("createdBy")
    */
   protected $createdBy;
 
