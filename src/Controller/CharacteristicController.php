@@ -171,7 +171,7 @@ class CharacteristicController extends AbstractFOSRestController implements Clas
      *     name="equipmentid",
      *     in="path",
      *     type="string",
-     *     description="The ID used to find the Equipment"
+     *     description="The ID used to find the characteristic of the "
      * )
      * @SWG\Parameter(
      *     name="id",
@@ -183,7 +183,7 @@ class CharacteristicController extends AbstractFOSRestController implements Clas
      * @var $id
      * @return \FOS\RestBundle\View\View
      */
-    public function getAction($request, string $id)
+    public function getAction(Request $request, string $id)
     {
         $equipment = $this->findEquipmentByRequest($request);
         $characteristic = $this->findCharacteristicById($id);

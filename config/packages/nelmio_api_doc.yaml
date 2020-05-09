@@ -16,4 +16,4 @@ nelmio_api_doc:
         path_patterns:
             - ^/api(?!/doc$) # Accepts routes under /api except /api/doc
 
-    models: { use_jms: false }
+    models: { use_jms: true }
