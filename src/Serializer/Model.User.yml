@@ -21,3 +21,5 @@ FOS\UserBundle\Model\User:
             expose: false
         salt:
             expose: true
+        roles:
+            expose: true

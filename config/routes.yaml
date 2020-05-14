@@ -26,6 +26,9 @@ api_auth_login:
 user:
      type:     rest
      resource: App\Controller\UserController
+backpack:
+     type:     rest
+     resource: App\Controller\BackpackController
 api:
      prefix: /api
      resource: '../src/Controller/Api'
