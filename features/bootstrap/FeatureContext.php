@@ -5,7 +5,6 @@ use Behat\Gherkin\Node\TableNode;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Tools\SchemaTool;
-use Doctrine\Common\DataFixtures\Purger\ORMPurger;
 /**
  * This context class contains the definitions of the steps used by the demo 
  * feature file. Learn how to get started with Behat and BDD on Behat's website.

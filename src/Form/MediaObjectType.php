@@ -34,7 +34,8 @@ class MediaObjectType extends AbstractType
                             'application/png',
                             'application/ico',
                             'application/jpg',
-                            'application/jpeg'
+                            'application/jpeg',
+                            'application/svg+xml'
                         ],
                         'mimeTypesMessage' => 'Please upload a valid image',
                     ])

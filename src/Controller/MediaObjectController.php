@@ -17,6 +17,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Swagger\Annotations as SWG;
 use Nelmio\ApiDocBundle\Annotation\Model;
+use phpDocumentor\Reflection\Types\Mixed_;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 /**
@@ -120,7 +121,7 @@ class MediaObjectController extends AbstractFOSRestController implements ClassRe
         }
 
         $mediaObject = $form->getData();
-        $this->manageImage($mediaObject, $request);
+        $this->manageImage($mediaObject, $data);
         $this->entityManager->persist($mediaObject);
         $this->entityManager->flush();
         return  $this->view(
@@ -355,22 +356,23 @@ class MediaObjectController extends AbstractFOSRestController implements ClassRe
             );
         }
         $mediaObject = $form->getData();
-        $this->manageImage($mediaObject, $request);
+        $this->manageImage($mediaObject, $data);
 
         $this->entityManager->flush();
 
         return $this->view(null, Response::HTTP_NO_CONTENT);
     }
 
-    private function manageImage(MediaObject $mediaObject, Request $request)
+    private function manageImage(MediaObject $mediaObject, $data)
     {
-        $img64 = $request->request->get('image');
+        if (!isset($data['image'])) { return; }
+        $img64 = $data['image'];
         if ($img64) {
-            if (preg_match('/^data:image\/(\w+);base64,/', $img64, $type)) {
+            if (preg_match('/^data:image\/(\w+)\+?\w*;base64,/', $img64, $type)) {
                 $img64 = substr($img64, strpos($img64, ',') + 1);
                 $type = strtolower($type[1]); // jpg, png, gif
 
-                if (!in_array($type, ['jpg', 'jpeg', 'gif', 'png'])) {
+                if (!in_array($type, ['jpg', 'jpeg', 'gif', 'png', 'svg'])) {
                     throw new \Exception('invalid image type');
                 }
 
@@ -383,7 +385,11 @@ class MediaObjectController extends AbstractFOSRestController implements ClassRe
                 throw new \Exception('did not match data URI with image data');
             }
             $filename = $mediaObject->getFilePath();
+            $oldfilename = null;
             if (!$filename) {
+                $filename = uniqid() . "." . $type;
+            } else if (!$this->endswith($filename, $type)){
+                $oldfilename = $filename;
                 $filename = uniqid() . "." . $type;
             }
             try {
@@ -398,6 +404,16 @@ class MediaObjectController extends AbstractFOSRestController implements ClassRe
             // updates the 'brochureFilename' property to store the PDF file name
             // instead of its contents
             $mediaObject->setFilePath($filename);
+            if ($oldfilename) {
+                unlink($this->getParameter('media_object') . "/" . $oldfilename);
+            }
         }
+    }
+
+    private function endswith($string, $test) {
+        $strlen = strlen($string);
+        $testlen = strlen($test);
+        if ($testlen > $strlen) return false;
+        return substr_compare($string, $test, $strlen - $testlen, $testlen) === 0;
     }
 }
