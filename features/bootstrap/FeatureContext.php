@@ -5,7 +5,7 @@ use Behat\Gherkin\Node\TableNode;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Tools\SchemaTool;
-
+use Doctrine\Common\DataFixtures\Purger\ORMPurger;
 /**
  * This context class contains the definitions of the steps used by the demo 
  * feature file. Learn how to get started with Behat and BDD on Behat's website.
@@ -34,11 +34,15 @@ class FeatureContext implements Context
     {
         $env = $scope
             ->getEnvironment();
-        $this->apiContext = $env
-            ->getContext(
+        $this->apiContext = $env->getContext(
                 ApiContextAuth::class
             )
         ;
+        $files = glob("public/media/*"); // get all file names
+        foreach($files as $file){ // iterate files
+        if(is_file($file))
+            unlink($file); // delete file
+        }
     }
 
     /**
@@ -82,10 +86,10 @@ class FeatureContext implements Context
      * @logout
      */
     public function logout() {
-        $this->apiContext->requestPath(
+        /* $this->apiContext->requestPath(
             '/api/auth/logout',
             'POST'
-        );
+        ); */
         $this->apiContext->logout();
     }
 
@@ -306,6 +310,25 @@ class FeatureContext implements Context
             );
             $this->logout();
         }
+    }
+
+    /**
+     * @Given /^there are MediaObject with the following details:$/
+     * @param TableNode $mediaObjects
+     */
+    public function thereAreMediaObjectWithTheFollowingDetails(TableNode $mediaObjects) 
+    {
+        $this->iAmLoginAsA();
+        foreach($mediaObjects->getColumnsHash() as $media) {
+            $this->apiContext->setRequestBody(
+                json_encode($media)
+            );
+            $this->apiContext->requestPath(
+                "/api/mediaobject",
+                'POST'
+            );
+        }
+        $this->logout();
     }
 
     /**

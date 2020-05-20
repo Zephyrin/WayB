@@ -41,6 +41,14 @@ class Brand extends Base
      */
     private $equipments;
 
+    /**
+     * @var MediaObject|null
+     *
+     * @ORM\ManyToOne(targetEntity=MediaObject::class)
+     * @ORM\JoinColumn(nullable=true)
+     */
+    private $logo;
+
     public function __construct()
     {
         $this->equipments = new ArrayCollection();
@@ -97,6 +105,18 @@ class Brand extends Base
                 $equipment->setBrand(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getLogo(): ?MediaObject
+    {
+        return $this->logo;
+    }
+
+    public function setLogo(MediaObject $logo): self
+    {
+        $this->logo = $logo;
 
         return $this;
     }

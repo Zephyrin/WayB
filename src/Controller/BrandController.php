@@ -24,7 +24,7 @@ use Nelmio\ApiDocBundle\Annotation\Model;
  * @package App\Controller
  *
  * @Rest\RouteResource(
- *     "api/Brand",
+ *     "api/brand",
  *     pluralize=false
  * )
  * @SWG\Tag(

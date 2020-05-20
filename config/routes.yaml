@@ -29,6 +29,9 @@ user:
 backpack:
      type:     rest
      resource: App\Controller\BackpackController
+mediaobject:
+     type:     rest
+     resource: App\Controller\MediaObjectController
 api:
      prefix: /api
      resource: '../src/Controller/Api'

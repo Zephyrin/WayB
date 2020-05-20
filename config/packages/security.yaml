@@ -64,6 +64,7 @@ security:
                     - lexik_jwt_authentication.jwt_token_authenticator
         main:
             pattern: ^/
+            user_checker: App\Security\UserChecker
             form_login:
                 provider: chain_provider
                 csrf_token_generator: security.csrf.token_manager
