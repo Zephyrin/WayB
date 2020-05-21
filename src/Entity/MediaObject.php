@@ -5,6 +5,7 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Swagger\Annotations as SWG;
+use JMS\Serializer\Annotation\SerializedName;
 
 /**
  * @ORM\Entity
@@ -27,7 +28,8 @@ class MediaObject
 
     /**
      * @var string|null
-     *
+     * 
+     * @SerializedName("filePath")
      * @ORM\Column(nullable=true)
      */
     public $filePath;
