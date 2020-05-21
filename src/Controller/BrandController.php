@@ -240,32 +240,7 @@ class BrandController extends AbstractFOSRestController implements ClassResource
      */
     public function putAction(Request $request, string $id)
     {
-        $connectUser = $this->getUser();
-        $existingBrand = $this->findBrandById($id);
-        if ($existingBrand->getCreatedBy() !== $connectUser)
-            $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
-        $form = $this->createForm(BrandType::class, $existingBrand);
-        $validate = $existingBrand->getValidate();
-        $data = json_decode($request->request->all(), true);
-        $data = $this->manageObjectToId($data);
-        $form->submit($data);
-
-        if (false === $form->isValid()) {
-            return new JsonResponse(
-                [
-                    'status' => 'error',
-                    'message' => 'Validation failed',
-                    'errors' => $this->formErrorSerializer->normalize($form),
-                ],
-                JsonResponse::HTTP_UNPROCESSABLE_ENTITY
-            );
-        }
-        if ($existingBrand->getValidate() !== $validate) {
-            $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
-        }
-        $this->entityManager->flush();
-
-        return $this->view(null, Response::HTTP_NO_CONTENT);
+        $this->putOrPatch($request, $id, true);
     }
 
     /**
@@ -312,14 +287,20 @@ class BrandController extends AbstractFOSRestController implements ClassResource
      */
     public function patchAction(Request $request, string $id)
     {
+        $this->putOrPatch($request, $id, false);
+    }
+
+    private function putOrPatch(Request $request, string $id, bool $clearData) {
         $connectUser = $this->getUser();
         $existingBrand = $this->findBrandById($id);
         if ($existingBrand->getCreatedBy() !== $connectUser)
             $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
         $form = $this->createForm(BrandType::class, $existingBrand);
         $validate = $existingBrand->getValidate();
-        $data = $this->manageObjectToId($request->getContent());
-        $form->submit($data, false);
+        $data = json_decode($request->getContent(), true);
+
+        $data = $this->manageObjectToId($data);
+        $form->submit($data, $clearData);
 
         if (false === $form->isValid()) {
             return new JsonResponse(
