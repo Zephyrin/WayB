@@ -100,6 +100,7 @@ class BrandController extends AbstractFOSRestController implements ClassResource
             $request->getContent(),
             true
         );
+        $data = $this->manageObjectToId($data);
         $form = $this->createForm(BrandType::class, new Brand());
         $form->submit(
             $data
@@ -245,7 +246,9 @@ class BrandController extends AbstractFOSRestController implements ClassResource
             $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
         $form = $this->createForm(BrandType::class, $existingBrand);
         $validate = $existingBrand->getValidate();
-        $form->submit($request->request->all());
+        $data = json_decode($request->request->all(), true);
+        $data = $this->manageObjectToId($data);
+        $form->submit($data);
 
         if (false === $form->isValid()) {
             return new JsonResponse(
@@ -315,8 +318,7 @@ class BrandController extends AbstractFOSRestController implements ClassResource
             $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
         $form = $this->createForm(BrandType::class, $existingBrand);
         $validate = $existingBrand->getValidate();
-        $data = json_decode($request->getContent());
-
+        $data = $this->manageObjectToId($request->getContent());
         $form->submit($data, false);
 
         if (false === $form->isValid()) {
@@ -408,20 +410,14 @@ class BrandController extends AbstractFOSRestController implements ClassResource
         return $existingBrand;
     }
 
-    /**
-     * @param Request $request
-     *
-     * @return User
-     * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
-     */
-    private function findUserByRequest(Request $request)
-    {
-        $user = $this->entityManager->find(
-            User::class,
-            $request->attributes->get('userid')
-        );
-        if ($user == null)
-            throw new NotFoundHttpException();
-        return $user;
+    private function manageObjectToId($data) {
+        if(isset($data['logo'])) {
+            if(isset($data['logo']['id'])) {
+                $data['logo'] = $data['logo']['id'];
+            } else if (!is_int($data['logo'])) {
+                unset($data['logo']);
+            }
+        }
+        return $data;
     }
 }

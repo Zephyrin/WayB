@@ -184,7 +184,6 @@ class FeatureContext implements Context
                 "{"
                 , "\"id\": {$i},"
                 , "\"name\": \"{$brand['name']}\","
-                , "\"description\": \"{$brand['description']}\","
                 , "\"uri\": \"{$brand['uri']}\""
                 , "}"
             ];
@@ -209,6 +208,10 @@ class FeatureContext implements Context
         foreach ($equipments->getColumnsHash() as $equipment) {
             if(array_key_exists("validate", $equipment))
                 $equipment['validate'] = $equipment['validate'] == 'true';
+            if(array_key_exists("brand", $equipment) && !is_int($equipment['brand']))
+                $equipment['brand'] = intval($equipment['brand']);
+            if(array_key_exists("subCategory", $equipment) && !is_int($equipment['subCategory']))
+                $equipment['subCategory'] = intval($equipment['subCategory']);
             $this->apiContext->setRequestBody(
                 json_encode($equipment)
             );
