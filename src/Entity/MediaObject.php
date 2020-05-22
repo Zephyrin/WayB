@@ -27,17 +27,17 @@ class MediaObject
     protected $id;
 
     /**
-     * @var string|null
+     * @var string
      * 
      * @SerializedName("filePath")
-     * @ORM\Column(nullable=true)
+     * @ORM\Column(type="string")
      */
     public $filePath;
 
     /**
-     * @var string
+     * @var string|null
      * 
-     * @ORM\Column(type="string", length=1024)
+     * @ORM\Column(type="string", length=1024, nullable=true)
      * @SWG\Property(description="The description of the media")
      */
     private $description;
@@ -52,7 +52,7 @@ class MediaObject
         return $this->description;
     }
 
-    public function setDescription(string $description): self
+    public function setDescription(?string $description): self
     {
         $this->description = $description;
 
@@ -64,7 +64,7 @@ class MediaObject
         return $this->filePath;
     }
 
-    public function setFilePath($filePath)
+    public function setFilePath(?string $filePath)
     {
         $this->filePath = $filePath;
 

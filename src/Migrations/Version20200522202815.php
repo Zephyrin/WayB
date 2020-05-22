@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20200520174216 extends AbstractMigration
+final class Version20200522202815 extends AbstractMigration
 {
     public function getDescription() : string
     {
@@ -22,7 +22,6 @@ final class Version20200520174216 extends AbstractMigration
         // this up() migration is auto-generated, please modify it to your needs
         $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'sqlite', 'Migration can only be executed safely on \'sqlite\'.');
 
-        $this->addSql('CREATE TABLE media_object (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, file_path VARCHAR(255) DEFAULT NULL, description VARCHAR(1024) NOT NULL)');
         $this->addSql('DROP INDEX IDX_BCE3F798DE12AB56');
         $this->addSql('DROP INDEX IDX_BCE3F79812469DE2');
         $this->addSql('CREATE TEMPORARY TABLE __temp__sub_category AS SELECT id, category_id, created_by, name, validate, ask_validate FROM sub_category');
@@ -67,17 +66,18 @@ final class Version20200520174216 extends AbstractMigration
         $this->addSql('DROP TABLE __temp__backpack');
         $this->addSql('CREATE INDEX IDX_C358569DE12AB56 ON backpack (created_by)');
         $this->addSql('DROP INDEX IDX_1C52F958DE12AB56');
+        $this->addSql('DROP INDEX IDX_1C52F958F98F144A');
         $this->addSql('DROP INDEX UNIQ_1C52F958841CB121');
         $this->addSql('DROP INDEX UNIQ_1C52F9585E237E06');
-        $this->addSql('CREATE TEMPORARY TABLE __temp__brand AS SELECT id, created_by, name, uri, validate, ask_validate FROM brand');
+        $this->addSql('CREATE TEMPORARY TABLE __temp__brand AS SELECT id, logo_id, created_by, name, uri, validate, ask_validate FROM brand');
         $this->addSql('DROP TABLE brand');
-        $this->addSql('CREATE TABLE brand (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, created_by INTEGER DEFAULT NULL, logo_id INTEGER DEFAULT NULL, name VARCHAR(255) NOT NULL COLLATE BINARY, uri VARCHAR(255) NOT NULL COLLATE BINARY, validate BOOLEAN DEFAULT \'0\' NOT NULL, ask_validate BOOLEAN DEFAULT \'0\' NOT NULL, CONSTRAINT FK_1C52F958F98F144A FOREIGN KEY (logo_id) REFERENCES media_object (id) NOT DEFERRABLE INITIALLY IMMEDIATE, CONSTRAINT FK_1C52F958DE12AB56 FOREIGN KEY (created_by) REFERENCES fos_user (id) NOT DEFERRABLE INITIALLY IMMEDIATE)');
-        $this->addSql('INSERT INTO brand (id, created_by, name, uri, validate, ask_validate) SELECT id, created_by, name, uri, validate, ask_validate FROM __temp__brand');
+        $this->addSql('CREATE TABLE brand (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, logo_id INTEGER DEFAULT NULL, created_by INTEGER DEFAULT NULL, name VARCHAR(255) NOT NULL COLLATE BINARY, uri VARCHAR(255) NOT NULL COLLATE BINARY, validate BOOLEAN DEFAULT \'0\' NOT NULL, ask_validate BOOLEAN DEFAULT \'0\' NOT NULL, CONSTRAINT FK_1C52F958F98F144A FOREIGN KEY (logo_id) REFERENCES media_object (id) NOT DEFERRABLE INITIALLY IMMEDIATE, CONSTRAINT FK_1C52F958DE12AB56 FOREIGN KEY (created_by) REFERENCES fos_user (id) NOT DEFERRABLE INITIALLY IMMEDIATE)');
+        $this->addSql('INSERT INTO brand (id, logo_id, created_by, name, uri, validate, ask_validate) SELECT id, logo_id, created_by, name, uri, validate, ask_validate FROM __temp__brand');
         $this->addSql('DROP TABLE __temp__brand');
         $this->addSql('CREATE INDEX IDX_1C52F958DE12AB56 ON brand (created_by)');
+        $this->addSql('CREATE INDEX IDX_1C52F958F98F144A ON brand (logo_id)');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_1C52F958841CB121 ON brand (uri)');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_1C52F9585E237E06 ON brand (name)');
-        $this->addSql('CREATE INDEX IDX_1C52F958F98F144A ON brand (logo_id)');
         $this->addSql('DROP INDEX IDX_64C19C1DE12AB56');
         $this->addSql('DROP INDEX UNIQ_64C19C15E237E06');
         $this->addSql('CREATE TEMPORARY TABLE __temp__category AS SELECT id, created_by, name, validate, ask_validate FROM category');
@@ -98,6 +98,11 @@ final class Version20200520174216 extends AbstractMigration
         $this->addSql('CREATE INDEX IDX_D27EEA40DEE9D12B ON have (characteristic_id)');
         $this->addSql('CREATE INDEX IDX_D27EEA40517FE9FE ON have (equipment_id)');
         $this->addSql('CREATE INDEX IDX_D27EEA40A76ED395 ON have (user_id)');
+        $this->addSql('CREATE TEMPORARY TABLE __temp__media_object AS SELECT id, file_path, description FROM media_object');
+        $this->addSql('DROP TABLE media_object');
+        $this->addSql('CREATE TABLE media_object (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, file_path VARCHAR(255) NOT NULL, description VARCHAR(1024) DEFAULT NULL)');
+        $this->addSql('INSERT INTO media_object (id, file_path, description) SELECT id, file_path, description FROM __temp__media_object');
+        $this->addSql('DROP TABLE __temp__media_object');
     }
 
     public function down(Schema $schema) : void
@@ -105,7 +110,6 @@ final class Version20200520174216 extends AbstractMigration
         // this down() migration is auto-generated, please modify it to your needs
         $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'sqlite', 'Migration can only be executed safely on \'sqlite\'.');
 
-        $this->addSql('DROP TABLE media_object');
         $this->addSql('DROP INDEX IDX_C358569DE12AB56');
         $this->addSql('CREATE TEMPORARY TABLE __temp__backpack AS SELECT id, created_by, name FROM backpack');
         $this->addSql('DROP TABLE backpack');
@@ -117,13 +121,14 @@ final class Version20200520174216 extends AbstractMigration
         $this->addSql('DROP INDEX UNIQ_1C52F958841CB121');
         $this->addSql('DROP INDEX IDX_1C52F958F98F144A');
         $this->addSql('DROP INDEX IDX_1C52F958DE12AB56');
-        $this->addSql('CREATE TEMPORARY TABLE __temp__brand AS SELECT id, created_by, name, uri, validate, ask_validate FROM brand');
+        $this->addSql('CREATE TEMPORARY TABLE __temp__brand AS SELECT id, logo_id, created_by, name, uri, validate, ask_validate FROM brand');
         $this->addSql('DROP TABLE brand');
-        $this->addSql('CREATE TABLE brand (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, created_by INTEGER DEFAULT NULL, name VARCHAR(255) NOT NULL, uri VARCHAR(255) NOT NULL, validate BOOLEAN DEFAULT \'0\' NOT NULL, ask_validate BOOLEAN DEFAULT \'0\' NOT NULL)');
-        $this->addSql('INSERT INTO brand (id, created_by, name, uri, validate, ask_validate) SELECT id, created_by, name, uri, validate, ask_validate FROM __temp__brand');
+        $this->addSql('CREATE TABLE brand (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, logo_id INTEGER DEFAULT NULL, created_by INTEGER DEFAULT NULL, name VARCHAR(255) NOT NULL, uri VARCHAR(255) NOT NULL, validate BOOLEAN DEFAULT \'0\' NOT NULL, ask_validate BOOLEAN DEFAULT \'0\' NOT NULL)');
+        $this->addSql('INSERT INTO brand (id, logo_id, created_by, name, uri, validate, ask_validate) SELECT id, logo_id, created_by, name, uri, validate, ask_validate FROM __temp__brand');
         $this->addSql('DROP TABLE __temp__brand');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_1C52F9585E237E06 ON brand (name)');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_1C52F958841CB121 ON brand (uri)');
+        $this->addSql('CREATE INDEX IDX_1C52F958F98F144A ON brand (logo_id)');
         $this->addSql('CREATE INDEX IDX_1C52F958DE12AB56 ON brand (created_by)');
         $this->addSql('DROP INDEX UNIQ_64C19C15E237E06');
         $this->addSql('DROP INDEX IDX_64C19C1DE12AB56');
@@ -172,6 +177,11 @@ final class Version20200520174216 extends AbstractMigration
         $this->addSql('INSERT INTO into_backpack (id, equipment_id, count) SELECT id, equipment_id, count FROM __temp__into_backpack');
         $this->addSql('DROP TABLE __temp__into_backpack');
         $this->addSql('CREATE INDEX IDX_ED9A8309517FE9FE ON into_backpack (equipment_id)');
+        $this->addSql('CREATE TEMPORARY TABLE __temp__media_object AS SELECT id, file_path, description FROM media_object');
+        $this->addSql('DROP TABLE media_object');
+        $this->addSql('CREATE TABLE media_object (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, file_path VARCHAR(255) DEFAULT NULL COLLATE BINARY, description VARCHAR(1024) NOT NULL COLLATE BINARY)');
+        $this->addSql('INSERT INTO media_object (id, file_path, description) SELECT id, file_path, description FROM __temp__media_object');
+        $this->addSql('DROP TABLE __temp__media_object');
         $this->addSql('DROP INDEX IDX_BCE3F79812469DE2');
         $this->addSql('DROP INDEX IDX_BCE3F798DE12AB56');
         $this->addSql('CREATE TEMPORARY TABLE __temp__sub_category AS SELECT id, category_id, created_by, name, validate, ask_validate FROM sub_category');

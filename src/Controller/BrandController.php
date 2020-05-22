@@ -240,7 +240,7 @@ class BrandController extends AbstractFOSRestController implements ClassResource
      */
     public function putAction(Request $request, string $id)
     {
-        $this->putOrPatch($request, $id, true);
+        return $this->putOrPatch($request, $id, true);
     }
 
     /**
@@ -287,7 +287,7 @@ class BrandController extends AbstractFOSRestController implements ClassResource
      */
     public function patchAction(Request $request, string $id)
     {
-        $this->putOrPatch($request, $id, false);
+        return $this->putOrPatch($request, $id, false);
     }
 
     private function putOrPatch(Request $request, string $id, bool $clearData) {
@@ -298,7 +298,7 @@ class BrandController extends AbstractFOSRestController implements ClassResource
         $form = $this->createForm(BrandType::class, $existingBrand);
         $validate = $existingBrand->getValidate();
         $data = json_decode($request->getContent(), true);
-
+        $logo = $existingBrand->getLogo();
         $data = $this->manageObjectToId($data);
         $form->submit($data, $clearData);
 
@@ -314,6 +314,10 @@ class BrandController extends AbstractFOSRestController implements ClassResource
         }
         if ($existingBrand->getValidate() !== $validate) {
             $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
+        }
+        if ($logo != null && $existingBrand->getLogo() == null) {
+            unlink($this->getParameter('media_object') . "/" . $logo->getFilePath());
+            $this->entityManager->remove($logo);
         }
         $this->entityManager->flush();
 
@@ -357,6 +361,11 @@ class BrandController extends AbstractFOSRestController implements ClassResource
                 "This brand don't belong to you and your are not an admin."
             );
         if (count($brand->getEquipments()) < 1) {
+            $logo = $brand->getLogo();
+            if($logo != null) {
+                unlink($this->getParameter('media_object') . "/" . $logo->getFilePath());
+                $this->entityManager->remove($logo);
+            }
             $this->entityManager->remove($brand);
             $this->entityManager->flush();
 
@@ -396,7 +405,7 @@ class BrandController extends AbstractFOSRestController implements ClassResource
             if(isset($data['logo']['id'])) {
                 $data['logo'] = $data['logo']['id'];
             } else if (!is_int($data['logo'])) {
-                unset($data['logo']);
+                $data['logo'] = null;
             }
         }
         return $data;

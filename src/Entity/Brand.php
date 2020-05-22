@@ -44,8 +44,7 @@ class Brand extends Base
     /**
      * @var MediaObject|null
      *
-     * @ORM\ManyToOne(targetEntity=MediaObject::class)
-     * @ORM\JoinColumn(nullable=true)
+     * @ORM\ManyToOne(targetEntity="App\Entity\MediaObject")
      */
     private $logo;
 
@@ -114,7 +113,7 @@ class Brand extends Base
         return $this->logo;
     }
 
-    public function setLogo(MediaObject $logo): self
+    public function setLogo(?MediaObject $logo): self
     {
         $this->logo = $logo;
 
