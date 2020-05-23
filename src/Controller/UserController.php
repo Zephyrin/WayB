@@ -108,12 +108,12 @@ class UserController extends AbstractFOSRestController implements ClassResourceI
         /* $form->submit(
             $request
             , false); */
-        $roles = $existingUser->getRoles();
-        foreach($roles as $role) {
-            $existingUser->removeRole($role);
-        }
         $partialUser = $request->request->all();
         if(array_key_exists("roles", $partialUser)){
+            $roles = $existingUser->getRoles();
+            foreach($roles as $role) {
+                $existingUser->removeRole($role);
+            }
             foreach($partialUser["roles"] as $role) {
                 $existingUser->addRole($role);
             }
