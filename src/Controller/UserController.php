@@ -4,8 +4,8 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Form\UserType;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use FOS\UserBundle\Model\UserManagerInterface;
 use App\Serializer\FormErrorSerializer;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
@@ -40,13 +40,13 @@ class UserController extends AbstractFOSRestController implements ClassResourceI
     private $formErrorSerializer;
 
     /**
-     * @var FosUserRepository
+     * @var UserRepository
      */
     private $userRepository;
 
     public function __construct(
         EntityManagerInterface $entityManager,
-        UserManagerInterface $userRepository,
+        UserRepository $userRepository,
         FormErrorSerializer $formErrorSerializer
     )
     {
@@ -110,13 +110,13 @@ class UserController extends AbstractFOSRestController implements ClassResourceI
             , false); */
         $partialUser = $request->request->all();
         if(array_key_exists("roles", $partialUser)){
-            $roles = $existingUser->getRoles();
+           /*  $roles = $existingUser->getRoles();
             foreach($roles as $role) {
                 $existingUser->removeRole($role);
             }
             foreach($partialUser["roles"] as $role) {
                 $existingUser->addRole($role);
-            }
+            } */
         }
 
         $form->submit($request->request->all(), false);

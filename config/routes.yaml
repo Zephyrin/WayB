@@ -20,9 +20,12 @@ have:
      type:     rest
      resource: App\Controller\HaveController
 #Login user
-api_auth_login:
-     path: /api/auth/login
-     methods: [POST]
+#api_auth_login:
+#     path: /api/auth/login
+#     methods: [POST]
+login_check:
+    path:     /api/auth/login
+    methods:  [POST]
 user:
      type:     rest
      resource: App\Controller\UserController

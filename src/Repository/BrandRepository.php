@@ -54,7 +54,7 @@ class BrandRepository extends ServiceEntityRepository
     , string $askValidate = null)
     {
         $query = $this->createQueryBuilder('e')
-            ->Where('(e.validate = true OR e.createdBy = :val')
+            ->Where('(e.validate = true OR e.createdBy = :val)')
             ->setParameter('val', $user->getId());
         $query = $this->search($query, $search);
         return $this->resultCount($query

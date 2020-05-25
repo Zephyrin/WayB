@@ -10,7 +10,6 @@
         "behat/behat": "^3.5",
         "behat/symfony2-extension": "^2.1",
         "friendsofsymfony/rest-bundle": "^2.5",
-        "friendsofsymfony/user-bundle": "~2.1",
         "imbo/behat-api-extension": "^2.1",
         "jms/serializer-bundle": "^3.4",
         "lexik/jwt-authentication-bundle": "^2.6",
@@ -89,8 +88,8 @@
     "require-dev": {
         "behat/mink": "~1.7@dev",
         "behatch/contexts": "^3.2",
+        "doctrine/doctrine-fixtures-bundle": "^3.3",
         "symfony/maker-bundle": "^1.17",
-        "symfony/profiler-pack": "^1.0",
-        "symfony/web-server-bundle": "4.4.*"
+        "symfony/profiler-pack": "^1.0"
     }
 }

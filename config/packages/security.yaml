@@ -1,8 +1,10 @@
 #config/packages/security.yaml
 security:
     encoders:
-        FOS\UserBundle\Model\UserInterface: auto
-        Symfony\Component\Security\Core\User\User: plaintext
+        #FOS\UserBundle\Model\UserInterface: auto
+        App\Entity\User:
+            algorithm: auto
+
 
     role_hierarchy:
         ROLE_AMBASSADOR:    ROLE_USER
@@ -12,19 +14,21 @@ security:
     providers:
         chain_provider:
             chain:
-                providers: [fos_userbundle, in_memory]
+                providers: [app_user_provider, in_memory]
         in_memory:
             memory:
                 users:
                     superadmin:
                         password: 'a'
                         roles: ['ROLE_SUPER_ADMIN']
-        fos_userbundle:
-            id: fos_user.user_provider.username
+        # used to reload user from session & other features (e.g. switch_user)
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: username
+        # used to reload user from session & other features (e.g. switch_user)
 
     access_control:
-        - { path: ^/login$, role: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: ^/register, role: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/resetting, role: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/admin/, role: ROLE_ADMIN }
         - { path: ^/api/doc, roles: IS_AUTHENTICATED_ANONYMOUSLY }
@@ -64,42 +68,7 @@ security:
                     - lexik_jwt_authentication.jwt_token_authenticator
         main:
             pattern: ^/
-            user_checker: App\Security\UserChecker
-            form_login:
-                provider: chain_provider
-                csrf_token_generator: security.csrf.token_manager
-                login_path: fos_user_security_login
-                check_path: fos_user_security_check
-                always_use_default_target_path: false
-                default_target_path: admin_admin_index
-
-            logout:
-                path:   fos_user_security_logout
-                target: fos_user_security_login
             anonymous:    true
-
-### DEFAULT
-#security:
-#    # https://symfony.com/doc/current/security.html#where-do-users-come-from-user-providers
-#    providers:
-#        in_memory: { memory: ~ }
-#    firewalls:
-#        dev:
-#            pattern: ^/(_(profiler|wdt)|css|images|js)/
-#            security: false
-#        main:
-#            anonymous: true
-#
-#            # activate different ways to authenticate
-#
-#            # http_basic: true
-#            # https://symfony.com/doc/current/security.html#a-configuring-how-your-users-will-authenticate
-#
-#            # form_login: true
-#            # https://symfony.com/doc/current/security/form_login_setup.html
-#
-#    # Easy way to control access for large sections of your site
-#    # Note: Only the *first* access control that matches will be used
-#    access_control:
-#        # - { path: ^/admin, roles: ROLE_ADMIN }
-#        # - { path: ^/profile, roles: ROLE_USER }
+            logout:
+                path:   app_logout
+                target: api_login

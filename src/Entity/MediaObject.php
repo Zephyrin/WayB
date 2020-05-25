@@ -9,7 +9,6 @@ use JMS\Serializer\Annotation\SerializedName;
 
 /**
  * @ORM\Entity
- * 
  * @SWG\Definition(
  *     description="Give an object that represent an image."
  * )

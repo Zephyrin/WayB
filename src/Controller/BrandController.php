@@ -242,7 +242,7 @@ class BrandController extends AbstractFOSRestController implements ClassResource
                     , $askValidate);
         } else {
             $user = $this->getUser();
-            $brands = $this->brandRepository->findByUserOrValidate($user
+            $brandsAndCount = $this->brandRepository->findByUserOrValidate($user
             , $page
             , $limit
             , $sort

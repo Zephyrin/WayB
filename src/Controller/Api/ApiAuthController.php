@@ -1,7 +1,6 @@
 <?php
 namespace App\Controller\Api;
 
-use FOS\UserBundle\Model\UserManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,10 +13,11 @@ use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Constraints as Assert;
 use Swagger\Annotations as SWG;
 use Nelmio\ApiDocBundle\Annotation\Model;
-
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
- * @Route("/auth")
+ * @Route("/api/auth")
  * @SWG\Tag(
  *     name="User"
  * )
@@ -29,10 +29,21 @@ class ApiAuthController extends AbstractController
      */
     private $formErrorSerializer;
 
+    private $passwordEncoder;
+
+    /**
+     * @var EntityManagerInterface
+     */
+    private $entityManager;
+
     public function __construct(
-        FormErrorSerializer $formErrorSerializer
+        EntityManagerInterface $entityManager,
+        FormErrorSerializer $formErrorSerializer,
+        UserPasswordEncoderInterface $passwordEncoder
     ) {
+        $this->entityManager = $entityManager;
         $this->formErrorSerializer = $formErrorSerializer;
+        $this->passwordEncoder = $passwordEncoder;
     }
     /**
      * Register an user to the DB.
@@ -50,14 +61,22 @@ class ApiAuthController extends AbstractController
      *     response=500,
      *     description="The form is not correct<BR/>
      * See the corresponding JSON error to see which field is not correct"
+     *    ),
+     *    @SWG\Parameter(
+     *     name="The JSON Characteristic",
+     *     in="body",
+     *     required=true,
+     *     @SWG\Schema(
+     *       ref=@Model(type=User::class)
+     *     ),
+     *     description="The JSon Characteristic"
      *    )
      * )
      *
      * @param Request $request
-     * @param UserManagerInterface $userManager
      * @return JsonResponse|\Symfony\Component\HttpFoundation\RedirectResponse
      */
-    public function register(Request $request, UserManagerInterface $userManager)
+    public function register(Request $request)
     {
         $data = json_decode(
             $request->getContent(),
@@ -83,19 +102,17 @@ class ApiAuthController extends AbstractController
         }
 
         $user = $form->getData();
-        $user->setPassword(null);
-        $user->setPlainPassword($data['password']);
+        $user->setPassword($this->passwordEncoder->encodePassword(
+            $user,
+            $user->getPassword()
+        ));
 
         $user->setRoles(['ROLE_USER']);
-        $user->setSuperAdmin(false);
-        $user->setEnabled(true);
-        try {
-            $userManager->updateUser($user, true);
-        } catch (\Exception $e) {
-            return new JsonResponse(["error" => $e->getMessage()], 500);
-        }
+        $this->entityManager->persist($user);
+        $this->entityManager->flush();
+
         # Code 307 preserves the request method, while redirectToRoute() is a shortcut method.
-        return $this->redirectToRoute('api_auth_login', [
+        return $this->redirectToRoute('login_check', [
             'username' => $data['username'],
             'password' => $data['password']
         ], 307);
