@@ -17,6 +17,6 @@ framework:
         log: true
 
     serializer:
-        enabled: false
+        enabled: true
         #name_converter: 'serializer.name_converter.camel_case_to_snake_case'
     form: { enabled: true }
