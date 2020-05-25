@@ -12,6 +12,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Serializer\FormErrorSerializer;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
+use FOS\RestBundle\Request\ParamFetcher;
 use FOS\RestBundle\Routing\ClassResourceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,6 +23,8 @@ use Swagger\Annotations as SWG;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Security\Core\Security;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+use FOS\RestBundle\Controller\Annotations\QueryParam;
+use FOS\RestBundle\Controller\Annotations\RequestParam;
 
 /**
  * Class EquipmentController
@@ -222,17 +225,97 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
      *     )
      * )
      *
+     * @QueryParam(name="page"
+     * , requirements="\d+"
+     * , default="1"
+     * , description="Page of the overview.")
+     * @QueryParam(name="limit"
+     * , requirements="\d+"
+     * , default="10"
+     * , description="Item count limit")
+     * @QueryParam(name="sort"
+     * , requirements="(asc|desc)"
+     * , allowBlank=false
+     * , default="asc"
+     * , description="Sort direction")
+     * @QueryParam(name="sortBy"
+     * , requirements="(name|description|subCategory|brand|validate|askValidate)"
+     * , default="name"
+     * , description="Sort by name or uri")
+     * @QueryParam(name="search"
+     * , nullable=true
+     * , description="Search on name or description or sub-category name or category name or brand name or brand description")
+     * @QueryParam(name="weight"
+     * , nullable=true
+     * , requirements="(gt\d+)?(lt\d+)?(eq\d+)?"
+     * , description="Retrieve all equipment that have a weight greater than x or lower than x or equal x")
+     * @QueryParam(name="price"
+     * , nullable=true
+     * , requirements="(gt\d+)?(lt\d+)?(eq\d+)?"
+     * , description="Retrieve all equipment that have a price greater than x or lower than x or equal x")
+     * @QueryParam(name="own"
+     * , nullable=true
+     * , requirements="(gt\d+)?(lt\d+)?(eq\d+)?"
+     * , description="Retrieve all equipment that user have greater than x or lower than x or equal x")
+     * @QueryParam(name="wish"
+     * , nullable=true
+     * , requirements="(gt\d+)?(lt\d+)?(eq\d+)?"
+     * , description="Retrieve all equipment that user wish greater than x or lower than x or equal x")
+     * @QueryParam(name="validate"
+     * , nullable=true
+     * , allowBlank=true
+     * , requirements="(false|true)"
+     * , description="Item validate or not")
+     * @QueryParam(name="askValidate"
+     * , nullable=true
+     * , allowBlank=true
+     * , requirements="(false|true)"
+     * , description="Item validate or not")
      * @param Request $request
      * @return \FOS\RestBundle\View\View
      */
-    public function cgetAction(Request $request)
+    public function cgetAction(ParamFetcher $paramFetcher)
     {
+        $page = $paramFetcher->get('page');
+        $limit = $paramFetcher->get('limit');
+        $sort = $paramFetcher->get('sort');
+        $sortBy = $paramFetcher->get('sortBy');
+        $search = $paramFetcher->get('search');
+        $validate = $paramFetcher->get('validate');
+        $askValidate = $paramFetcher->get('askValidate');
+        $weight = $paramFetcher->get('weight');
+        $price = $paramFetcher->get('price');
+        $own = $paramFetcher->get('own');
+        $wish = $paramFetcher->get('wish');
         $equipments = null;
         if($this->isGranted("ROLE_AMBASSADOR"))
-            $equipments = $this->equipmentRepository->findAll();
+            $equipments = $this->equipmentRepository->findForAmbassador(
+                $page
+                , $limit
+                , $sort
+                , $sortBy
+                , $search
+                , $validate
+                , $askValidate
+                , $weight
+                , $price
+                , $own
+                , $wish
+            );
         else {
             $user = $this->getUser();
-            $equipments = $this->equipmentRepository->findByUserOrValidate($user);
+            $equipments = $this->equipmentRepository->findByUserOrValidate($user
+                , $page
+                , $limit
+                , $sort
+                , $sortBy
+                , $search
+                , $validate
+                , $askValidate
+                , $weight
+                , $price
+                , $own
+                , $wish);
             foreach($equipments as $eq) {
                 $cha = $eq->getCharacteristics();
                 for($i = count($cha) - 1; $i >= 0; $i--) {
@@ -242,7 +325,16 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
                 }
             }
         }
-        return $this->view($equipments);
+        $view = $this->view(
+            $equipments[0]
+        );
+        $view->setHeader('X-Total-Count', $equipments[1]);
+        $view->setHeader('X-Pagination-Count', $equipments[2]);
+        $view->setHeader('X-Pagination-Page', $equipments[3]);
+        $view->setHeader('X-Pagination-Limit', $equipments[4]);
+        $view->setHeader('Access-Control-Expose-Headers'
+            , 'X-Total-Count, X-Pagination-Count, X-Pagination-Page, X-Pagination-Limit');
+        return $view;
     }
 
     /**

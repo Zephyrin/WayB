@@ -18,6 +18,9 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Swagger\Annotations as SWG;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Nelmio\ApiDocBundle\Annotation\Model;
+use FOS\RestBundle\Request\ParamFetcher;
+use FOS\RestBundle\Controller\Annotations\QueryParam;
+use FOS\RestBundle\Controller\Annotations\RequestParam;
 
 /**
  * Class BrandController
@@ -184,18 +187,80 @@ class BrandController extends AbstractFOSRestController implements ClassResource
      *     )
      * )
      *
-     *
+     * @QueryParam(name="page"
+     * , requirements="\d+"
+     * , default="1"
+     * , description="Page of the overview.")
+     * @QueryParam(name="limit"
+     * , requirements="\d+"
+     * , default="10"
+     * , description="Item count limit")
+     * @QueryParam(name="sort"
+     * , requirements="(asc|desc)"
+     * , allowBlank=false
+     * , default="asc"
+     * , description="Sort direction")
+     * @QueryParam(name="sortBy"
+     * , requirements="(name|uri|validate|askValidate)"
+     * , default="name"
+     * , description="Sort by name or uri")
+     * @QueryParam(name="search"
+     * , nullable=true
+     * , description="Search on name and uri")
+     * @QueryParam(name="validate"
+     * , nullable=true
+     * , allowBlank=true
+     * , requirements="(false|true)"
+     * , description="Item validate or not")
+     * @QueryParam(name="askValidate"
+     * , nullable=true
+     * , allowBlank=true
+     * , requirements="(false|true)"
+     * , description="Item validate or not")
+     * 
      * @return \FOS\RestBundle\View\View
      */
-    public function cgetAction()
+    public function cgetAction(ParamFetcher $paramFetcher)
     {
-        if ($this->isGranted("ROLE_AMBASSADOR"))
-            return $this->view(
-                $this->brandRepository->findAll()
-            );
-        $user = $this->getUser();
-        $brands = $this->brandRepository->findByUserOrValidate($user);
-        return $this->view($brands);
+        $page = $paramFetcher->get('page');
+        $limit = $paramFetcher->get('limit');
+        $sort = $paramFetcher->get('sort');
+        $sortBy = $paramFetcher->get('sortBy');
+        $search = $paramFetcher->get('search');
+        $validate = $paramFetcher->get('validate');
+        $askValidate = $paramFetcher->get('askValidate');
+        $brandsAndCount = [];
+        if ($this->isGranted("ROLE_AMBASSADOR")) {
+            $brandsAndCount = 
+                $this->brandRepository->findForAmbassador(
+                    $page
+                    , $limit
+                    , $sort
+                    , $sortBy
+                    , $search
+                    , $validate
+                    , $askValidate);
+        } else {
+            $user = $this->getUser();
+            $brands = $this->brandRepository->findByUserOrValidate($user
+            , $page
+            , $limit
+            , $sort
+            , $sortBy
+            , $search
+            , $validate
+            , $askValidate);
+        }
+        $view = $this->view(
+            $brandsAndCount[0]
+        );
+        $view->setHeader('X-Total-Count', $brandsAndCount[1]);
+        $view->setHeader('X-Pagination-Count', $brandsAndCount[2]);
+        $view->setHeader('X-Pagination-Page', $brandsAndCount[3]);
+        $view->setHeader('X-Pagination-Limit', $brandsAndCount[4]);
+        $view->setHeader('Access-Control-Expose-Headers'
+            , 'X-Total-Count, X-Pagination-Count, X-Pagination-Page, X-Pagination-Limit');
+        return $view;
     }
 
     /**

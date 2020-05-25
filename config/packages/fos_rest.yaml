@@ -12,6 +12,7 @@ fos_rest:
         view_response_listener:
             enabled: true
             force: true
+    param_fetcher_listener: true
 #    serializer:
 #        serialize_null: true
 

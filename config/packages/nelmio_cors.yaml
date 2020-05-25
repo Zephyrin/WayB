@@ -12,7 +12,7 @@ nelmio_cors:
     paths:
         '^/api/':
             allow_origin: ['*']
-            allow_headers: ['Content-Type', 'Authorization', 'X-Total-Count']
+            allow_headers: ['Content-Type', 'Authorization', 'X-Total-Count', 'Pagination-Count', 'Pagination-Limit', 'Pagination-Page']
             allow_methods: ['POST', 'PUT', 'GET', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD']
             max_age: 3600
         '^/':

@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Brand;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -15,24 +16,63 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class BrandRepository extends ServiceEntityRepository
 {
+    use AbstractRepository;
+ 
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Brand::class);
     }
 
+    public function findForAmbassador(int $page
+    , int $limit
+    , string $sort
+    , string $sortBy
+    , string $search = null
+    , string $validate = null
+    , string $askValidate = null) {
+        $query = $this->createQueryBuilder('e');
+        $query = $this->search($query, $search);
+        return $this->resultCount($query
+            , $page
+            , $limit
+            , $sort
+            , $sortBy
+            , $validate
+            , $askValidate
+        );
+    }
     // /**
     //  * @return Equipment[] Returns an array of Equipment objects
     //  */
-    public function findByUserOrValidate(User $user)
+    public function findByUserOrValidate(User $user
+    , int $page
+    , int $limit
+    , string $sort
+    , string $sortBy
+    , string $search = null
+    , string $validate = null
+    , string $askValidate = null)
     {
-        return $this->createQueryBuilder('e')
-            ->Where('e.validate = true')
-            ->orWhere('e.createdBy = :val')
-            ->setParameter('val', $user->getId())
-            ->orderBy('e.name', 'ASC')
-            ->getQuery()
-            ->getResult()
-        ;
+        $query = $this->createQueryBuilder('e')
+            ->Where('(e.validate = true OR e.createdBy = :val')
+            ->setParameter('val', $user->getId());
+        $query = $this->search($query, $search);
+        return $this->resultCount($query
+            , $page
+            , $limit
+            , $sort
+            , $sortBy
+            , $validate
+            , $askValidate
+            );
+    }
+
+    private function search(QueryBuilder $query, ?string $search) {
+        if($search != null) {
+            $query = $query->andWhere('(e.name LIKE :search OR e.uri LIKE :search)')
+                ->setParameter('search', '%'.addcslashes($search, '%_').'%');
+        }
+        return $query;
     }
     // /**
     //  * @return Brand[] Returns an array of Brand objects
