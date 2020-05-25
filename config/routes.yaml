@@ -32,9 +32,9 @@ backpack:
 mediaobject:
      type:     rest
      resource: App\Controller\MediaObjectController
-api:
-     prefix: /api
-     resource: '../src/Controller/Api'
+#api:
+#     prefix: /api
+#     resource: '../src/Controller/Api'
 #Documentation
 #app.swagger_ui:
 #     path: /api/doc
