@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Enum\GenderEnum;
 use App\Repository\UserRepository;
+use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -11,6 +12,8 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use JMS\Serializer\Annotation\SerializedName;
 use Swagger\Annotations as SWG;
 use JMS\Serializer\Annotation\Exclude;
+use Symfony\Component\Validator\Constraints as Asset;
+
 
 /**
  * @ORM\Table(name="wuser")
@@ -27,6 +30,7 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
+     * @Asset\NotBlank()
      */
     private $username;
 
@@ -45,6 +49,7 @@ class User implements UserInterface
     /**
      * @ORM\Column(type="string", length=6, nullable=false )
      * @SerializedName("gender")
+     * @Asset\NotBlank()
      * @SWG\Property(
      *     description="The gender of the user."
      *     , enum={GenderEnum::MALE, GenderEnum::FEMALE})
@@ -62,8 +67,17 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Asset\NotBlank()
      */
     private $email;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     * @SWG\Property(
+     *  description="The last login of user")
+     * @var DateTime
+     */
+    private $lastLogin;
 
     public function __construct()
     {
@@ -199,6 +213,17 @@ class User implements UserInterface
     {
         $this->email = $email;
 
+        return $this;
+    }
+
+    public function getLastLogin(): DateTime
+    {
+        return $this->lastLogin;
+    }
+
+    public function setLastLogin(DateTime $lastLogin): self
+    {
+        $this->lastLogin = $lastLogin;
         return $this;
     }
 }

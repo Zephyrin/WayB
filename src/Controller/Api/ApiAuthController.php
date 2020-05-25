@@ -87,7 +87,7 @@ class ApiAuthController extends AbstractController
             , new User()
         );
 
-        $form->submit($data);
+        $form->submit($data, false);
 
         if(false == $form->isValid())
         {
