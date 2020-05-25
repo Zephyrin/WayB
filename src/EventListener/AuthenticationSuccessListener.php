@@ -2,9 +2,11 @@
 
 namespace App\EventListener;
 
+use App\Entity\User as LUser;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\AuthenticationSuccessEvent;
+use Symfony\Component\Security\Core\User\User;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 class AuthenticationSuccessListener
@@ -30,9 +32,22 @@ class AuthenticationSuccessListener
         if (!$user instanceof UserInterface) {
             return;
         }
-        $user->setLastLogin(new DateTime());
-        $this->entityManager->persist($user);
-        $this->entityManager->flush();
+        if ($user instanceof LUser) {
+            $user->setLastLogin(new DateTime());
+            $this->entityManager->persist($user);
+            $this->entityManager->flush();
+        } else if ($user instanceof User) {
+            $existingUser = new LUser();
+            $existingUser->setUsername($user->getUsername());
+            $existingUser->setPassword($user->getPassword());
+            $existingUser->setRoles(['ROLE_SUPER_ADMIN']);
+            $existingUser->setGender('UNISEX');
+            $existingUser->setEmail($user->getUsername());
+            $existingUser->setLastLogin(new DateTime('1953-05-23'));
+            $this->entityManager->persist($existingUser);
+            $this->entityManager->flush();
+        }
+
         
     }
 }

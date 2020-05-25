@@ -7,6 +7,7 @@ use App\Form\UserType;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Serializer\FormErrorSerializer;
+use DateTime;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Routing\ClassResourceInterface;
@@ -165,10 +166,11 @@ class UserController extends AbstractFOSRestController implements ClassResourceI
      */
     public function getAction(Request $request, string $username)
     {
+
         $existingUser = $this->userRepository->findUserByUsernameOrEmail(
             $username
         );
-
+        
         if (null == $existingUser) {
             throw new NotFoundHttpException();
         }
