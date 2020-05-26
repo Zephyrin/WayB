@@ -30,6 +30,12 @@ class IntoBackpack
      */
     private $equipment;
 
+    /**
+     * @ORM\ManyToOne(targetEntity=Backpack::class)
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $backpack;
+
     public function getId(): ?int
     {
         return $this->id;
