@@ -393,8 +393,14 @@ class MediaObjectController extends AbstractFOSRestController implements ClassRe
                 $filename = uniqid() . "." . $type;
             }
             try {
+                $directoryName = $this->getParameter('media_object');
+                //Check if the directory already exists.
+                if(!is_dir($directoryName)){
+                    //Directory does not exist, so lets create it.
+                    mkdir($directoryName, 0755);
+                }
                 file_put_contents(
-                    $this->getParameter('media_object') . "/" . $filename,
+                    $directoryName . "/" . $filename,
                     $img
                 );
             } catch (FileException $e) {
