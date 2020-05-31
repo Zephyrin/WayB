@@ -29,3 +29,7 @@ sqlite3.def
 sqlite3.dll
 ### Symfony server
 .web-server-pid
+
+###> symfony/web-server-bundle ###
+/.web-server-pid
+###< symfony/web-server-bundle ###

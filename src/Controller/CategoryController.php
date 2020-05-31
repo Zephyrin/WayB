@@ -19,6 +19,8 @@ use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Doctrine\Common\Collections\Collection;
+use FOS\RestBundle\Request\ParamFetcher;
+use FOS\RestBundle\Controller\Annotations\QueryParam;
 
 /**
  * @Rest\RouteResource(
@@ -43,14 +45,13 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
     /**
      * @var FormErrorSerializer
      */
-   private $formErrorSerializer;
+    private $formErrorSerializer;
 
-   public function __construct(
+    public function __construct(
         EntityManagerInterface $entityManager,
         CategoryRepository $categoryRepository,
         FormErrorSerializer $formErrorSerializer
-    )
-    {
+    ) {
         $this->entityManager = $entityManager;
         $this->categoryRepository = $categoryRepository;
         $this->formErrorSerializer = $formErrorSerializer;
@@ -103,7 +104,7 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
 
         $form->submit(
             $data
-            );
+        );
         if (false === $form->isValid()) {
             return new JsonResponse(
                 [
@@ -117,8 +118,10 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
 
         $insertData = $form->getData();
         $insertData->setCreatedBy($connectUser);
-        if (!$this->isGranted("ROLE_AMBASSADOR")
-        || $insertData->getValidate() === null)
+        if (
+            !$this->isGranted("ROLE_AMBASSADOR")
+            || $insertData->getValidate() === null
+        )
             $insertData->setValidate(false);
 
         $this->entityManager->persist($insertData);
@@ -126,7 +129,8 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
         $this->entityManager->flush();
         return  $this->view(
             $insertData,
-            Response::HTTP_CREATED);
+            Response::HTTP_CREATED
+        );
     }
 
     /**
@@ -180,31 +184,113 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
      *     )
      * )
      *
+     * @QueryParam(name="page"
+     * , requirements="\d+"
+     * , default="1"
+     * , description="Page of the overview.")
+     * @QueryParam(name="limit"
+     * , requirements="\d+"
+     * , default="10"
+     * , description="Item count limit")
+     * @QueryParam(name="noPagination"
+     * , requirements="(true|false)"
+     * , default=false
+     * , description="Don't care about pagination")
+     * @QueryParam(name="sort"
+     * , requirements="(asc|desc)"
+     * , allowBlank=false
+     * , default="asc"
+     * , description="Sort direction")
+     * @QueryParam(name="sortBy"
+     * , requirements="(name|validate|askValidate)"
+     * , default="name"
+     * , description="Sort by name or validate or ask validate")
+     * @QueryParam(name="search"
+     * , nullable=true
+     * , description="Search on name and sub-category's name")
+     * @QueryParam(name="validate"
+     * , nullable=true
+     * , allowBlank=true
+     * , requirements="(false|true)"
+     * , description="Item validate or not")
+     * @QueryParam(name="askValidate"
+     * , nullable=true
+     * , allowBlank=true
+     * , requirements="(false|true)"
+     * , description="Item asked to be validated or not")
+     * @QueryParam(name="subCategoryCount"
+     * , requirements="(l|le|e|g|ge)(\d+)((l|le|e|g|ge)(\d+))?"
+     * , nullable=true
+     * , description="Retourne only category which have greater or equal or lower than the number")
      *
      * @return \FOS\RestBundle\View\View
      */
-    public function cgetAction()
+    public function cgetAction(ParamFetcher $paramFetcher)
     {
+        $page = $paramFetcher->get('page');
+        $limit = $paramFetcher->get('limit');
+        $noPagination = $paramFetcher->get('noPagination');
+        $sort = $paramFetcher->get('sort');
+        $sortBy = $paramFetcher->get('sortBy');
+        $search = $paramFetcher->get('search');
+        $validate = $paramFetcher->get('validate');
+        $askValidate = $paramFetcher->get('askValidate');
+        $subCategoryCount = $paramFetcher->get('subCategoryCount');
+        $categoryAndCount = [];
         $result = null;
-        if($this->isGranted("ROLE_AMBASSADOR")) {
-            $result = $this->categoryRepository->findAll();
+        if ($this->isGranted("ROLE_AMBASSADOR")) {
+            $categoryAndCount = $this->categoryRepository->findForAmbassador(
+                $page,
+                $limit,
+                $noPagination == 'true' ? true : false,
+                $sort,
+                $sortBy,
+                $search,
+                $validate,
+                $askValidate,
+                $subCategoryCount
+            );
         } else {
             $user = $this->getUser();
-            $result = $this->categoryRepository->findByUserOrValidate($user);
-            foreach($result as $cat) {
+            $categoryAndCount = $this->categoryRepository->findByUserOrValidate(
+                $user,
+                $page,
+                $noPagination == 'true' ? true : false,
+                $limit,
+                $sort,
+                $sortBy,
+                $search,
+                $validate,
+                $askValidate,
+                $subCategoryCount
+            );
+            foreach ($categoryAndCount[0] as $cat) {
                 $subs = $cat->getSubCategories();
-                for($i = count($subs) - 1; $i >= 0; $i--) {
-                    if(!($subs[$i]->getValidate() || $subs[$i]->getCreatedBy() == $user)) {
+                for ($i = count($subs) - 1; $i >= 0; $i--) {
+                    if (!($subs[$i]->getValidate() || $subs[$i]->getCreatedBy() == $user)) {
                         $cat->removeSubCategory($subs[$i]);
                     }
                 }
             }
         }
         $view = $this->view(
-            $result
+            $categoryAndCount[0]
         );
-        $view->setHeader('X-Total-Count', count($result));
-        $view->setHeader('Access-Control-Expose-Headers', 'X-Total-Count');
+        $view->setHeader('X-Total-Count', $categoryAndCount[1]);
+        if (!$noPagination) {
+            $view->setHeader('X-Pagination-Count', $categoryAndCount[2]);
+            $view->setHeader('X-Pagination-Page',  $categoryAndCount[3]);
+            $view->setHeader('X-Pagination-Limit', $categoryAndCount[4]);
+            $view->setHeader(
+                'Access-Control-Expose-Headers',
+                'X-Total-Count, X-Pagination-Count, X-Pagination-Page, X-Pagination-Limit'
+            );
+        } else {
+            $view->setHeader(
+                'Access-Control-Expose-Headers',
+                'X-Total-Count'
+            );   
+        }
         return $view;
     }
 
@@ -256,7 +342,7 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
     {
         $connectUser = $this->getUser();
         $existingCategory = $this->findCategoryById($id);
-        if($existingCategory->getCreatedBy() !== $connectUser)
+        if ($existingCategory->getCreatedBy() !== $connectUser)
             $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
         $form = $this->createForm(CategoryType::class, $existingCategory);
         $data = $request->request->all();
@@ -272,9 +358,8 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
                 ],
                 JsonResponse::HTTP_UNPROCESSABLE_ENTITY
             );
-
         }
-        if($existingCategory->getValidate() !== $validate) {
+        if ($existingCategory->getValidate() !== $validate) {
             $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
         }
         $this->entityManager->flush();
@@ -333,7 +418,7 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
     {
         $connectUser = $this->getUser();
         $existingCategory = $this->findCategoryById($id);
-        if($existingCategory->getCreatedBy() !== $connectUser)
+        if ($existingCategory->getCreatedBy() !== $connectUser)
             $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
 
         $validate = $existingCategory->getValidate();
@@ -353,7 +438,7 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
                 JsonResponse::HTTP_UNPROCESSABLE_ENTITY
             );
         }
-        if($existingCategory->getValidate() !== $validate) {
+        if ($existingCategory->getValidate() !== $validate) {
             $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
         }
 
@@ -394,16 +479,18 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
     public function deleteAction(string $id)
     {
         $category = $this->findCategoryById($id);
-        if($category->getCreatedBy() !== $this->getUser()) 
-            $this->denyAccessUnlessGranted("ROLE_ADMIN"
-                , null
-                , "This category don't belong to you and your are not an admin.");
+        if ($category->getCreatedBy() !== $this->getUser())
+            $this->denyAccessUnlessGranted(
+                "ROLE_ADMIN",
+                null,
+                "This category don't belong to you and your are not an admin."
+            );
         if (count($category->getSubCategories()) < 1) {
-            $this->entityManager->remove($category);    
+            $this->entityManager->remove($category);
             $this->entityManager->flush();
-            return $this->view(null, Response::HTTP_NO_CONTENT);   
+            return $this->view(null, Response::HTTP_NO_CONTENT);
         }
-        if(count($category->getSubCategories()) > 0) {
+        if (count($category->getSubCategories()) > 0) {
             return new JsonResponse(
                 [
                     'status' => 'error',

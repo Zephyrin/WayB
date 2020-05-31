@@ -44,10 +44,14 @@ class EquipmentRepository extends ServiceEntityRepository
         return $this->resultCount($query
             , $page
             , $limit
+            , false
             , $sort
             , $sortBy
             , $validate
             , $askValidate
+            , null
+            , null
+            , null
         );
     }
 
@@ -76,10 +80,14 @@ class EquipmentRepository extends ServiceEntityRepository
         return $this->resultCount($query
             , $page
             , $limit
+            , false
             , $sort
             , $sortBy
             , $validate
             , $askValidate
+            , null
+            , null
+            , null
         );
     }
 

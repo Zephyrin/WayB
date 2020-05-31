@@ -35,10 +35,14 @@ class BrandRepository extends ServiceEntityRepository
         return $this->resultCount($query
             , $page
             , $limit
+            , false
             , $sort
             , $sortBy
             , $validate
             , $askValidate
+            , null
+            , null
+            , null
         );
     }
     // /**
@@ -60,10 +64,14 @@ class BrandRepository extends ServiceEntityRepository
         return $this->resultCount($query
             , $page
             , $limit
+            , false
             , $sort
             , $sortBy
             , $validate
             , $askValidate
+            , null
+            , null
+            , null
             );
     }
 
