@@ -47,8 +47,7 @@ trait AbstractRepository
     ?string $parentName,
     ?string $countExp,
     string $preParamName
-  )
-  {
+  ) {
     if ($countExp) {
       preg_match('/(l|le|e|g|ge)(\d+)((l|le|e|g|ge)(\d+))?/', $countExp, $match, PREG_UNMATCHED_AS_NULL);
       $sup = null;
@@ -81,20 +80,20 @@ trait AbstractRepository
       }
       $subQuery = '(select count(s.id) from ' . $entityName . ' s where e.id = s.' . $parentName . ')';
       if ($sup != null)
-        $query = $query->andWhere($subQuery . ' > :'.$preParamName.'sup')
-          ->setParameter($preParamName.'sup', $sup);
+        $query = $query->andWhere($subQuery . ' > :' . $preParamName . 'sup')
+          ->setParameter($preParamName . 'sup', $sup);
       if ($supE != null)
-        $query = $query->andWhere($subQuery . ' >= :'.$preParamName.'supE')
-          ->setParameter($preParamName.'supE', $supE);
+        $query = $query->andWhere($subQuery . ' >= :' . $preParamName . 'supE')
+          ->setParameter($preParamName . 'supE', $supE);
       if ($eq != null)
-        $query = $query->andWhere($subQuery . ' == :'.$preParamName.'eq')
-          ->setParameter($preParamName.'eq', $eq);
+        $query = $query->andWhere($subQuery . ' == :' . $preParamName . 'eq')
+          ->setParameter($preParamName . 'eq', $eq);
       if ($lower != null)
-        $query = $query->andWhere($subQuery . ' < :'.$preParamName.'lower')
-          ->setParameter($preParamName.'lower', $lower);
+        $query = $query->andWhere($subQuery . ' < :' . $preParamName . 'lower')
+          ->setParameter($preParamName . 'lower', $lower);
       if ($lowerE != null)
-        $query = $query->andWhere($subQuery . ' > :'.$preParamName.'lowerE')
-          ->setParameter($preParamName.'lowerE', $lowerE);
+        $query = $query->andWhere($subQuery . ' > :' . $preParamName . 'lowerE')
+          ->setParameter($preParamName . 'lowerE', $lowerE);
     }
     return $query;
   }
@@ -112,7 +111,11 @@ trait AbstractRepository
     $page = $this->getPage($page);
     $limit = $this->getLimit($limit);
     $offset = $this->getOffset($page, $limit);
-    $lSortBy = 'e.' . $sortBy;
+    if (strpos($sortBy, 'COUNT') === false) {
+      $lSortBy = 'e.' . $sortBy;
+    } else {
+      $lSortBy = $sortBy;
+    }
 
     if ($validate != null) {
       $val = $validate == 'false' ? false : true;
@@ -131,12 +134,14 @@ trait AbstractRepository
       ->getQuery()->getSingleScalarResult();
     if ($noPagination) {
       $ret = $query
+        ->groupBy('e.id')
         ->orderBy($lSortBy, $sort)
         ->getQuery()->getResult();
     } else {
       $ret = $query
         ->setMaxResults($limit)
         ->setFirstResult($offset)
+        ->groupBy('e.id')
         ->orderBy($lSortBy, $sort)
         ->getQuery()->getResult();
     }

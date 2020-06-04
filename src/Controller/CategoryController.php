@@ -202,7 +202,7 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
      * , default="asc"
      * , description="Sort direction")
      * @QueryParam(name="sortBy"
-     * , requirements="(name|validate|askValidate)"
+     * , requirements="(name|validate|askValidate|subCategoryCount)"
      * , default="name"
      * , description="Sort by name or validate or ask validate")
      * @QueryParam(name="search"
@@ -237,7 +237,6 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
         $askValidate = $paramFetcher->get('askValidate');
         $subCategoryCount = $paramFetcher->get('subCategoryCount');
         $categoryAndCount = [];
-        $result = null;
         if ($this->isGranted("ROLE_AMBASSADOR")) {
             $categoryAndCount = $this->categoryRepository->findForAmbassador(
                 $page,

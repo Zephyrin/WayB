@@ -35,8 +35,13 @@ class CategoryRepository extends ServiceEntityRepository
         ?string $validate,
         ?string $askValidate,
         ?string $subCategoryCount
-    ) {$query = $this->createQueryBuilder('e');
+    ) {
+        $query = $this->createQueryBuilder('e');
         $query = $this->search($query, $search);
+        if($sortBy == 'subCategoryCount') {
+            $sortBy = 'COUNT(subs)';
+            $query = $query->leftJoin('e.subCategories', 'subs');
+        }
         $query = $this->setLowerGreaterEqual($query, "App\Entity\SubCategory", "category", $subCategoryCount, "catSubCat");
         return $this->resultCount(
             $query,
@@ -69,6 +74,10 @@ class CategoryRepository extends ServiceEntityRepository
             ->Where('(e.validate = true OR e.createdBy = :val')
             ->setParameter('val', $user->getId());
         $query = $this->search($query, $search);
+        if($sortBy == 'subCategoryCount') {
+            $sortBy = 'COUNT(subs)';
+            $query = $query->leftJoin('e.subCategories', 'subs');
+        }
         $query = $this->setLowerGreaterEqual($query, "App\Entity\SubCategory", "category", $subCategoryCount, "catSubCat");
         return $this->resultCount(
             $query,
