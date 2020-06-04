@@ -6,6 +6,7 @@ use App\Entity\Category;
 use App\Entity\SubCategory;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Query\AST\Functions\LowerFunction;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -24,74 +25,75 @@ class CategoryRepository extends ServiceEntityRepository
         parent::__construct($registry, Category::class);
     }
 
-    public function findForAmbassador(int $page
-    , int $limit
-    , bool $noPagination
-    , string $sort
-    , string $sortBy
-    , string $search = null
-    , string $validate = null
-    , string $askValidate = null
-    , string $subCategoryCount = null) {
-        $query = $this->createQueryBuilder('e');
+    public function findForAmbassador(
+        int $page,
+        int $limit,
+        bool $noPagination,
+        string $sort,
+        string $sortBy,
+        ?string $search,
+        ?string $validate,
+        ?string $askValidate,
+        ?string $subCategoryCount
+    ) {$query = $this->createQueryBuilder('e');
         $query = $this->search($query, $search);
-        return $this->resultCount($query
-            , $page
-            , $limit
-            , $noPagination
-            , $sort
-            , $sortBy
-            , $validate
-            , $askValidate
-            , "App\Entity\SubCategory"
-            , "category"
-            , $subCategoryCount
+        $query = $this->setLowerGreaterEqual($query, "App\Entity\SubCategory", "category", $subCategoryCount, "catSubCat");
+        return $this->resultCount(
+            $query,
+            $page,
+            $limit,
+            $noPagination,
+            $sort,
+            $sortBy,
+            $validate,
+            $askValidate
         );
     }
 
     // /**
     //  * @return Category[] Returns an array of Category objects
     //  */
-    public function findByUserOrValidate(User $user
-    , int $page
-    , int $limit
-    , bool $noPagination
-    , string $sort
-    , string $sortBy
-    , string $search = null
-    , string $validate = null
-    , string $askValidate = null
-    , string $subCategoryCount = null)
-    {
+    public function findByUserOrValidate(
+        User $user,
+        int $page,
+        int $limit,
+        bool $noPagination,
+        string $sort,
+        string $sortBy,
+        ?string $search,
+        ?string $validate,
+        ?string $askValidate,
+        ?string $subCategoryCount
+    ) {
         $query = $this->createQueryBuilder('e')
             ->Where('(e.validate = true OR e.createdBy = :val')
             ->setParameter('val', $user->getId());
         $query = $this->search($query, $search);
-        return $this->resultCount($query
-            , $page
-            , $limit
-            , $noPagination
-            , $sort
-            , $sortBy
-            , $validate
-            , $askValidate
-            , "App\Entity\SubCategory"
-            , "category"
-            , $subCategoryCount
-            );
+        $query = $this->setLowerGreaterEqual($query, "App\Entity\SubCategory", "category", $subCategoryCount, "catSubCat");
+        return $this->resultCount(
+            $query,
+            $page,
+            $limit,
+            $noPagination,
+            $sort,
+            $sortBy,
+            $validate,
+            $askValidate
+        );
     }
 
-    private function search(QueryBuilder $query, ?string $search) {
-        if($search != null) {
-            $query = $query->andWhere('(e.name LIKE :search OR e.sub_category.name LIKE :search)')
-                ->setParameter('search', '%'.addcslashes($search, '%_').'%');
+    private function search(QueryBuilder $query, ?string $search)
+    {
+        if ($search != null) {
+            $query = $query->leftJoin('e.subCategories', 'subCat');
+            $query = $query->andWhere('(LOWER(e.name) LIKE :search OR LOWER(subCat.name) LIKE :search)')
+                ->setParameter('search', '%' . addcslashes(strtolower($search), '%_') . '%');
         }
         return $query;
     }
     // /**
     //  * @return Category[] Returns an array of Category objects
     //  */
-
     public function findById($value)
     {
         return $this->createQueryBuilder('c')
@@ -100,17 +102,4 @@ class CategoryRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
-
-
-    /*
-    public function findOneBySomeField($value): ?Category
-    {
-        return $this->createQueryBuilder('c')
-            ->andWhere('c.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-    */
 }

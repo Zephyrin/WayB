@@ -40,9 +40,6 @@ class BrandRepository extends ServiceEntityRepository
             , $sortBy
             , $validate
             , $askValidate
-            , null
-            , null
-            , null
         );
     }
     // /**
@@ -69,45 +66,14 @@ class BrandRepository extends ServiceEntityRepository
             , $sortBy
             , $validate
             , $askValidate
-            , null
-            , null
-            , null
             );
     }
 
     private function search(QueryBuilder $query, ?string $search) {
         if($search != null) {
-            $query = $query->andWhere('(e.name LIKE :search OR e.uri LIKE :search)')
-                ->setParameter('search', '%'.addcslashes($search, '%_').'%');
+            $query = $query->andWhere('(LOWER(e.name) LIKE :search OR LOWER(e.uri) LIKE :search)')
+                ->setParameter('search', '%'.addcslashes(strtolower($search), '%_').'%');
         }
         return $query;
     }
-    // /**
-    //  * @return Brand[] Returns an array of Brand objects
-    //  */
-    /*
-    public function findByExampleField($value)
-    {
-        return $this->createQueryBuilder('b')
-            ->andWhere('b.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('b.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
-
-    /*
-    public function findOneBySomeField($value): ?Brand
-    {
-        return $this->createQueryBuilder('b')
-            ->andWhere('b.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-    */
 }

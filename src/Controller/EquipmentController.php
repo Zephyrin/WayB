@@ -253,14 +253,18 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
      * , nullable=true
      * , requirements="(gt\d+)?(lt\d+)?(eq\d+)?"
      * , description="Retrieve all equipment that have a price greater than x or lower than x or equal x")
-     * @QueryParam(name="own"
+     * @QueryParam(name="owned"
      * , nullable=true
      * , requirements="(gt\d+)?(lt\d+)?(eq\d+)?"
      * , description="Retrieve all equipment that user have greater than x or lower than x or equal x")
-     * @QueryParam(name="wish"
+     * @QueryParam(name="wishes"
      * , nullable=true
      * , requirements="(gt\d+)?(lt\d+)?(eq\d+)?"
      * , description="Retrieve all equipment that user wish greater than x or lower than x or equal x")
+     * @QueryParam(name="others"
+     * , nullable=true
+     * , requirements="(true|false)"
+     * , description="Retrieve all equipment that user does not wish and does not owned")
      * @QueryParam(name="validate"
      * , nullable=true
      * , allowBlank=true
@@ -271,6 +275,16 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
      * , allowBlank=true
      * , requirements="(false|true)"
      * , description="Item validate or not")
+     * @QueryParam(name="belongToSubCategories"
+     * , nullable=true
+     * , allowBlank=true
+     * , requirements="\[\d+(,\d+)*\]"
+     * , description="list of sub-category id that equipment belong to. Empty means all")
+     * @QueryParam(name="belongToBrands"
+     * , nullable=true
+     * , allowBlank=true
+     * , requirements="\[\d+(,\d+)*\]"
+     * , description="list of brand id that equipment belong to. Empty means all")
      * @param Request $request
      * @return \FOS\RestBundle\View\View
      */
@@ -285,8 +299,11 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
         $askValidate = $paramFetcher->get('askValidate');
         $weight = $paramFetcher->get('weight');
         $price = $paramFetcher->get('price');
-        $own = $paramFetcher->get('own');
-        $wish = $paramFetcher->get('wish');
+        $owned = $paramFetcher->get('owned');
+        $wishes = $paramFetcher->get('wishes');
+        $others = $paramFetcher->get('others');
+        $belongToSubCategories = $paramFetcher->get('belongToSubCategories');
+        $belongToBrands = $paramFetcher->get('belongToBrands');
         $equipments = null;
         if($this->isGranted("ROLE_AMBASSADOR"))
             $equipments = $this->equipmentRepository->findForAmbassador(
@@ -299,8 +316,11 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
                 , $askValidate
                 , $weight
                 , $price
-                , $own
-                , $wish
+                , $owned
+                , $wishes
+                , $others
+                , $belongToSubCategories
+                , $belongToBrands
             );
         else {
             $user = $this->getUser();
@@ -314,8 +334,12 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
                 , $askValidate
                 , $weight
                 , $price
-                , $own
-                , $wish);
+                , $owned
+                , $wishes
+                , $others
+                , $belongToSubCategories
+                , $belongToBrands    
+            );
             foreach($equipments as $eq) {
                 $cha = $eq->getCharacteristics();
                 for($i = count($cha) - 1; $i >= 0; $i--) {

@@ -27,67 +27,88 @@ class EquipmentRepository extends ServiceEntityRepository
     //  * @return Equipment[] Returns an array of Equipment objects
     //  */
     public function findForAmbassador(
-    int $page
-    , int $limit
-    , string $sort
-    , string $sortBy
-    , string $search = null
-    , string $validate = null
-    , string $askValidate = null
-    , string $weight = null
-    , string $price = null
-    , string $own = null
-    , string $wish = null)
-    {
+        int $page,
+        int $limit,
+        ?string $sort,
+        ?string $sortBy,
+        ?string $search,
+        ?string $validate,
+        ?string $askValidate,
+        ?string $weight,
+        ?string $price,
+        ?string $own,
+        ?string $wish,
+        ?string $others,
+        ?string $belongToSubCategories,
+        ?string $belongToBrands
+    ) {
         $query = $this->createQueryBuilder('e');
-        $query = $this->search($query, $search, $weight, $price, $own, $wish);
-        return $this->resultCount($query
-            , $page
-            , $limit
-            , false
-            , $sort
-            , $sortBy
-            , $validate
-            , $askValidate
-            , null
-            , null
-            , null
+        $query = $this->search(
+            $query,
+            $search,
+            $weight,
+            $price,
+            $own,
+            $wish,
+            $others,
+            $belongToSubCategories,
+            $belongToBrands
+        );
+        return $this->resultCount(
+            $query,
+            $page,
+            $limit,
+            false,
+            $sort,
+            $sortBy,
+            $validate,
+            $askValidate
         );
     }
 
     // /**
     //  * @return Equipment[] Returns an array of Equipment objects
     //  */
-    public function findByUserOrValidate(User $user
-    , int $page
-    , int $limit
-    , string $sort
-    , string $sortBy
-    , string $search = null
-    , string $validate = null
-    , string $askValidate = null
-    , string $weight = null
-    , string $price = null
-    , string $own = null
-    , string $wish = null)
-    {
+    public function findByUserOrValidate(
+        User $user,
+        int $page,
+        int $limit,
+        ?string $sort,
+        ?string $sortBy,
+        ?string $search,
+        ?string $validate,
+        ?string $askValidate,
+        ?string $weight,
+        ?string $price,
+        ?string $own,
+        ?string $wish,
+        ?string $others,
+        ?string $belongToSubCategories,
+        ?string $belongToBrands
+    ) {
         $query = $this->createQueryBuilder('e')
-            ->Where('e.validate = true')
-            ->orWhere('e.createdBy = :val')
-            ->setParameter('val', $user->getId()
+            ->Where('(e.validate = true OR e.createdBy = :user')
+            ->setParameter('user', $user->getId());
+        $query = $this->search(
+            $query,
+            $search,
+            $weight,
+            $price,
+            $own,
+            $wish,
+            $others,
+            $belongToSubCategories,
+            $belongToBrands
         );
-        $query = $this->search($query, $search, $weight, $price, $own, $wish);
-        return $this->resultCount($query
-            , $page
-            , $limit
-            , false
-            , $sort
-            , $sortBy
-            , $validate
-            , $askValidate
-            , null
-            , null
-            , null
+        return $this->resultCount(
+            $query,
+            $page,
+            $limit,
+            false,
+            $sort,
+            $sortBy,
+            $validate,
+            $askValidate
         );
     }
 
@@ -97,32 +118,36 @@ class EquipmentRepository extends ServiceEntityRepository
         , ?string $weight
         , ?string $price
         , ?string $own
-        , ?string $wish) {
-        if($search != null) {
+        , ?string $wish
+        , ?string $others
+        , ?string $belongToSubCategories
+        , ?string $belongToBrands
+    ) {
+        if ($search != null) {
             $query = $query->leftJoin('e.brand', 'brand')
                 ->leftJoin('e.subCategory', 'sub')
                 ->leftJoin('sub.category', 'cat')
-                ->andWhere('(e.name LIKE :search OR e.description LIKE :search OR brand.name LIKE :search OR sub.name LIKE :search OR cat.name LIKE :search)')
-                ->setParameter('search', '%'.addcslashes($search, '%_').'%');
+                ->andWhere('(LOWER(e.name) LIKE :search OR LOWER(e.description) LIKE :search OR LOWER(brand.name) LIKE :search OR LOWER(sub.name) LIKE :search OR LOWER(cat.name) LIKE :search)')
+                ->setParameter('search', '%' . addcslashes(strtolower($search), '%_') . '%');
         }
-        
-        $query = $this->setLowerGreaterEq($query, $weight, 'e.characteristics', 'chara', 'weight');
-        $query = $this->setLowerGreaterEq($query, $price, 'e.characteristics', 'chara', 'price');
-        $query = $this->setLowerGreaterEq($query, $own, 'e.characteristics', 'chara', 'own');
-        $query = $this->setLowerGreaterEq($query, $wish, 'e.characteristics', 'chara', 'wish');
-            
+        if ($others != null) {
+            $eqOrSup = $others == 'true' ? '=' : '>';
+            $query = $query->andWhere('(select count(chara.id) from App\\Entity\\Characteristic chara where chara.equipment = e.id)' . $eqOrSup . '0');
+        }
+        if ($belongToSubCategories != null) {
+            $array = json_decode($belongToSubCategories);
+            $query = $query->andWhere('e.subCategory in (:belongSub)')
+                ->setParameter('belongSub', $array);
+        }
+        if ($belongToBrands != null) {
+            $array = json_decode($belongToBrands);
+            $query = $query->andWhere('e.brand in (:belongBrand)')
+                ->setParameter('belongBrand', $array);
+        }
+        $query = $this->setLowerGreaterEqual($query, "App\Entity\Characteristic", "equipment", $weight, "weight");
+        $query = $this->setLowerGreaterEqual($query, "App\Entity\Characteristic", "equipment", $price, "price");
+        $query = $this->setLowerGreaterEqual($query, "App\Entity\Characteristic", "equipment", $own, "own");
+        $query = $this->setLowerGreaterEqual($query, "App\Entity\Characteristic", "equipment", $wish, "wish");
         return $query;
     }
-
-    /*
-    public function findOneBySomeField($value): ?Equipment
-    {
-        return $this->createQueryBuilder('e')
-            ->andWhere('e.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-    */
 }
