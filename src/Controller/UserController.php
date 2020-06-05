@@ -18,6 +18,8 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use FOS\RestBundle\Controller\Annotations\QueryParam;
+use FOS\RestBundle\Request\ParamFetcher;
 
 /**
  * @Rest\RouteResource(
@@ -49,8 +51,7 @@ class UserController extends AbstractFOSRestController implements ClassResourceI
         EntityManagerInterface $entityManager,
         UserRepository $userRepository,
         FormErrorSerializer $formErrorSerializer
-    )
-    {
+    ) {
         $this->entityManager = $entityManager;
         $this->userRepository = $userRepository;
         $this->formErrorSerializer = $formErrorSerializer;
@@ -110,18 +111,14 @@ class UserController extends AbstractFOSRestController implements ClassResourceI
             $request
             , false); */
         $partialUser = $request->request->all();
-        if(array_key_exists("roles", $partialUser)){
-           /*  $roles = $existingUser->getRoles();
-            foreach($roles as $role) {
-                $existingUser->removeRole($role);
+        if (array_key_exists("roles", $partialUser)) {
+            foreach ($partialUser["roles"] as $role) {
+                $existingUser->setRoles($partialUser["roles"]);
             }
-            foreach($partialUser["roles"] as $role) {
-                $existingUser->addRole($role);
-            } */
         }
 
         $form->submit($request->request->all(), false);
-        if (/*!$form->isSubmitted() ||*/ false === $form->isValid()) {
+        if (/*!$form->isSubmitted() ||*/false === $form->isValid()) {
             return new JsonResponse(
                 [
                     'status' => 'error',
@@ -170,7 +167,7 @@ class UserController extends AbstractFOSRestController implements ClassResourceI
         $existingUser = $this->userRepository->findUserByUsernameOrEmail(
             $username
         );
-        
+
         if (null == $existingUser) {
             throw new NotFoundHttpException();
         }
@@ -193,13 +190,54 @@ class UserController extends AbstractFOSRestController implements ClassResourceI
      *     )
      * )
      *
-     *
+     * @QueryParam(name="page"
+     * , requirements="\d+"
+     * , default="1"
+     * , description="Page of the overview.")
+     * @QueryParam(name="limit"
+     * , requirements="\d+"
+     * , default="10"
+     * , description="Item count limit")
+     * @QueryParam(name="sort"
+     * , requirements="(asc|desc)"
+     * , allowBlank=false
+     * , default="asc"
+     * , description="Sort direction")
+     * @QueryParam(name="sortBy"
+     * , requirements="(username|roles|gender|email|lastLogin)"
+     * , default="username"
+     * , description="Sort by name or uri")
+     * @QueryParam(name="search"
+     * , nullable=true
+     * , description="Search on name and uri")
+     * 
      * @return \FOS\RestBundle\View\View
      */
-    public function cgetAction()
+    public function cgetAction(ParamFetcher $paramFetcher)
     {
-        return $this->view(
-            $this->userRepository->findUsers()    
+        $page = $paramFetcher->get('page');
+        $limit = $paramFetcher->get('limit');
+        $sort = $paramFetcher->get('sort');
+        $sortBy = $paramFetcher->get('sortBy');
+        $search = $paramFetcher->get('search');
+        $usersAndCount = $this->userRepository->findByParams(
+            $page,
+            $limit,
+            $sort,
+            $sortBy,
+            $search
         );
+        $view = $this->view(
+            $usersAndCount[0]
+        );
+        $view->setHeader('X-Total-Count', $usersAndCount[1]);
+        $view->setHeader('X-Pagination-Count', $usersAndCount[2]);
+        $view->setHeader('X-Pagination-Page', $usersAndCount[3]);
+        $view->setHeader('X-Pagination-Limit', $usersAndCount[4]);
+        $view->setHeader(
+            'Access-Control-Expose-Headers',
+            'X-Total-Count, X-Pagination-Count, X-Pagination-Page, X-Pagination-Limit'
+        );
+        return $view;
     }
 }

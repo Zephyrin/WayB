@@ -73,6 +73,7 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
+     * @SerializedName("lastLogin")
      * @SWG\Property(
      *  description="The last login of user")
      * @var DateTime

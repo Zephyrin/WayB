@@ -8,6 +8,7 @@ use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Doctrine\ORM\QueryBuilder;
 
 /**
  * @method UserN|null find($id, $lockMode = null, $lockVersion = null)
@@ -17,6 +18,8 @@ use Symfony\Component\Security\Core\User\UserInterface;
  */
 class UserRepository extends ServiceEntityRepository implements PasswordUpgraderInterface
 {
+    use AbstractRepository;
+    
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, User::class);
@@ -36,42 +39,42 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->_em->flush();
     }
 
-    public function findUserByUsernameOrEmail(string $username) {
+    public function findUserByUsernameOrEmail(string $username)
+    {
         return $this->createQueryBuilder('u')
             ->andWhere('u.username = :val OR u.email = :val')
             ->setParameter('val', $username)
             ->orderBy('u.id', 'ASC')
             ->setMaxResults(10)
             ->getQuery()
-            ->getOneOrNullResult()
-        ;
+            ->getOneOrNullResult();
     }
-    // /**
-    //  * @return UserN[] Returns an array of UserN objects
-    //  */
-    /*
-    public function findByExampleField($value)
-    {
-        return $this->createQueryBuilder('u')
-            ->andWhere('u.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('u.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
 
-    /*
-    public function findOneBySomeField($value): ?UserN
-    {
-        return $this->createQueryBuilder('u')
-            ->andWhere('u.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
+    public function findByParams(
+        int $page,
+        int $limit,
+        string $sort,
+        string $sortBy,
+        ?string $search
+    ) {
+        $query = $this->createQueryBuilder('e');
+        $query = $this->search($query, $search);
+        return $this->resultCount($query
+            , $page
+            , $limit
+            , false
+            , $sort
+            , $sortBy
+            , null
+            , null
+        );
     }
-    */
+
+    private function search(QueryBuilder $query, ?string $search) {
+        if($search != null) {
+            $query = $query->andWhere('(LOWER(e.username) LIKE :search OR LOWER(e.email) LIKE :search)')
+                ->setParameter('search', '%'.addcslashes(strtolower($search), '%_').'%');
+        }
+        return $query;
+    }
 }
