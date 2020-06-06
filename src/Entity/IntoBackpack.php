@@ -31,7 +31,7 @@ class IntoBackpack
     private $equipment;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Backpack::class)
+     * @ORM\ManyToOne(targetEntity=Backpack::class, inversedBy="intoBackpacks")
      * @ORM\JoinColumn(nullable=false)
      */
     private $backpack;

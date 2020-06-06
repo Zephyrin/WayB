@@ -6,6 +6,7 @@ use App\Entity\Backpack;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\QueryBuilder;
 
 /**
  * @method Backpack|null find($id, $lockMode = null, $lockVersion = null)
@@ -15,48 +16,42 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class BackpackRepository extends ServiceEntityRepository
 {
+    use AbstractRepository;
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Backpack::class);
     }
 
-    public function findAllOfUser(User $user) {
-        return $this->createQueryBuilder('h')
-            ->Where('h.createdBy = :val')
-            ->setParameter('val', $user->getId())
-            ->orderBy('h.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
+    public function findByUser(
+        User $user,
+        int $page,
+        int $limit,
+        string $sort,
+        string $sortBy,
+        ?string $search
+    ) {
+        $query = $this->createQueryBuilder('e')
+            ->Where('e.createdBy = :val')
+            ->setParameter('val', $user->getId());
+        $query = $this->search($query, $search);
+        return $this->resultCount(
+            $query,
+            $page,
+            $limit,
+            false,
+            $sort,
+            $sortBy,
+            null,
+            null
+        );
     }
-
-    // /**
-    //  * @return Backpack[] Returns an array of Backpack objects
-    //  */
-    /*
-    public function findByExampleField($value)
+    private function search(QueryBuilder $query, ?string $search)
     {
-        return $this->createQueryBuilder('b')
-            ->andWhere('b.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('b.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
+        if ($search != null) {
+            $query = $query->andWhere('(LOWER(e.name) LIKE :search)')
+                ->setParameter('search', '%' . addcslashes(strtolower($search), '%_') . '%');
+        }
+        return $query;
     }
-    */
-
-    /*
-    public function findOneBySomeField($value): ?Backpack
-    {
-        return $this->createQueryBuilder('b')
-            ->andWhere('b.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-    */
 }

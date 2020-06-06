@@ -19,7 +19,7 @@ class BackpackType extends AbstractType
             ->add('intoBackpacks'
                 , CollectionType::class
                 , [
-                    'entry_type' => IntoBackpack::class
+                    'entry_type' => IntoBackpackType::class
                     , 'allow_add' => true
                     , 'allow_delete' => true
                     , 'by_reference' => false

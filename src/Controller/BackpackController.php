@@ -17,6 +17,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Swagger\Annotations as SWG;
 use Nelmio\ApiDocBundle\Annotation\Model;
+use FOS\RestBundle\Request\ParamFetcher;
+use FOS\RestBundle\Controller\Annotations\QueryParam;
 
 /**
  * Class BackpackController
@@ -135,7 +137,7 @@ class BackpackController extends AbstractFOSRestController implements ClassResou
         }
 
         $backpack = $form->getData();
-        $backpack->setUser($user);
+        $backpack->setCreatedBy($user);
         $this->entityManager->persist($backpack);
         $this->entityManager->flush();
 
@@ -214,15 +216,54 @@ class BackpackController extends AbstractFOSRestController implements ClassResou
      *     description="The User based on UserId is not found"
      * )
      *
+     * @QueryParam(name="page"
+     * , requirements="\d+"
+     * , default="1"
+     * , description="Page of the overview.")
+     * @QueryParam(name="limit"
+     * , requirements="\d+"
+     * , default="10"
+     * , description="Item count limit")
+     * @QueryParam(name="sort"
+     * , requirements="(asc|desc)"
+     * , allowBlank=false
+     * , default="asc"
+     * , description="Sort direction")
+     * @QueryParam(name="sortBy"
+     * , requirements="(name|id)"
+     * , default="name"
+     * , description="Sort by name or uri")
+     * @QueryParam(name="search"
+     * , nullable=true
+     * , description="Search on name and uri")
+     * 
      * @param Request $request
      * @return \FOS\RestBundle\View\View
      */
-    public function cgetAction(Request $request)
+    public function cgetAction(Request $request, ParamFetcher $paramFetcher)
     {
+        $page = $paramFetcher->get('page');
+        $limit = $paramFetcher->get('limit');
+        $sort = $paramFetcher->get('sort');
+        $sortBy = $paramFetcher->get('sortBy');
+        $search = $paramFetcher->get('search');
         $user = $this->findUserByRequest($request);
-        return $this->view(
-            $this->backpackRepository->findAllOfUser($user)
+        $count = $this->backpackRepository->findByUser($user
+        , $page
+        , $limit
+        , $sort
+        , $sortBy
+        , $search);
+        $view = $this->view(
+            $count[0]
         );
+        $view->setHeader('X-Total-Count', $count[1]);
+        $view->setHeader('X-Pagination-Count', $count[2]);
+        $view->setHeader('X-Pagination-Page', $count[3]);
+        $view->setHeader('X-Pagination-Limit', $count[4]);
+        $view->setHeader('Access-Control-Expose-Headers'
+            , 'X-Total-Count, X-Pagination-Count, X-Pagination-Page, X-Pagination-Limit');
+        return $view;
     }
 
     /**
@@ -431,7 +472,7 @@ class BackpackController extends AbstractFOSRestController implements ClassResou
             return new JsonResponse(
                 [
                     'status' => 'error',
-                    'message' => 'You are not allowed to change for other user',
+                    'message' => 'You are not allowed to delete for other user',
                 ],
                 JsonResponse::HTTP_FORBIDDEN
             );

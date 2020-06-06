@@ -25,7 +25,7 @@ class IntoBackpackType extends AbstractType
                     , 'query_builder' => function(EntityRepository $er) {
                         return $er
                             ->createQueryBuilder('u')
-                            ->orderBy('u.size', 'ASC');
+                            ->orderBy('u.ownQuantity', 'ASC');
                     }
                 ])
             ;
