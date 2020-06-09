@@ -87,7 +87,7 @@ class EquipmentRepository extends ServiceEntityRepository
         ?string $belongToBrands
     ) {
         $query = $this->createQueryBuilder('e')
-            ->Where('(e.validate = true OR e.createdBy = :user')
+            ->Where('(e.validate = true OR e.createdBy = :user)')
             ->setParameter('user', $user->getId());
         $query = $this->search(
             $query,

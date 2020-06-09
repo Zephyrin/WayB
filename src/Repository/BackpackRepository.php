@@ -23,6 +23,17 @@ class BackpackRepository extends ServiceEntityRepository
         parent::__construct($registry, Backpack::class);
     }
 
+    public function findByIdAndCreatedBy(int $id, User $user) {
+        return $this->createQueryBuilder('e')
+            ->Where('e.createdBy = :user')
+            ->andWhere('e.id = :id')
+            ->setParameter('id', $id)
+            ->setParameter('user', $user->getId())
+            ->getQuery()
+            ->getOneOrNullResult();
+
+    }
+
     public function findByUser(
         User $user,
         int $page,

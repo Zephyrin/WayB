@@ -71,7 +71,7 @@ class CategoryRepository extends ServiceEntityRepository
         ?string $subCategoryCount
     ) {
         $query = $this->createQueryBuilder('e')
-            ->Where('(e.validate = true OR e.createdBy = :val')
+            ->Where('(e.validate = true OR e.createdBy = :val)')
             ->setParameter('val', $user->getId());
         $query = $this->search($query, $search);
         if($sortBy == 'subCategoryCount') {

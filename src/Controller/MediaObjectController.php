@@ -399,6 +399,7 @@ class MediaObjectController extends AbstractFOSRestController implements ClassRe
                     //Directory does not exist, so lets create it.
                     mkdir($directoryName, 0755);
                 }
+                error_log($directoryName);
                 file_put_contents(
                     $directoryName . "/" . $filename,
                     $img

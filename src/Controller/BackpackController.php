@@ -182,10 +182,12 @@ class BackpackController extends AbstractFOSRestController implements ClassResou
      * @param User $user
      * @return \FOS\RestBundle\View\View
      */
-    public function getAction(string $id, User $user)
+    public function getAction(Request $request, string $id)
     {
+        $user = $this->findUserByRequest($request);
+
         return $this->view(
-            $this->findBackpackById($id)
+            $this->findBackpackById($id, $user)
         );
     }
 
@@ -491,9 +493,9 @@ class BackpackController extends AbstractFOSRestController implements ClassResou
      * @return Backpack
      * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
      */
-    private function findBackpackById(string $id)
+    private function findBackpackById(string $id, User $user)
     {
-        $existingBackpack = $this->backpackRepository->find($id);
+        $existingBackpack = $this->backpackRepository->findByIdAndCreatedBy($id, $user);
         if (null === $existingBackpack) {
             throw new NotFoundHttpException();
         }
