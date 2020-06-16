@@ -365,8 +365,10 @@ class MediaObjectController extends AbstractFOSRestController implements ClassRe
 
     private function manageImage(MediaObject $mediaObject, $data)
     {
-        if (!isset($data['image'])) { return; }
-        $img64 = $data['image'];
+        if (!(isset($data['image']) || isset($data['img']))) { return; }
+        $img64 = null; 
+        if(isset($data['image'])) { $img64 = $data['image']; }
+        if(isset($data['img'])) { $img64 = $data['img']; } 
         if ($img64) {
             if (preg_match('/^data:image\/(\w+)\+?\w*;base64,/', $img64, $type)) {
                 $img64 = substr($img64, strpos($img64, ',') + 1);
@@ -408,8 +410,6 @@ class MediaObjectController extends AbstractFOSRestController implements ClassRe
                 throw new \Exception('cannot save image data to file');
             }
 
-            // updates the 'brochureFilename' property to store the PDF file name
-            // instead of its contents
             $mediaObject->setFilePath($filename);
             if ($oldfilename) {
                 unlink($this->getParameter('media_object') . "/" . $oldfilename);

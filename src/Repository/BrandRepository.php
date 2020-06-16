@@ -27,15 +27,16 @@ class BrandRepository extends ServiceEntityRepository
     , int $limit
     , string $sort
     , string $sortBy
-    , string $search = null
-    , string $validate = null
-    , string $askValidate = null) {
+    , ?string $search
+    , ?string $validate
+    , ?string $askValidate
+    , bool $noPagination) {
         $query = $this->createQueryBuilder('e');
         $query = $this->search($query, $search);
         return $this->resultCount($query
             , $page
             , $limit
-            , false
+            , $noPagination
             , $sort
             , $sortBy
             , $validate
@@ -50,9 +51,10 @@ class BrandRepository extends ServiceEntityRepository
     , int $limit
     , string $sort
     , string $sortBy
-    , string $search = null
-    , string $validate = null
-    , string $askValidate = null)
+    , ?string $search
+    , ?string $validate
+    , ?string $askValidate
+    , bool $noPagination)
     {
         $query = $this->createQueryBuilder('e')
             ->Where('(e.validate = true OR e.createdBy = :val)')
@@ -61,7 +63,7 @@ class BrandRepository extends ServiceEntityRepository
         return $this->resultCount($query
             , $page
             , $limit
-            , false
+            , $noPagination
             , $sort
             , $sortBy
             , $validate

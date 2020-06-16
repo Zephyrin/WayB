@@ -18,6 +18,13 @@ php compose install
 
 For database, you can use all [ORM include in Symfony](https://symfony.com/doc/current/doctrine.html#configuring-the-database) 
 
+The database configuration is located into **config/packages/doctrine.yaml**. 
+To set information about the connection, create your own **.env.local** and set the information about your database and environment.
+At least, add this line:
+```bash
+DATABASE_URL=pgsql://USERNAME:PASSWORD@127.0.0.1:5432/DATABASENAME
+```
+
 Then the creation of the database can be made with this command in the root of the project:
 
 ```bash

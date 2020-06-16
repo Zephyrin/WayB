@@ -217,6 +217,10 @@ class BrandController extends AbstractFOSRestController implements ClassResource
      * , allowBlank=true
      * , requirements="(false|true)"
      * , description="Item validate or not")
+     * @QueryParam(name="noPagination"
+     * , requirements="(true|false)"
+     * , default=false
+     * , description="Don't care about pagination")
      * 
      * @return \FOS\RestBundle\View\View
      */
@@ -229,6 +233,7 @@ class BrandController extends AbstractFOSRestController implements ClassResource
         $search = $paramFetcher->get('search');
         $validate = $paramFetcher->get('validate');
         $askValidate = $paramFetcher->get('askValidate');
+        $noPagination = $paramFetcher->get('noPagination');
         $brandsAndCount = [];
         if ($this->isGranted("ROLE_AMBASSADOR")) {
             $brandsAndCount = 
@@ -239,7 +244,8 @@ class BrandController extends AbstractFOSRestController implements ClassResource
                     , $sortBy
                     , $search
                     , $validate
-                    , $askValidate);
+                    , $askValidate
+                    , $noPagination == 'true' ? true : false);
         } else {
             $user = $this->getUser();
             $brandsAndCount = $this->brandRepository->findByUserOrValidate($user
@@ -249,7 +255,8 @@ class BrandController extends AbstractFOSRestController implements ClassResource
             , $sortBy
             , $search
             , $validate
-            , $askValidate);
+            , $askValidate
+            , $noPagination == 'true' ? true : false);
         }
         $view = $this->view(
             $brandsAndCount[0]
