@@ -29,11 +29,12 @@ class Equipment extends Base
     private $name;
 
     /**
-     * @ORM\Column(type="text")
+     * @ORM\Column(type="text", nullable=true)
+     * @SerializedName("linkToManufacturer")
      * @var string
-     * @SWG\Property(description="A description about the Equipment.")
+     * @SWG\Property(description="The link of the equipment to the manufacturer website.")
      */
-    private $description;
+    private $linkToManufacturer = null;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\SubCategory"
@@ -84,14 +85,14 @@ class Equipment extends Base
         return $this;
     }
 
-    public function getDescription(): ?string
+    public function getLinkToManufacturer(): ?string
     {
-        return $this->description;
+        return $this->linkToManufacturer;
     }
 
-    public function setDescription(string $description): self
+    public function setLinkToManufacturer(?string $linkToManufacturer): self
     {
-        $this->description = $description;
+        $this->linkToManufacturer = $linkToManufacturer;
 
         return $this;
     }

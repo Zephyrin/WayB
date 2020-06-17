@@ -127,7 +127,7 @@ class EquipmentRepository extends ServiceEntityRepository
             $query = $query->leftJoin('e.brand', 'brand')
                 ->leftJoin('e.subCategory', 'sub')
                 ->leftJoin('sub.category', 'cat')
-                ->andWhere('(LOWER(e.name) LIKE :search OR LOWER(e.description) LIKE :search OR LOWER(brand.name) LIKE :search OR LOWER(sub.name) LIKE :search OR LOWER(cat.name) LIKE :search)')
+                ->andWhere('(LOWER(e.name) LIKE :search OR LOWER(e.linkToManufacturer) LIKE :search OR LOWER(brand.name) LIKE :search OR LOWER(sub.name) LIKE :search OR LOWER(cat.name) LIKE :search)')
                 ->setParameter('search', '%' . addcslashes(strtolower($search), '%_') . '%');
         }
         if ($others != null) {

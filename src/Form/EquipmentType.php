@@ -20,7 +20,7 @@ class EquipmentType extends AbstractType
     {
         $builder
             ->add('name')
-            ->add('description')
+            ->add('linkToManufacturer')
             ->add('brand'
                 , EntityType::class
                 , [
