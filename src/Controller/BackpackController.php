@@ -328,7 +328,7 @@ class BackpackController extends AbstractFOSRestController implements ClassResou
                 JsonResponse::HTTP_FORBIDDEN
             );
         }
-        $existingBackpackField = $this->findBackpackById($id);
+        $existingBackpackField = $this->findBackpackById($id, $user);
         $form = $this->createForm(BackpackType::class, $existingBackpackField);
         $data = json_decode($request->getContent(), true);
         $data = $this->manageObjectToId($data);
@@ -414,7 +414,7 @@ class BackpackController extends AbstractFOSRestController implements ClassResou
                 JsonResponse::HTTP_FORBIDDEN
             );
         }
-        $existingBackpack = $this->findBackpackById($id);
+        $existingBackpack = $this->findBackpackById($id, $user);
         $form = $this->createForm(BackpackType::class, $existingBackpack);
         $data = json_decode($request->getContent(), true);
         $data = $this->manageObjectToId($data);
@@ -480,7 +480,7 @@ class BackpackController extends AbstractFOSRestController implements ClassResou
             );
         }
         $this->findUserByRequest($request);
-        $backpack = $this->findBackpackById($id);
+        $backpack = $this->findBackpackById($id, $user);
         $this->entityManager->remove($backpack);
         $this->entityManager->flush();
 

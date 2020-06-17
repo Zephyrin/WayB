@@ -2,10 +2,14 @@
 
 namespace App\Controller;
 
+use App\Entity\Backpack;
 use App\Entity\Category;
 use App\Entity\IntoBackpack;
+use App\Entity\User;
 use App\Form\IntoBackpackType;
+use App\Repository\BackpackRepository;
 use App\Repository\CategoryRepository;
+use App\Repository\HaveRepository;
 use App\Repository\IntoBackpackRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Serializer\FormErrorSerializer;
@@ -22,7 +26,7 @@ use Swagger\Annotations as SWG;
 
 /**
  * @Rest\RouteResource(
- *     "api/backpack/{backpackId}/IntoBackpack",
+ *     "api/user/{userId}/backpack/{backpackId}/intoBackpack",
  *     pluralize=false
  * )
  *
@@ -37,35 +41,42 @@ class IntoBackpackController extends AbstractFOSRestController implements ClassR
      */
     private $entityManager;
     /**
-     * @var intoBackpackRepository
+     * @var IntoBackpackRepository
      */
     private $intoBackpackRepository;
+
+    /**
+     * @var BackpackRepository
+     */
+    private $backpackRepository;
+    /**
+     * @var HaveRepository
+     */
+    private $haveRepository;
 
     /**
      * @var FormErrorSerializer
      */
     private $formErrorSerializer;
 
-    /**
-     * @var CategoryRepository
-     */
-    private $categoryRepository;
-
     public function __construct(
         EntityManagerInterface $entityManager,
         IntoBackpackRepository $intoBackpackRepository,
-        CategoryRepository $categoryRepository,
+        HaveRepository $haveRepository,
+        BackpackRepository $backpackRepository,
         FormErrorSerializer $formErrorSerializer
     )
     {
         $this->entityManager = $entityManager;
         $this->intoBackpackRepository = $intoBackpackRepository;
-        $this->categoryRepository = $categoryRepository;
+        $this->haveRepository = $haveRepository;
+        $this->backpackRepository = $backpackRepository;
         $this->formErrorSerializer = $formErrorSerializer;
     }
 
     /**
-     * Create a new Sub-Category link to a Category
+     * Create a new IntoBackPack link to a Backpack. 
+     * An IntoBackPack is an equipment that the user have or wish.
      *
      * @SWG\Post(
      *     consumes={"application/json"},
@@ -84,21 +95,22 @@ class IntoBackpackController extends AbstractFOSRestController implements ClassR
      *    )
      *    ,
      *    @SWG\Parameter(
-     *     name="categoryid",
+     *     name="userid",
      *     in="path",
      *     type="string",
      *     required=true,
      *     allowEmptyValue=false,
-     *     description="The ID used to find the Category"
+     *     description="The ID used to find the User and verify if the 
+     * connected user is the same as the one of the backpack."
      *    ),
      *    @SWG\Parameter(
-     *     name="The JSON Sub-Category",
+     *     name="The JSON IntoBackpack",
      *     in="body",
      *     required=true,
      *     @SWG\Schema(
      *       ref=@Model(type=IntoBackpack::class)
      *     ),
-     *     description="The JSon Sub-Category"
+     *     description="The JSon IntoBackpack"
      *    )
      *
      * )
@@ -109,13 +121,23 @@ class IntoBackpackController extends AbstractFOSRestController implements ClassR
     public function postAction(Request $request)
     {
         $connectUser = $this->getUser();
-
+        if($connectUser->getId() != $request->attributes->get('userid')) {
+            return new JsonResponse(
+                [
+                    'status' => 'error',
+                    'message' => 'You are not allowed to change an equipment for other user',
+                ],
+                JsonResponse::HTTP_FORBIDDEN
+            );
+        }
+        $backpack = $this->findBackpackByRequest($request, $connectUser);
         $data = json_decode(
             $request->getContent(),
             true
         );
         $data = $this->manageObjectToId($data);
-        $category = $this->findBackpackByRequest($request);
+        $this->findHaveById($data);
+        
         $form = $this->createForm(
             IntoBackpackType::class,
             new IntoBackpack());
@@ -123,11 +145,11 @@ class IntoBackpackController extends AbstractFOSRestController implements ClassR
             $data
         );
 
-        if(isset($data['category']) && $data['category'] != $category->getId()) {
+        if(isset($data['backpack']) && $data['backpack'] != $backpack->getId()) {
             return new JsonResponse(
                 [
                     'status' => 'error',
-                    'message' => 'Validation error request parameters do not correspond with the category of the sub-category',
+                    'message' => 'Validation error request parameters do not correspond with the backpack of the into-backpack',
                     'errors' => $this->formErrorSerializer->normalize($form),
                 ],
                 JsonResponse::HTTP_UNPROCESSABLE_ENTITY
@@ -144,49 +166,51 @@ class IntoBackpackController extends AbstractFOSRestController implements ClassR
             );
         }
 
-        $subCat = $form->getData();
-        if(!$this->isGranted("ROLE_AMBASSADOR")
-            || $subCat->getValidate() === null)
-            $subCat->setValidate(false);
-        $subCat->setCreatedBy($connectUser);
-        $subCat->setCategory($category);
-        $this->entityManager->persist($subCat);
+        $into = $form->getData();
+        $into->setBackpack($backpack);
+        $this->entityManager->persist($into);
         $this->entityManager->flush();
 
         return  $this->view(
-            $subCat,
+            $into,
             Response::HTTP_CREATED);
     }
 
     /**
-     * Expose the Sub-Category with the id.
+     * Expose the IntoBackpack with the id.
      *
      * @SWG\Get(
-     *     summary="Get the Sub-Category based on its ID and the CategoryId of the category",
+     *     summary="Get the IntoBackpack based on its ID, the Id of the backpack and the one of the user",
      *     produces={"application/json"}
      * )
      * @SWG\Response(
      *     response=200,
-     *     description="Return the Sub-Category based on ID and the CategoryId of the category",
+     *     description="Return the IntoBackpack based on ID.",
      *     @SWG\Schema(ref=@Model(type=IntoBackpack::class))
      * )
      *
      * @SWG\Response(
      *     response=404,
-     *     description="The Category based on CategoryId or the Sub-Category based on ID is not found"
+     *     description="The Backpack based on BackpackId or the User based on userId or the IntoBackpack is not found"
      * )
      *
      * @SWG\Parameter(
-     *     name="categoryid",
+     *     name="userid",
      *     in="path",
      *     type="string",
-     *     description="The ID used to find the Category"
+     *     description="The ID used to find the user"
+     * )
+     * @SWG\Parameter(
+     *     name="backpackid",
+     *     in="path",
+     *     type="string",
+     *     description="The ID used to find the backpack"
      * )
      * @SWG\Parameter(
      *     name="id",
      *     in="path",
      *     type="string",
-     *     description="The ID used to find the Sub-Category"
+     *     description="The ID used to find the IntoBackpack"
      * )
      *
      * @var $id
@@ -194,50 +218,59 @@ class IntoBackpackController extends AbstractFOSRestController implements ClassR
      */
     public function getAction(Request $request, string $id)
     {
-        $backpack = $this->findBackpackByRequest($request);
-        $intoBackpack = $this->findIntoBackpackById($id);
+        $user = $this->findUserByRequest($request);
+        $backpack = $this->findBackpackByRequest($request, $user);
+        $intoBackpack = $this->findIntoBackpackById($id, $backpack);
         if($intoBackpack->getBackpack()->getId() == $backpack->getId())
             throw new NotFoundHttpException();
         return $this->view($intoBackpack);
     }
 
     /**
-     * Expose all Sub-Categories
+     * Expose all IntoBackpacks of a Backpack.
      *
      * @SWG\Get(
-     *     summary="Get all Sub-Categories belong to CategoryId",
+     *     summary="Get all IntoBackpacks belong to BackpackId",
      *     produces={"application/json"}
      * )
      * @SWG\Response(
      *     response=200,
-     *     description="Return all the Sub-Categories",
+     *     description="Return all the IntoBackpacks",
      *     @SWG\Schema(
      *      type="array",
      *      @SWG\Items(ref=@Model(type=IntoBackpack::class))
      *     )
      * )
+     * 
      * @SWG\Parameter(
-     *     name="categoryid",
+     *     name="userid",
      *     in="path",
      *     type="string",
-     *     description="The ID of the Category which Sub-Categories belong to"
+     *     description="The ID used to find the user"
+     * )
+     * @SWG\Parameter(
+     *     name="backpackid",
+     *     in="path",
+     *     type="string",
+     *     description="The ID used to find the backpack"
      * )
      *
      * @SWG\Response(
      *     response=404,
-     *     description="The Category based on CategoryId is not found"
+     *     description="The Backpack based on BackpackId or the User based on UserId is not found"
      * )
      *
      * @return \FOS\RestBundle\View\View
      */
     public function cgetAction(Request $request)
     {
-        $category = $this->findBackpackByRequest($request);
-        return $this->view($category->getSubCategories());
+        $user = $this->findUserByRequest($request);
+        $backpack = $this->findBackpackByRequest($request, $user);
+        return $this->view($backpack->getIntoBackpacks());
     }
 
     /**
-     * Update a IntoBackpack
+     * Update an IntoBackpack
      *
      * @SWG\Put(
      *     consumes={"application/json"},
@@ -253,31 +286,36 @@ class IntoBackpackController extends AbstractFOSRestController implements ClassR
      *    ),
      *    @SWG\Response(
      *     response=404,
-     *     description="The Category based on CategoryId or the Sub-Category based on ID is not found"
+     *     description="The User based on UserId or the Backpack based on BackpackId or the IntoBackpack is not found"
      *    ),
      *    @SWG\Parameter(
-     *     name="The full JSON Sub-Category",
+     *     name="The full JSON IntoBackpack",
      *     in="body",
      *     required=true,
      *     @SWG\Schema(
      *       ref=@Model(type=IntoBackpack::class)
      *     ),
-     *     description="The JSon Sub-Category"
+     *     description="The JSon IntoBackpack"
      *    ),
      *    @SWG\Parameter(
-     *     name="categoryid",
+     *     name="userid",
      *     in="path",
      *     type="string",
-     *     description="The ID used to find the Category"
+     *     description="The ID used to find the user"
+     *    ),
+     *    @SWG\Parameter(
+     *     name="backpackid",
+     *     in="path",
+     *     type="string",
+     *     description="The ID used to find the backpack"
      *    ),
      *    @SWG\Parameter(
      *     name="id",
      *     in="path",
      *     type="string",
-     *     description="The ID used to find the Sub-Category"
-     *    )
+     *     description="The ID used to find the IntoBackpack"
+     *   )
      * )
-     * @Security("has_role('ROLE_AMBASSADOR')")
      * @param Request $request
      * @param string $id of the Category to update
      * @return \FOS\RestBundle\View\View|JsonResponse
@@ -305,31 +343,36 @@ class IntoBackpackController extends AbstractFOSRestController implements ClassR
      *    ),
      *    @SWG\Response(
      *     response=404,
-     *     description="The Category based on CategoryId or the Sub-Category based on ID is not found"
+     *     description="The User based on UserId or the Backpack based on BackpackId or the IntoBackpack is not found"
      *    ),
      *    @SWG\Parameter(
-     *     name="The full JSON Sub-Category",
+     *     name="The JSON IntoBackpack",
      *     in="body",
      *     required=true,
      *     @SWG\Schema(
      *       ref=@Model(type=IntoBackpack::class)
      *     ),
-     *     description="The JSon Sub-Category"
+     *     description="The JSon IntoBackpack"
      *    ),
      *    @SWG\Parameter(
-     *     name="categoryid",
+     *     name="userid",
      *     in="path",
      *     type="string",
-     *     description="The ID used to find the Category"
+     *     description="The ID used to find the user"
+     *    ),
+     *    @SWG\Parameter(
+     *     name="backpackid",
+     *     in="path",
+     *     type="string",
+     *     description="The ID used to find the backpack"
      *    ),
      *    @SWG\Parameter(
      *     name="id",
      *     in="path",
      *     type="string",
-     *     description="The ID used to find the Sub-Category"
+     *     description="The ID used to find the IntoBackpack"
      *    )
      * )
-     * @Security("has_role('ROLE_AMBASSADOR')")
      * @param Request $request
      * @param string $id of the Category to update
      * @return \FOS\RestBundle\View\View|JsonResponse
@@ -341,19 +384,24 @@ class IntoBackpackController extends AbstractFOSRestController implements ClassR
     }
 
     private function managePutOrPatch(Request $request, string $id, bool $clearMissing) {
-        $existingIntoBackpack = $this->findIntoBackpackById($id);
-        $backpack = $this->findBackpackByRequest($request);
-        if($backpack->getId() != $existingIntoBackpack->getBackpack()->getId())
-        {
-            throw new NotFoundHttpException();
+        $user = $this->findUserByRequest($request);
+        if($user->getId() != $this->getUser()->getId()) {
+            return new JsonResponse(
+                [
+                    'status' => 'error',
+                    'message' => 'You are not allowed to change an equipment for other user',
+                ],
+                JsonResponse::HTTP_FORBIDDEN
+            );
         }
+        $backpack = $this->findBackpackByRequest($request, $user);
+        $existingIntoBackpack = $this->findIntoBackpackById($id, $backpack);
         $form = $this->createForm(IntoBackpackType::class, $existingIntoBackpack);
         $data = json_decode($request->getContent(), true);
         $data = $this->manageObjectToId($data);
 
         $form->submit($data, $clearMissing);
         if (false === $form->isValid()) {
-            //return $this->view($form);
             return new JsonResponse(
                 [
                     'status' => 'error',
@@ -368,46 +416,58 @@ class IntoBackpackController extends AbstractFOSRestController implements ClassR
         return $this->view(null, Response::HTTP_NO_CONTENT);
     }
     /**
-     * Delete a IntoBackpack with the id.
+     * Delete an IntoBackpack with the id.
      *
      * @SWG\Delete(
-     *     summary="Delete a Sub-Category based on ID"
+     *     summary="Delete an IntoBackpack based on its ID"
      * )
      * @SWG\Response(
      *     response=204,
-     *     description="The sub-category is correctly delete",
+     *     description="The IntoBackpack is correctly delete",
      * )
      *
      * @SWG\Response(
      *     response=404,
-     *     description="The category based on CategoryId or the sub-category based on ID is not found"
+     *     description="The User based on UserId or backpack based on BackpackId or IntoBackpack based on ID is not found"
      * )
      *
      * @SWG\Parameter(
-     *     name="categoryid",
+     *     name="userid",
      *     in="path",
      *     type="string",
-     *     description="The ID used to find the Category"
+     *     description="The ID used to find the user"
+     * )
+     * @SWG\Parameter(
+     *     name="backpackid",
+     *     in="path",
+     *     type="string",
+     *     description="The ID used to find the backpack"
      * )
      * @SWG\Parameter(
      *     name="id",
      *     in="path",
      *     type="string",
-     *     description="The ID used to find the Sub-Category"
+     *     description="The ID used to find the IntoBackpack"
      * )
      * 
-     * @Security("has_role('ROLE_AMBASSADOR')")
      * @param string $id
      * @return \FOS\RestBundle\View\View
      */
     public function deleteAction(Request $request, string $id)
     {
-        $intoBackpack = $this->findIntoBackpackById($id);
-        $backpack = $this->findBackpackByRequest($request);
-        if($backpack->getId() != $intoBackpack->getBackpack()->getId())
-        {
-            throw new NotFoundHttpException();
+        $user = $this->findUserByRequest($request);
+        if($user->getId() != $this->getUser()->getId()) {
+            return new JsonResponse(
+                [
+                    'status' => 'error',
+                    'message' => 'You are not allowed to change an equipment for other user',
+                ],
+                JsonResponse::HTTP_FORBIDDEN
+            );
         }
+        $backpack = $this->findBackpackByRequest($request, $user);
+        $intoBackpack = $this->findIntoBackpackById($id, $backpack);
+        
         $this->entityManager->remove($intoBackpack);
         $this->entityManager->flush();
 
@@ -416,17 +476,17 @@ class IntoBackpackController extends AbstractFOSRestController implements ClassR
 
     /**
      * @param string $id
+     * @param Backpack $backpack
      *
      * @return IntoBackpack
      * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
      */
-    private function findIntoBackpackById(string $id)
+    private function findIntoBackpackById(string $id, Backpack $backpack)
     {
-        $existingIntoBackpack = $this->intoBackpackRepository->find($id);
-        if (null === $existingIntoBackpack) {
-            throw new NotFoundHttpException();
+        foreach($backpack->getIntoBackpacks() as $into) {
+            if($into->getId() == $id) return $into;
         }
-        return $existingIntoBackpack;
+        throw new NotFoundHttpException();
     }
 
     /**
@@ -435,23 +495,54 @@ class IntoBackpackController extends AbstractFOSRestController implements ClassR
      * @return Category
      * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
      */
-    private function findBackpackByRequest(Request $request)
+    private function findBackpackByRequest(Request $request, User $user): Backpack
     {
-        /* $category = $this->entityManager->find(
-            Category::class, */
-        $category = $this->categoryRepository->findById(
-            $request->attributes->get('backpackid'));
-        if($category == null)
+        $backpack = $this->backpackRepository->findByIdAndCreatedBy(
+            $request->attributes->get('backpackid'), $user);
+        if($backpack == null)
             throw new NotFoundHttpException();
-        return $category;
+        return $backpack;
+    }
+
+    private function findHaveById($data) {
+        $have = null;
+        if (isset($data['equipment'])) {
+            $have = $this->haveRepository->findById($data['equipment']);
+        }
+        
+        if($have == null) throw new NotFoundHttpException("Equipment not found.");
+        return $have;
+    }
+
+    /**
+     * @param Request $request
+     *
+     * @return User
+     * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+     */
+    private function findUserByRequest(Request $request)
+    {
+        $user = $this->entityManager->find(
+            User::class,
+            $request->attributes->get('userid'));
+        if($user == null)
+            throw new NotFoundHttpException();
+        return $user;
     }
 
     private function manageObjectToId($data) {
-        if(isset($data['category'])) {
-            if(isset($data['category']['id'])) {
-                $data['category'] = $data['category']['id'];
-            } else if (!is_int($data['category'])) {
-                unset($data['category']);
+        if(isset($data['backpack'])) {
+            if(isset($data['backpack']['id'])) {
+                $data['backpack'] = $data['backpack']['id'];
+            } else if (!is_int($data['backpack'])) {
+                unset($data['backpack']);
+            }
+        }
+        if(isset($data['equipment'])) {
+            if(isset($data['equipment']['id'])) {
+                $data['equipment'] = $data['equipment']['id'];
+            } else if (!is_int($data['equipment'])) {
+                unset($data['equipment']);
             }
         }
         return $data;

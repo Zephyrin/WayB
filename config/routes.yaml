@@ -35,6 +35,9 @@ backpack:
 mediaobject:
      type:     rest
      resource: App\Controller\MediaObjectController
+intoBackpack:
+     type:     rest
+     resource: App\Controller\IntoBackpackController
 #api:
 #     prefix: /api
 #     resource: '../src/Controller/Api'

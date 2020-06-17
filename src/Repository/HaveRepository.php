@@ -30,6 +30,16 @@ class HaveRepository extends ServiceEntityRepository
             ->getResult()
         ;
     }
+
+    public function findByIdAndCreatedBy(int $id, User $user) {
+        return $this->createQueryBuilder('e')
+            ->Where('e.id = :id')
+            ->andWhere('e.createdBy = :user')
+            ->setParameter('id', $id)
+            ->setParameter('user', $user->getId())
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
     // /**
     //  * @return Have[] Returns an array of Have objects
     //  */
