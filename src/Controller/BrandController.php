@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Brand;
-use App\Entity\User;
 use App\Form\BrandType;
 use App\Repository\BrandRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -37,6 +36,7 @@ use Symfony\Component\Serializer\Exception\ExceptionInterface;
  */
 class BrandController extends AbstractFOSRestController implements ClassResourceInterface
 {
+    use AbstractController;
     /**
      * @var EntityManagerInterface
      */
@@ -106,19 +106,10 @@ class BrandController extends AbstractFOSRestController implements ClassResource
         );
         $data = $this->manageObjectToId($data);
         $form = $this->createForm(BrandType::class, new Brand());
-        $form->submit(
-            $data
-        );
-        if (false === $form->isValid()) {
-            return new JsonResponse(
-                [
-                    'status' => 'error',
-                    'message' => 'Validation failed',
-                    'errors' => $this->formErrorSerializer->normalize($form),
-                ],
-                JsonResponse::HTTP_UNPROCESSABLE_ENTITY
-            );
-        }
+        $form->submit($data);
+        $validation = $this->validationError($form, $this);
+        if($validation instanceof JsonResponse)
+            return $validation;
 
         $insertData = $form->getData();
         $insertData->setCreatedBy($connectUser);
@@ -258,15 +249,16 @@ class BrandController extends AbstractFOSRestController implements ClassResource
             , $askValidate
             , $noPagination == 'true');
         }
+        if(!$noPagination)
+            return $this->setPaginateToView($brandsAndCount, $this);
         $view = $this->view(
             $brandsAndCount[0]
         );
         $view->setHeader('X-Total-Count', $brandsAndCount[1]);
-        $view->setHeader('X-Pagination-Count', $brandsAndCount[2]);
-        $view->setHeader('X-Pagination-Page', $brandsAndCount[3]);
-        $view->setHeader('X-Pagination-Limit', $brandsAndCount[4]);
-        $view->setHeader('Access-Control-Expose-Headers'
-            , 'X-Total-Count, X-Pagination-Count, X-Pagination-Page, X-Pagination-Limit');
+        $view->setHeader(
+            'Access-Control-Expose-Headers',
+            'X-Total-Count'
+        );   
         return $view;
     }
 
@@ -374,16 +366,9 @@ class BrandController extends AbstractFOSRestController implements ClassResource
         $data = $this->manageObjectToId($data);
         $form->submit($data, $clearData);
 
-        if (false === $form->isValid()) {
-            return new JsonResponse(
-                [
-                    'status' => 'error',
-                    'message' => 'Validation failed',
-                    'errors' => $this->formErrorSerializer->normalize($form),
-                ],
-                JsonResponse::HTTP_UNPROCESSABLE_ENTITY
-            );
-        }
+        $validation = $this->validationError($form, $this);
+        if($validation instanceof JsonResponse)
+            return $validation;
         if ($existingBrand->getValidate() !== $validate) {
             $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
         }

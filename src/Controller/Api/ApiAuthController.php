@@ -13,6 +13,7 @@ use Swagger\Annotations as SWG;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 /**
  * @Route("/api/auth")
@@ -74,8 +75,8 @@ class ApiAuthController extends AbstractController
      *
      * @param Request $request
      * @return JsonResponse|RedirectResponse
-     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
-     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
+     * @throws ExceptionInterface
+     * @throws ExceptionInterface
      */
     public function register(Request $request)
     {

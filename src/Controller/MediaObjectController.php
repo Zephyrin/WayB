@@ -35,6 +35,7 @@ use Symfony\Component\Serializer\Exception\ExceptionInterface;
  */
 class MediaObjectController extends AbstractFOSRestController implements ClassResourceInterface
 {
+    use AbstractController;
     /**
      * @var EntityManagerInterface
      */
@@ -95,6 +96,7 @@ class MediaObjectController extends AbstractFOSRestController implements ClassRe
      * @param Request $request
      * @return View|JsonResponse
      * @throws ExceptionInterface
+     * @throws Exception
      */
     public function postAction(Request $request)
     {
@@ -109,17 +111,9 @@ class MediaObjectController extends AbstractFOSRestController implements ClassRe
         $form->submit(
             $data
         );
-        if (false === $form->isValid()) {
-            return new JsonResponse(
-                [
-                    'status' => 'error',
-                    'message' => 'Validation error',
-                    'errors' => $this->formErrorSerializer->normalize($form),
-                    'data' => $data
-                ],
-                JsonResponse::HTTP_UNPROCESSABLE_ENTITY
-            );
-        }
+        $validation = $this->validationError($form, $this);
+        if($validation instanceof JsonResponse)
+            return $validation;
 
         $mediaObject = $form->getData();
         $this->manageImage($mediaObject, $data);
@@ -346,6 +340,7 @@ class MediaObjectController extends AbstractFOSRestController implements ClassRe
      * @param bool $clearMissing
      * @return View|JsonResponse
      * @throws ExceptionInterface
+     * @throws Exception
      */
     private function putOrPatch(Request $request, string $id, bool $clearMissing)
     {
@@ -353,16 +348,9 @@ class MediaObjectController extends AbstractFOSRestController implements ClassRe
         $form = $this->createForm(MediaObjectType::class, $existingMediaObjectField);
         $data = json_decode($request->getContent(), true);
         $form->submit($data, $clearMissing);
-        if (false === $form->isValid()) {
-            return new JsonResponse(
-                [
-                    'status' => 'error',
-                    'message' => 'Validation error',
-                    'errors' => $this->formErrorSerializer->normalize($form),
-                ],
-                JsonResponse::HTTP_UNPROCESSABLE_ENTITY
-            );
-        }
+        $validation = $this->validationError($form, $this);
+        if($validation instanceof JsonResponse)
+            return $validation;
         $mediaObject = $form->getData();
         $this->manageImage($mediaObject, $data);
 
@@ -400,11 +388,11 @@ class MediaObjectController extends AbstractFOSRestController implements ClassRe
                 throw new Exception('did not match data URI with image data');
             }
             $filename = $mediaObject->getFilePath();
-            $oldfilename = null;
+            $oldFilename = null;
             if (!$filename) {
                 $filename = uniqid() . "." . $type;
-            } else if (!$this->endswith($filename, $type)){
-                $oldfilename = $filename;
+            } else if (!$this->endsWith($filename, $type)){
+                $oldFilename = $filename;
                 $filename = uniqid() . "." . $type;
             }
             try {
@@ -424,16 +412,16 @@ class MediaObjectController extends AbstractFOSRestController implements ClassRe
             }
 
             $mediaObject->setFilePath($filename);
-            if ($oldfilename) {
-                unlink($this->getParameter('media_object') . "/" . $oldfilename);
+            if ($oldFilename) {
+                unlink($this->getParameter('media_object') . "/" . $oldFilename);
             }
         }
     }
 
-    private function endswith($string, $test) {
-        $strlen = strlen($string);
-        $testlen = strlen($test);
-        if ($testlen > $strlen) return false;
-        return substr_compare($string, $test, $strlen - $testlen, $testlen) === 0;
+    private function endsWith($string, $test) {
+        $strLen = strlen($string);
+        $testLen = strlen($test);
+        if ($testLen > $strLen) return false;
+        return substr_compare($string, $test, $strLen - $testLen, $testLen) === 0;
     }
 }

@@ -39,6 +39,7 @@ use FOS\RestBundle\Controller\Annotations\QueryParam;
  */
 class EquipmentController extends AbstractFOSRestController implements ClassResourceInterface
 {
+    use AbstractController;
     /**
      * @var EntityManagerInterface
      */
@@ -117,16 +118,9 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
         $form->submit(
             $data
         );
-        if (false === $form->isValid()) {
-            return new JsonResponse(
-                [
-                    'status' => 'error',
-                    'message' => 'Validation error',
-                    'errors' => $this->formErrorSerializer->normalize($form),
-                ],
-                JsonResponse::HTTP_UNPROCESSABLE_ENTITY
-            );
-        }
+        $validation = $this->validationError($form, $this);
+        if($validation instanceof JsonResponse)
+            return $validation;
 
         $equipment = $form->getData();
         $equipment->setCreatedBy($connectUser);
@@ -346,16 +340,7 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
                 }
             }
         }
-        $view = $this->view(
-            $equipments[0]
-        );
-        $view->setHeader('X-Total-Count', $equipments[1]);
-        $view->setHeader('X-Pagination-Count', $equipments[2]);
-        $view->setHeader('X-Pagination-Page', $equipments[3]);
-        $view->setHeader('X-Pagination-Limit', $equipments[4]);
-        $view->setHeader('Access-Control-Expose-Headers'
-            , 'X-Total-Count, X-Pagination-Count, X-Pagination-Page, X-Pagination-Limit');
-        return $view;
+        return $this->setPaginateToView($equipments, $this);
     }
 
     /**
@@ -415,16 +400,9 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
         $data = $this->manageObjectToId($data);
         $validate = $existingEquipment->getValidate();
         $form->submit($data);
-        if (false === $form->isValid()) {
-            return new JsonResponse(
-                [
-                    'status' => 'error',
-                    'message' => 'Validation error',
-                    'errors' => $this->formErrorSerializer->normalize($form),
-                ],
-                JsonResponse::HTTP_UNPROCESSABLE_ENTITY
-            );
-        }
+        $validation = $this->validationError($form, $this);
+        if($validation instanceof JsonResponse)
+            return $validation;
         if($existingEquipment->getValidate() !== $validate) {
             $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
         }
@@ -491,16 +469,9 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
 
         $data = $this->manageObjectToId($request->request->all());
         $form->submit($data, false);
-        if (false === $form->isValid()) {
-            return new JsonResponse(
-                [
-                    'status' => 'error',
-                    'message' => 'Validation failed',
-                    'errors' => $this->formErrorSerializer->normalize($form),
-                ],
-                JsonResponse::HTTP_UNPROCESSABLE_ENTITY
-            );
-        }
+        $validation = $this->validationError($form, $this);
+        if($validation instanceof JsonResponse)
+            return $validation;
         if($existingEquipment->getValidate() !== $validate) {
             $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
         }

@@ -35,6 +35,7 @@ use Symfony\Component\Serializer\Exception\ExceptionInterface;
  */
 class IntoBackpackController extends AbstractFOSRestController implements ClassResourceInterface
 {
+    use AbstractController;
     /**
      * @var EntityManagerInterface
      */
@@ -401,16 +402,9 @@ class IntoBackpackController extends AbstractFOSRestController implements ClassR
         $data = $this->manageObjectToId($data);
 
         $form->submit($data, $clearMissing);
-        if (false === $form->isValid()) {
-            return new JsonResponse(
-                [
-                    'status' => 'error',
-                    'message' => 'Validation error',
-                    'errors' => $this->formErrorSerializer->normalize($form),
-                ],
-                JsonResponse::HTTP_UNPROCESSABLE_ENTITY
-            );
-        }
+        $validation = $this->validationError($form, $this);
+        if($validation instanceof JsonResponse)
+            return $validation;
         $this->entityManager->flush();
 
         return $this->view(null, Response::HTTP_NO_CONTENT);

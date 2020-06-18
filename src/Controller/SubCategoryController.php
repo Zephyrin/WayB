@@ -34,6 +34,7 @@ use Symfony\Component\Serializer\Exception\ExceptionInterface;
  */
 class SubCategoryController extends AbstractFOSRestController implements ClassResourceInterface
 {
+    use AbstractController;
     /**
      * @var EntityManagerInterface
      */
@@ -135,16 +136,9 @@ class SubCategoryController extends AbstractFOSRestController implements ClassRe
                 JsonResponse::HTTP_UNPROCESSABLE_ENTITY
             );
         }
-        if (false === $form->isValid()) {
-            return new JsonResponse(
-                [
-                    'status' => 'error',
-                    'Message' => 'Validation error',
-                    'errors' => $this->formErrorSerializer->normalize($form),
-                ],
-                JsonResponse::HTTP_UNPROCESSABLE_ENTITY
-            );
-        }
+        $validation = $this->validationError($form, $this);
+        if($validation instanceof JsonResponse)
+            return $validation;
 
         $subCat = $form->getData();
         if(!$this->isGranted("ROLE_AMBASSADOR")
@@ -356,17 +350,9 @@ class SubCategoryController extends AbstractFOSRestController implements ClassRe
         $data = $this->manageObjectToId($data);
 
         $form->submit($data, $clearMissing);
-        if (false === $form->isValid()) {
-            //return $this->view($form);
-            return new JsonResponse(
-                [
-                    'status' => 'error',
-                    'message' => 'Validation error',
-                    'errors' => $this->formErrorSerializer->normalize($form),
-                ],
-                JsonResponse::HTTP_UNPROCESSABLE_ENTITY
-            );
-        }
+        $validation = $this->validationError($form, $this);
+        if($validation instanceof JsonResponse)
+            return $validation;
         if($existingSubCategory->getValidate() !== $validate) {
             $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
         }

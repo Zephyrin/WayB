@@ -32,6 +32,7 @@ use Symfony\Component\Serializer\Exception\ExceptionInterface;
  */
 class CategoryController extends AbstractFOSRestController implements ClassResourceInterface
 {
+    use AbstractController;
     /**
      * @var EntityManagerInterface
      */
@@ -94,42 +95,22 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
      */
     public function postAction(Request $request)
     {
-        $connectUser = $this->getUser();
         $data = json_decode(
             $request->getContent(),
             true
         );
         $form = $this->createForm(CategoryType::class, new Category());
 
-        $form->submit(
-            $data
-        );
-        if (false === $form->isValid()) {
-            return new JsonResponse(
-                [
-                    'status' => 'error',
-                    'message' => 'Validation failed',
-                    'errors' => $this->formErrorSerializer->normalize($form),
-                ],
-                JsonResponse::HTTP_UNPROCESSABLE_ENTITY
-            );
-        }
-
-        $insertData = $form->getData();
-        $insertData->setCreatedBy($connectUser);
-        if (
-            !$this->isGranted("ROLE_AMBASSADOR")
-            || $insertData->getValidate() === null
-        )
-            $insertData->setValidate(false);
+        $form->submit($data);
+        $validation = $this->validationError($form, $this);
+        if($validation instanceof JsonResponse)
+            return $validation;
+        $insertData = $this->setCreatedByAndValidateToFalse($form);
 
         $this->entityManager->persist($insertData);
 
         $this->entityManager->flush();
-        return  $this->view(
-            $insertData,
-            Response::HTTP_CREATED
-        );
+        return  $this->view($insertData, Response::HTTP_CREATED);
     }
 
     /**
@@ -348,16 +329,9 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
         $validate = $existingCategory->getValidate();
         $form->submit($data);
 
-        if (false === $form->isValid()) {
-            return new JsonResponse(
-                [
-                    'status' => 'error',
-                    'message' => 'Validation failed',
-                    'errors' => $this->formErrorSerializer->normalize($form),
-                ],
-                JsonResponse::HTTP_UNPROCESSABLE_ENTITY
-            );
-        }
+        $validation = $this->validationError($form, $this);
+        if($validation instanceof JsonResponse)
+            return $validation;
         if ($existingCategory->getValidate() !== $validate) {
             $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
         }
@@ -427,16 +401,9 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
 
         $form->submit($data, false);
 
-        if (false === $form->isValid()) {
-            return new JsonResponse(
-                [
-                    'status' => 'error',
-                    'message' => 'Validation failed',
-                    'errors' => $this->formErrorSerializer->normalize($form),
-                ],
-                JsonResponse::HTTP_UNPROCESSABLE_ENTITY
-            );
-        }
+        $validation = $this->validationError($form, $this);
+        if($validation instanceof JsonResponse)
+            return $validation;
         if ($existingCategory->getValidate() !== $validate) {
             $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
         }

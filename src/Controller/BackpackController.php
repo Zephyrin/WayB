@@ -116,28 +116,15 @@ class BackpackController extends AbstractFOSRestController implements ClassResou
                 , null
                 , "You cannot link an equipment for other user");
         }
-        $data = json_decode(
-            $request->getContent(),
-            true
-        );
+        $data = json_decode($request->getContent(), true);
         //$data = $this->manageObjectToId($data);
         $form = $this->createForm(
             BackpackType::class,
             new Backpack());
-        $form->submit(
-            $data
-        );
-        if (false === $form->isValid()) {
-            return new JsonResponse(
-                [
-                    'status' => 'error',
-                    'message' => 'Validation error',
-                    'errors' => $this->formErrorSerializer->normalize($form),
-                    'data' => $data
-                ],
-                JsonResponse::HTTP_UNPROCESSABLE_ENTITY
-            );
-        }
+        $form->submit($data);
+        $validation = $this->validationError($form, $this);
+        if($validation instanceof JsonResponse)
+            return $validation;
 
         $backpack = $form->getData();
         $backpack->setCreatedBy($user);
@@ -260,17 +247,7 @@ class BackpackController extends AbstractFOSRestController implements ClassResou
         , $sort
         , $sortBy
         , $search);
-        //return $this->setPaginateToView($count, $this);
-        $view = $this->view(
-            $count[0]
-        );
-        $view->setHeader('X-Total-Count', $count[1]);
-        $view->setHeader('X-Pagination-Count', $count[2]);
-        $view->setHeader('X-Pagination-Page', $count[3]);
-        $view->setHeader('X-Pagination-Limit', $count[4]);
-        $view->setHeader('Access-Control-Expose-Headers'
-            , 'X-Total-Count, X-Pagination-Count, X-Pagination-Page, X-Pagination-Limit');
-        return $view;
+        return $this->setPaginateToView($count, $this);
     }
 
     /**
@@ -322,37 +299,7 @@ class BackpackController extends AbstractFOSRestController implements ClassResou
      */
     public function putAction(Request $request, string $id)
     {
-        $user = $this->findUserByRequest($request);
-        $login_user = $this->getUser();
-        if($user !== $login_user) {
-            return new JsonResponse(
-                [
-                    'status' => 'error',
-                    'message' => 'You are not allowed to change for other user',
-                ],
-                JsonResponse::HTTP_FORBIDDEN
-            );
-        }
-        $existingBackpackField = $this->findBackpackById($id, $user);
-        $form = $this->createForm(BackpackType::class, $existingBackpackField);
-        $data = json_decode($request->getContent(), true);
-        $data = $this->manageObjectToId($data);
-        $data['user'] = $request->attributes->get('userid');
-        $form->submit($data);
-        if (false === $form->isValid()) {
-            return new JsonResponse(
-                [
-                    'status' => 'error',
-                    'message' => 'Validation error',
-                    'errors' => $this->formErrorSerializer->normalize($form),
-                ],
-                JsonResponse::HTTP_UNPROCESSABLE_ENTITY
-            );
-        }
-
-        $this->entityManager->flush();
-
-        return $this->view(null, Response::HTTP_NO_CONTENT);
+        return $this->putOrPatch($request, $id, true);
     }
 
     /**
@@ -408,6 +355,18 @@ class BackpackController extends AbstractFOSRestController implements ClassResou
      */
     public function patchAction(Request $request, string $id)
     {
+        return $this->putOrPatch($request, $id, false);
+    }
+
+    /**
+     * @see putAction
+     * @see patchAction
+     * @param Request $request
+     * @param string $id
+     * @param bool $isPut
+     * @return View|JsonResponse
+     */
+    private function putOrPatch(Request $request, string $id, bool $isPut) {
         $user = $this->findUserByRequest($request);
         $login_user = $this->getUser();
         if($user !== $login_user) {
@@ -423,22 +382,15 @@ class BackpackController extends AbstractFOSRestController implements ClassResou
         $form = $this->createForm(BackpackType::class, $existingBackpack);
         $data = json_decode($request->getContent(), true);
         $data = $this->manageObjectToId($data);
-        $form->submit($data, false);
-        if (false === $form->isValid()) {
-            return new JsonResponse(
-                [
-                    'status' => 'error',
-                    'errors' => $this->formErrorSerializer->normalize($form),
-                ],
-                JsonResponse::HTTP_UNPROCESSABLE_ENTITY
-            );
-        }
+        $form->submit($data, $isPut);
+        $validation = $this->validationError($form, $this);
+        if($validation instanceof JsonResponse)
+            return $validation;
 
         $this->entityManager->flush();
 
         return $this->view(null, Response::HTTP_NO_CONTENT);
     }
-
     /**
      * Delete an Backpack with the id.
      *

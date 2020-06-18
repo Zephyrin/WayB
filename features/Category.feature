@@ -85,7 +85,7 @@ Feature: Provide a consistent standard JSON API endpoint
       }
       """
     When I request "/api/category" using HTTP POST
-    Then the response code is 200
+    Then the response code is 201
 
 
   Scenario: Cannot add a new Category with an existing name

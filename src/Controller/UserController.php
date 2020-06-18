@@ -31,6 +31,7 @@ use Symfony\Component\Serializer\Exception\ExceptionInterface;
  */
 class UserController extends AbstractFOSRestController implements ClassResourceInterface
 {
+    use AbstractController;
   /**
    * @var EntityManagerInterface
    */
@@ -237,17 +238,6 @@ class UserController extends AbstractFOSRestController implements ClassResourceI
       $sortBy,
       $search
     );
-    $view = $this->view(
-      $usersAndCount[0]
-    );
-    $view->setHeader('X-Total-Count', $usersAndCount[1]);
-    $view->setHeader('X-Pagination-Count', $usersAndCount[2]);
-    $view->setHeader('X-Pagination-Page', $usersAndCount[3]);
-    $view->setHeader('X-Pagination-Limit', $usersAndCount[4]);
-    $view->setHeader(
-      'Access-Control-Expose-Headers',
-      'X-Total-Count, X-Pagination-Count, X-Pagination-Page, X-Pagination-Limit'
-    );
-    return $view;
+      return $this->setPaginateToView($usersAndCount, $this);
   }
 }

@@ -34,6 +34,7 @@ use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 class HaveController extends AbstractFOSRestController implements ClassResourceInterface
 {
+    use AbstractController;
     /**
      * @var EntityManagerInterface
      */
@@ -102,7 +103,6 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
      *
      * @param Request $request
      * @return View|JsonResponse
-     * @throws ExceptionInterface
      */
     public function postAction(Request $request)
     {
@@ -124,17 +124,9 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
         $form->submit(
             $data
         );
-        if (false === $form->isValid()) {
-            return new JsonResponse(
-                [
-                    'status' => 'error',
-                    'message' => 'Validation error',
-                    'errors' => $this->formErrorSerializer->normalize($form),
-                    'data' => $data
-                ],
-                JsonResponse::HTTP_UNPROCESSABLE_ENTITY
-            );
-        }
+        $validation = $this->validationError($form, $this);
+        if($validation instanceof JsonResponse)
+            return $validation;
 
         $have = $form->getData();
         $have->setUser($user);
@@ -293,16 +285,9 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
         $data = $this->manageObjectToId($data);
         $data['user'] = $request->attributes->get('userid');
         $form->submit($data);
-        if (false === $form->isValid()) {
-            return new JsonResponse(
-                [
-                    'status' => 'error',
-                    'message' => 'Validation error',
-                    'errors' => $this->formErrorSerializer->normalize($form),
-                ],
-                JsonResponse::HTTP_UNPROCESSABLE_ENTITY
-            );
-        }
+        $validation = $this->validationError($form, $this);
+        if($validation instanceof JsonResponse)
+            return $validation;
 
         $this->entityManager->flush();
 
@@ -358,7 +343,6 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
      * @param Request $request
      * @param string $id of the Have to update
      * @return View|JsonResponse
-     * @throws ExceptionInterface
      */
     public function patchAction(Request $request, string $id)
     {
@@ -379,15 +363,9 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
         $data = json_decode($request->getContent(), true);
         $data = $this->manageObjectToId($data);
         $form->submit($data, false);
-        if (false === $form->isValid()) {
-            return new JsonResponse(
-                [
-                    'status' => 'error',
-                    'errors' => $this->formErrorSerializer->normalize($form),
-                ],
-                JsonResponse::HTTP_UNPROCESSABLE_ENTITY
-            );
-        }
+        $validation = $this->validationError($form, $this);
+        if($validation instanceof JsonResponse)
+            return $validation;
 
         $this->entityManager->flush();
 

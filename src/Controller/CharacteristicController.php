@@ -34,6 +34,7 @@ use Symfony\Component\Serializer\Exception\ExceptionInterface;
  */
 class CharacteristicController extends AbstractFOSRestController implements ClassResourceInterface
 {
+    use AbstractController;
     /**
      * @var EntityManagerInterface
      */
@@ -126,16 +127,9 @@ class CharacteristicController extends AbstractFOSRestController implements Clas
                 JsonResponse::HTTP_UNPROCESSABLE_ENTITY
             );
         }
-        if (false === $form->isValid()) {
-            return new JsonResponse(
-                [
-                    'status' => 'error',
-                    'Message' => 'Validation error',
-                    'errors' => $this->formErrorSerializer->normalize($form),
-                ],
-                JsonResponse::HTTP_UNPROCESSABLE_ENTITY
-            );
-        }
+        $validation = $this->validationError($form, $this);
+        if($validation instanceof JsonResponse)
+            return $validation;
 
         $characteristic = $form->getData();
         if(!$this->isGranted("ROLE_AMBASSADOR")
@@ -239,7 +233,7 @@ class CharacteristicController extends AbstractFOSRestController implements Clas
         $chas = $equipment->getCharacteristics();
         for($i = count($chas) - 1; $i >= 0; $i--) {
             if(!($chas[$i]->getValidate() || $chas[$i]->getCreatedBy() == $user)) {
-                $chas->removeCharacteristic($chas[$i]);
+                $chas[$i]->removeCharacteristic($chas[$i]);
             }
         }
         return $this->view($chas);
@@ -312,16 +306,9 @@ class CharacteristicController extends AbstractFOSRestController implements Clas
             );
         }
         $form->submit($data);
-        if (false === $form->isValid()) {
-            return new JsonResponse(
-                [
-                    'status' => 'error',
-                    'message' => 'Validation error',
-                    'errors' => $this->formErrorSerializer->normalize($form),
-                ],
-                JsonResponse::HTTP_UNPROCESSABLE_ENTITY
-            );
-        }
+        $validation = $this->validationError($form, $this);
+        if($validation instanceof JsonResponse)
+            return $validation;
         if($existingCharacteristic->getValidate() !== $validate) {
             $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
         }
