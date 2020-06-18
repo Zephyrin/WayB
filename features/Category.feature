@@ -5,10 +5,7 @@ Feature: Provide a consistent standard JSON API endpoint
   I need to allow Create, Read, Update, and Delete functionality
 
   Background:
-    Given there are User with the following details:
-      | username | password | email     | gender | ROLE            |
-      | a        | a        | a.b@c.com | MALE   | ROLE_AMBASSADOR |
-      | b        | b        | b.b@c.com | MALE   | ROLE_USER       |
+    Given there are default users
     Given there are Categories with the following details:
       | name      |
       | Clothe    |
@@ -16,7 +13,7 @@ Feature: Provide a consistent standard JSON API endpoint
       | Accessory |
 
   Scenario: Can get a single Category
-    Given I am Login As B
+    Given I am login as user
     Then I request "/api/category/1" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
@@ -33,7 +30,7 @@ Feature: Provide a consistent standard JSON API endpoint
     Then the response code is 401
 
   Scenario: Can get a collection of Categories
-    Given I am Login As B
+    Given I am login as admin
     Then I request "/api/category" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
@@ -58,7 +55,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can add a new Category
-    Given I am Login As A
+    Given I am login as admin
     And the request body is:
       """
       {
@@ -78,8 +75,8 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
 
-  Scenario: Cannot add a new Category as USER
-    Given I am Login As B
+  Scenario: Can add a new Category as USER
+    Given I am login as user
     And the request body is:
       """
       {
@@ -88,11 +85,11 @@ Feature: Provide a consistent standard JSON API endpoint
       }
       """
     When I request "/api/category" using HTTP POST
-    Then the response code is 403
+    Then the response code is 200
 
 
   Scenario: Cannot add a new Category with an existing name
-    Given I am Login As A
+    Given I am login as admin
     And the request body is:
       """
       {
@@ -120,7 +117,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can update an existing Category - PUT
-    Given I am Login As A
+    Given I am login as admin
     And the request body is:
       """
       {
@@ -132,7 +129,7 @@ Feature: Provide a consistent standard JSON API endpoint
     Then the response code is 204
 
   Scenario: Cannot update an existing Category - PUT - USER
-    Given I am Login As B
+    Given I am login as user
     And the request body is:
       """
       {
@@ -144,7 +141,7 @@ Feature: Provide a consistent standard JSON API endpoint
     Then the response code is 403
 
   Scenario: Cannot update a new Category with an existing name
-    Given I am Login As A
+    Given I am login as admin
     And the request body is:
       """
       {
@@ -172,7 +169,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Cannot update an unknown Category - PUT
-    Given I am Login As A
+    Given I am login as admin
     And the request body is:
       """
       {
@@ -184,7 +181,7 @@ Feature: Provide a consistent standard JSON API endpoint
     Then the response code is 404
 
   Scenario: Can update an existing Category - PATCH
-    Given I am Login As A
+    Given I am login as admin
     And the request body is:
       """
       {
@@ -196,7 +193,7 @@ Feature: Provide a consistent standard JSON API endpoint
     Then the response code is 204
   
   Scenario: Cannot update an existing Category - PATCH - USER
-    Given I am Login As B
+    Given I am login as user
     And the request body is:
       """
       {
@@ -208,7 +205,7 @@ Feature: Provide a consistent standard JSON API endpoint
     Then the response code is 403
 
   Scenario: Can delete an Category
-    Given I am Login As A
+    Given I am login as admin
     Then I request "/api/category/3" using HTTP GET
     Then the response code is 200
     When I request "/api/category/3" using HTTP DELETE
@@ -217,7 +214,7 @@ Feature: Provide a consistent standard JSON API endpoint
     Then the response code is 404
   
   Scenario: Can delete an Category - DELETE - USER
-    Given I am Login As B
+    Given I am login as user
     Then I request "/api/category/3" using HTTP GET
     Then the response code is 200
     When I request "/api/category/3" using HTTP DELETE
@@ -226,7 +223,7 @@ Feature: Provide a consistent standard JSON API endpoint
     Then the response code is 200
 
   Scenario: Must have a non-blank name
-    Given I am Login As A
+    Given I am login as admin
     And the request body is:
       """
       {
@@ -254,7 +251,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Count categories
-    Given I am Login As A
+    Given I am login as admin
     When I request "/api/category" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
@@ -267,7 +264,7 @@ Feature: Provide a consistent standard JSON API endpoint
     And the "X-Total-Count" response header is "3"
   
   Scenario: Count categories
-    Given I am Login As A
+    Given I am login as admin
     When I request "/api/category" using HTTP HEAD
     Then the response code is 200
     And the "X-Total-Count" response header exists

@@ -7,6 +7,7 @@ use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * @method Brand|null find($id, $lockMode = null, $lockVersion = null)
@@ -56,6 +57,7 @@ class BrandRepository extends ServiceEntityRepository
     , ?string $askValidate
     , bool $noPagination)
     {
+
         $query = $this->createQueryBuilder('e')
             ->Where('(e.validate = true OR e.createdBy = :val)')
             ->setParameter('val', $user->getId());

@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Category;
-use App\Entity\SubCategory;
 use App\Form\CategoryType;
 use App\Repository\CategoryRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -11,16 +10,16 @@ use App\Serializer\FormErrorSerializer;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Routing\ClassResourceInterface;
+use FOS\RestBundle\View\View;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
-use Doctrine\Common\Collections\Collection;
 use FOS\RestBundle\Request\ParamFetcher;
 use FOS\RestBundle\Controller\Annotations\QueryParam;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 /**
  * @Rest\RouteResource(
@@ -90,8 +89,8 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
      * )
      * 
      * @param Request $request
-     * @return \FOS\RestBundle\View\View|JsonResponse
-     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
+     * @return View|JsonResponse
+     * @throws ExceptionInterface
      */
     public function postAction(Request $request)
     {
@@ -159,7 +158,7 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
      * )
      *
      * @var $id
-     * @return \FOS\RestBundle\View\View
+     * @return View
      */
     public function getAction(string $id)
     {
@@ -223,7 +222,8 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
      * , nullable=true
      * , description="Retourne only category which have greater or equal or lower than the number")
      *
-     * @return \FOS\RestBundle\View\View
+     * @param ParamFetcher $paramFetcher
+     * @return View
      */
     public function cgetAction(ParamFetcher $paramFetcher)
     {
@@ -241,7 +241,7 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
             $categoryAndCount = $this->categoryRepository->findForAmbassador(
                 $page,
                 $limit,
-                $noPagination == 'true' ? true : false,
+                $noPagination == 'true',
                 $sort,
                 $sortBy,
                 $search,
@@ -254,7 +254,7 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
             $categoryAndCount = $this->categoryRepository->findByUserOrValidate(
                 $user,
                 $page,
-                $noPagination == 'true' ? true : false,
+                $noPagination == 'true',
                 $limit,
                 $sort,
                 $sortBy,
@@ -334,8 +334,8 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
      *
      * @param Request $request
      * @param string $id of the Category to update
-     * @return \FOS\RestBundle\View\View|JsonResponse
-     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
+     * @return View|JsonResponse
+     * @throws ExceptionInterface
      */
     public function putAction(Request $request, string $id)
     {
@@ -410,8 +410,8 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
      *
      * @param Request $request
      * @param string $id of the Category to update
-     * @return \FOS\RestBundle\View\View|JsonResponse
-     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
+     * @return View|JsonResponse
+     * @throws ExceptionInterface
      */
     public function patchAction(Request $request, string $id)
     {
@@ -473,7 +473,7 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
      * )
      *
      * @param string $id
-     * @return \FOS\RestBundle\View\View
+     * @return View|JsonResponse
      */
     public function deleteAction(string $id)
     {
@@ -498,13 +498,20 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
                 JsonResponse::HTTP_PRECONDITION_FAILED
             );
         }
+        return new JsonResponse(
+            [
+                'status' => 'error',
+                'message' => 'Unknown error.'
+            ],
+            JsonResponse::HTTP_INTERNAL_SERVER_ERROR
+        );
     }
 
     /**
      * @param string $id
      *
      * @return Category
-     * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+     * @throws NotFoundHttpException
      */
     private function findCategoryById(string $id)
     {

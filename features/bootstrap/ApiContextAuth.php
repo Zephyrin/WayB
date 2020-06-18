@@ -1,6 +1,7 @@
 <?php
 
 use Imbo\BehatApiExtension\Context;
+use PHPUnit\Framework\Assert as Assertions;
 
 class ApiContextAuth extends Context\ApiContext
 {
@@ -25,5 +26,12 @@ class ApiContextAuth extends Context\ApiContext
     {
         $this->setRequestHeader('Authorization', '');
         $this->token = "Bearer ";
+    }
+
+    public function theResponseBodyHasFields($nbField) {
+        $this->requireResponse();
+
+        $body = $this->getResponseBody();
+        Assertions::assertEquals(count((array)$body), $nbField);
     }
 }

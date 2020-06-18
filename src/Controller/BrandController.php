@@ -11,16 +11,16 @@ use App\Serializer\FormErrorSerializer;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Routing\ClassResourceInterface;
+use FOS\RestBundle\View\View;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Swagger\Annotations as SWG;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use FOS\RestBundle\Request\ParamFetcher;
 use FOS\RestBundle\Controller\Annotations\QueryParam;
-use FOS\RestBundle\Controller\Annotations\RequestParam;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 /**
  * Class BrandController
@@ -91,9 +91,10 @@ class BrandController extends AbstractFOSRestController implements ClassResource
      *    )
      *
      * )
-     * 
+     *
      * @param Request $request
-     * @return \FOS\RestBundle\View\View|JsonResponse
+     * @return View|JsonResponse
+     * @throws ExceptionInterface
      */
     public function postAction(Request $request)
     {
@@ -121,10 +122,8 @@ class BrandController extends AbstractFOSRestController implements ClassResource
 
         $insertData = $form->getData();
         $insertData->setCreatedBy($connectUser);
-        if (
-            !$this->isGranted("ROLE_AMBASSADOR")
-            || $insertData->getValidate() === null
-        )
+        if (!$this->isGranted("ROLE_AMBASSADOR")
+            || $insertData->getValidate() === null)
             $insertData->setValidate(false);
 
         $this->entityManager->persist($insertData);
@@ -162,7 +161,7 @@ class BrandController extends AbstractFOSRestController implements ClassResource
      * )
      *
      * @var $id
-     * @return \FOS\RestBundle\View\View
+     * @return View
      */
     public function getAction(string $id)
     {
@@ -221,8 +220,9 @@ class BrandController extends AbstractFOSRestController implements ClassResource
      * , requirements="(true|false)"
      * , default=false
      * , description="Don't care about pagination")
-     * 
-     * @return \FOS\RestBundle\View\View
+     *
+     * @param ParamFetcher $paramFetcher
+     * @return View
      */
     public function cgetAction(ParamFetcher $paramFetcher)
     {
@@ -245,7 +245,7 @@ class BrandController extends AbstractFOSRestController implements ClassResource
                     , $search
                     , $validate
                     , $askValidate
-                    , $noPagination == 'true' ? true : false);
+                    , $noPagination == 'true');
         } else {
             $user = $this->getUser();
             $brandsAndCount = $this->brandRepository->findByUserOrValidate($user
@@ -256,7 +256,7 @@ class BrandController extends AbstractFOSRestController implements ClassResource
             , $search
             , $validate
             , $askValidate
-            , $noPagination == 'true' ? true : false);
+            , $noPagination == 'true');
         }
         $view = $this->view(
             $brandsAndCount[0]
@@ -308,7 +308,7 @@ class BrandController extends AbstractFOSRestController implements ClassResource
      *
      * @param Request $request
      * @param string $id of the Brand to update
-     * @return \FOS\RestBundle\View\View|JsonResponse
+     * @return View|JsonResponse
      */
     public function putAction(Request $request, string $id)
     {
@@ -355,7 +355,7 @@ class BrandController extends AbstractFOSRestController implements ClassResource
      *
      * @param Request $request
      * @param string $id of the Brand to update
-     * @return \FOS\RestBundle\View\View|JsonResponse
+     * @return View|JsonResponse
      */
     public function patchAction(Request $request, string $id)
     {
@@ -421,7 +421,7 @@ class BrandController extends AbstractFOSRestController implements ClassResource
      * )
      * 
      * @param string $id
-     * @return \FOS\RestBundle\View\View
+     * @return View|JsonResponse
      */
     public function deleteAction(string $id)
     {
@@ -459,7 +459,7 @@ class BrandController extends AbstractFOSRestController implements ClassResource
      * @param string $id
      *
      * @return Brand
-     * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+     * @throws NotFoundHttpException
      */
     private function findBrandById(string $id)
     {

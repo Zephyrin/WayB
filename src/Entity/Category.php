@@ -42,6 +42,7 @@ class Category extends Base
 
     public function __construct()
     {
+        parent::__construct();
         $this->subCategories = new ArrayCollection();
     }
 

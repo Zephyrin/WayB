@@ -3,7 +3,6 @@
 namespace App\Form;
 
 use App\Entity\Backpack;
-use App\Entity\IntoBackpack;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;

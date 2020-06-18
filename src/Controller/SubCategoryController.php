@@ -12,6 +12,7 @@ use App\Serializer\FormErrorSerializer;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Routing\ClassResourceInterface;
+use FOS\RestBundle\View\View;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,6 +20,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 /**
  * @Rest\RouteResource(
@@ -103,8 +105,8 @@ class SubCategoryController extends AbstractFOSRestController implements ClassRe
      *
      * )
      * @param Request $request
-     * @return \FOS\RestBundle\View\View|JsonResponse
-     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
+     * @return View|JsonResponse
+     * @throws ExceptionInterface
      */
     public function postAction(Request $request)
     {
@@ -189,8 +191,10 @@ class SubCategoryController extends AbstractFOSRestController implements ClassRe
      *     description="The ID used to find the Sub-Category"
      * )
      *
-     * @var $id
-     * @return \FOS\RestBundle\View\View
+     *
+     * @param Request $request
+     * @param string $id
+     * @return View
      */
     public function getAction(Request $request, string $id)
     {
@@ -228,7 +232,8 @@ class SubCategoryController extends AbstractFOSRestController implements ClassRe
      *     description="The Category based on CategoryId is not found"
      * )
      *
-     * @return \FOS\RestBundle\View\View
+     * @param Request $request
+     * @return View
      */
     public function cgetAction(Request $request)
     {
@@ -280,8 +285,7 @@ class SubCategoryController extends AbstractFOSRestController implements ClassRe
      * @Security("has_role('ROLE_AMBASSADOR')")
      * @param Request $request
      * @param string $id of the Category to update
-     * @return \FOS\RestBundle\View\View|JsonResponse
-     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
+     * @return void
      */
     public function putAction(Request $request, string $id)
     {
@@ -332,8 +336,7 @@ class SubCategoryController extends AbstractFOSRestController implements ClassRe
      * @Security("has_role('ROLE_AMBASSADOR')")
      * @param Request $request
      * @param string $id of the Category to update
-     * @return \FOS\RestBundle\View\View|JsonResponse
-     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
+     * @return void
      */
     public function patchAction(Request $request, string $id)
     {
@@ -371,6 +374,7 @@ class SubCategoryController extends AbstractFOSRestController implements ClassRe
 
         return $this->view(null, Response::HTTP_NO_CONTENT);
     }
+
     /**
      * Delete a SubCategory with the id.
      *
@@ -399,10 +403,11 @@ class SubCategoryController extends AbstractFOSRestController implements ClassRe
      *     type="string",
      *     description="The ID used to find the Sub-Category"
      * )
-     * 
+     *
      * @Security("has_role('ROLE_AMBASSADOR')")
+     * @param Request $request
      * @param string $id
-     * @return \FOS\RestBundle\View\View
+     * @return View|JsonResponse
      */
     public function deleteAction(Request $request, string $id)
     {
@@ -431,7 +436,7 @@ class SubCategoryController extends AbstractFOSRestController implements ClassRe
      * @param string $id
      *
      * @return SubCategory
-     * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+     * @throws NotFoundHttpException
      */
     private function findSubCategoryById(string $id)
     {
@@ -446,7 +451,7 @@ class SubCategoryController extends AbstractFOSRestController implements ClassRe
      * @param Request $request
      *
      * @return Category
-     * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+     * @throws NotFoundHttpException
      */
     private function findCategoryByRequest(Request $request)
     {

@@ -11,6 +11,7 @@ use App\Serializer\FormErrorSerializer;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Routing\ClassResourceInterface;
+use FOS\RestBundle\View\View;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,6 +20,7 @@ use Swagger\Annotations as SWG;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use FOS\RestBundle\Request\ParamFetcher;
 use FOS\RestBundle\Controller\Annotations\QueryParam;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 /**
  * Class BackpackController
@@ -34,6 +36,7 @@ use FOS\RestBundle\Controller\Annotations\QueryParam;
  */
 class BackpackController extends AbstractFOSRestController implements ClassResourceInterface
 {
+    use AbstractController;
     /**
      * @var EntityManagerInterface
      */
@@ -101,8 +104,8 @@ class BackpackController extends AbstractFOSRestController implements ClassResou
      * )
      *
      * @param Request $request
-     * @return \FOS\RestBundle\View\View|JsonResponse
-     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
+     * @return View|JsonResponse
+     * @throws ExceptionInterface
      */
     public function postAction(Request $request)
     {
@@ -178,9 +181,9 @@ class BackpackController extends AbstractFOSRestController implements ClassResou
      * )
      *
      *
+     * @param Request $request
      * @param string $id
-     * @param User $user
-     * @return \FOS\RestBundle\View\View
+     * @return View
      */
     public function getAction(Request $request, string $id)
     {
@@ -238,9 +241,10 @@ class BackpackController extends AbstractFOSRestController implements ClassResou
      * @QueryParam(name="search"
      * , nullable=true
      * , description="Search on name and uri")
-     * 
+     *
      * @param Request $request
-     * @return \FOS\RestBundle\View\View
+     * @param ParamFetcher $paramFetcher
+     * @return View
      */
     public function cgetAction(Request $request, ParamFetcher $paramFetcher)
     {
@@ -256,6 +260,7 @@ class BackpackController extends AbstractFOSRestController implements ClassResou
         , $sort
         , $sortBy
         , $search);
+        //return $this->setPaginateToView($count, $this);
         $view = $this->view(
             $count[0]
         );
@@ -312,8 +317,8 @@ class BackpackController extends AbstractFOSRestController implements ClassResou
      *
      * @param Request $request
      * @param string $id of the Category to update
-     * @return \FOS\RestBundle\View\View|JsonResponse
-     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
+     * @return View|JsonResponse
+     * @throws ExceptionInterface
      */
     public function putAction(Request $request, string $id)
     {
@@ -398,8 +403,8 @@ class BackpackController extends AbstractFOSRestController implements ClassResou
      *
      * @param Request $request
      * @param string $id of the Backpack to update
-     * @return \FOS\RestBundle\View\View|JsonResponse
-     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
+     * @return View|JsonResponse
+     * @throws ExceptionInterface
      */
     public function patchAction(Request $request, string $id)
     {
@@ -464,7 +469,7 @@ class BackpackController extends AbstractFOSRestController implements ClassResou
      * )
      * @param string $id
      * @param Request $request
-     * @return \FOS\RestBundle\View\View
+     * @return View|JsonResponse
      */
     public function deleteAction(Request $request, string $id)
     {
@@ -490,8 +495,8 @@ class BackpackController extends AbstractFOSRestController implements ClassResou
     /**
      * @param string $id
      *
+     * @param User $user
      * @return Backpack
-     * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
      */
     private function findBackpackById(string $id, User $user)
     {
@@ -521,7 +526,7 @@ class BackpackController extends AbstractFOSRestController implements ClassResou
      * @param Request $request
      *
      * @return User
-     * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+     * @throws NotFoundHttpException
      */
     private function findUserByRequest(Request $request)
     {

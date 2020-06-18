@@ -34,13 +34,19 @@ trait AbstractRepository
     return $offset;
   }
 
-  /**
-   * $query The query builder
-   * $entityName the name of the entity to count in. Like App\Entity\SubCategory
-   * $parentName the name of the relation in the $entityName. Like category
-   * $countExp the expression of counting.
-   * $preParamName the name use to distinguish differentes request. 
-   */
+    /**
+     * $query The query builder
+     * $entityName the name of the entity to count in. Like App\Entity\SubCategory
+     * $parentName the name of the relation in the $entityName. Like category
+     * $countExp the expression of counting.
+     * $preParamName the name use to distinguish differentes request.
+     * @param QueryBuilder $query
+     * @param string|null $entityName
+     * @param string|null $parentName
+     * @param string|null $countExp
+     * @param string $preParamName
+     * @return QueryBuilder
+     */
   public function setLowerGreaterEqual(
     QueryBuilder $query,
     ?string $entityName,

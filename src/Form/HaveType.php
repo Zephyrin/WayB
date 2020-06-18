@@ -4,9 +4,7 @@ namespace App\Form;
 
 use App\Entity\Have;
 use App\Entity\Equipment;
-use App\Form\EquipmentType;
 use App\Entity\Characteristic;
-use App\Form\CharacteristicType;
 use Doctrine\ORM\EntityRepository;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;

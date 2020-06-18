@@ -5,18 +5,15 @@ Feature: Provide a consistent standard JSON API endpoint
   I need to allow Create, Read, Update, and Delete functionality
 
   Background:
-    Given there are User with the following details:
-      | username | password | email     | gender | ROLE            |
-      | a        | a        | a.b@c.com | MALE   | ROLE_AMBASSADOR |
-      | b        | b        | b.b@c.com | MALE   | ROLE_USER       |
+    Given there are default users
     Given there are Brands with the following details:
-      | name           | validate | uri                 |
-      | MSR            | true     | www.msr.com         |
-      | Mammut         | false    | www.mammut.com      |
-      | The north face | false    | www.thenorthface.fr |
+      | name           | validate | uri                 | askValidate |
+      | MSR            | true     | www.msr.com         | false       |
+      | Mammut         | false    | www.mammut.com      | false       |
+      | The north face | false    | www.thenorthface.fr | false       |
 
   Scenario: Can get a single Brand if I am connected
-    Given I am Login As A
+    Given I am login as admin
     Then I request "/api/brand/1" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
@@ -34,9 +31,10 @@ Feature: Provide a consistent standard JSON API endpoint
     Then the response code is 401
 
   Scenario: Can get a collection of Brands
-    Given I am Login As A 
+    Given I am login as admin 
     Then I request "/api/brand" using HTTP GET
     Then the response code is 200
+    And the response body is a JSON array of length 3
     And the response body contains JSON:
     """
     [
@@ -62,7 +60,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can add a new Brand (ROLE_AMBASSADOR)
-    Given I am Login As A
+    Given I am login as admin
     Then the request body is:
       """
       {
@@ -84,7 +82,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
   
   Scenario: Can add a new Brand (ROLE_USER)
-    Given I am Login As B
+    Given I am login as user
     Then the request body is:
       """
       {
@@ -106,7 +104,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """    
 
   Scenario: Cannot add a new Brand with an existing name
-    Given I am Login As A
+    Given I am login as admin
     Then the request body is:
       """
       {
@@ -136,7 +134,7 @@ Feature: Provide a consistent standard JSON API endpoint
 
 
   Scenario: Can update an existing Brand - PUT ROLE_AMBASSADOR
-    Given I am Login As A
+    Given I am login as admin
     Then the request body is:
       """
       {
@@ -149,7 +147,7 @@ Feature: Provide a consistent standard JSON API endpoint
     Then the response code is 204
 
   Scenario: Cannot update an existing Brand - PUT ROLE_USER
-    Given I am Login As B
+    Given I am login as user
     Then the request body is:
       """
       {
@@ -162,7 +160,7 @@ Feature: Provide a consistent standard JSON API endpoint
     Then the response code is 403
 
   Scenario: Cannot update a new Brand with an existing name
-    Given I am Login As A
+    Given I am login as admin
     Then the request body is:
       """
       {
@@ -192,7 +190,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Cannot update an unknown Brand - PUT
-    Given I am Login As A
+    Given I am login as admin
     Then the request body is:
       """
       {
@@ -205,7 +203,7 @@ Feature: Provide a consistent standard JSON API endpoint
     Then the response code is 404
 
   Scenario: Can update an existing Brand - PATCH ROLE_AMBASSADOR
-    Given I am Login As A
+    Given I am login as admin
     Then the request body is:
       """
       {
@@ -217,7 +215,7 @@ Feature: Provide a consistent standard JSON API endpoint
     Then the response code is 204
   
   Scenario: Cannot update an existing Brand - PATCH ROLE_USER
-    Given I am Login As B
+    Given I am login as user
     Then the request body is:
       """
       {
@@ -229,7 +227,7 @@ Feature: Provide a consistent standard JSON API endpoint
     Then the response code is 403
 
   Scenario: Can delete an Brand ROLE_AMBASSADOR
-    Given I am Login As A
+    Given I am login as admin
     Then I request "/api/brand/3" using HTTP GET
     Then the response code is 200
     When I request "/api/brand/3" using HTTP DELETE
@@ -238,7 +236,7 @@ Feature: Provide a consistent standard JSON API endpoint
     Then the response code is 404
 
   Scenario: Cannot delete an Brand ROLE_USER
-    Given I am Login As B
+    Given I am login as user
     Then I request "/api/brand/3" using HTTP GET
     Then the response code is 200
     When I request "/api/brand/3" using HTTP DELETE
@@ -247,7 +245,7 @@ Feature: Provide a consistent standard JSON API endpoint
     Then the response code is 200
 
   Scenario: Must have a non-blank name
-    Given I am Login As A
+    Given I am login as admin
     Then the request body is:
       """
       {
@@ -275,21 +273,8 @@ Feature: Provide a consistent standard JSON API endpoint
     }
     """
 
-  Scenario: Must have a non-blank name but first should be ROLE ok
-    Given I am Login As B
-    Then the request body is:
-      """
-      {
-        "name": "",
-        "validate": false,
-        "uri": "blank desc"
-      }
-      """
-    When I request "/api/brand" using HTTP POST
-    Then the response code is 403
-
   Scenario: Add an image to the brand - PUT
-    Given I am Login As A
+    Given I am login as admin
     Then the request body is:
       """
       {
@@ -302,7 +287,7 @@ Feature: Provide a consistent standard JSON API endpoint
     Then the request body is:
       """
       {
-        "description": "MSR",
+        "description": "MSR Logo",
         "logo": 1
       }
       """
@@ -319,14 +304,14 @@ Feature: Provide a consistent standard JSON API endpoint
       "uri": "www.msr.com",
       "logo": {
         "id": 1,
-        "file_path": "@regExp(/.+\\.png/)",
+        "filePath": "@regExp(/.+\\.png/)",
         "description": "MSR Logo"
       }
     }
     """
 
   Scenario: Add an image to the brand - POST
-    Given I am Login As A
+    Given I am login as admin
     Then the request body is:
       """
       {
@@ -356,7 +341,7 @@ Feature: Provide a consistent standard JSON API endpoint
         "uri": "www.rab.fr",
         "logo": {
           "id": 1,
-          "file_path": "@regExp(/.+\\.png/)",
+          "filePath": "@regExp(/.+\\.png/)",
           "description": "MSR Logo"
         }
       }

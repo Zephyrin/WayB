@@ -11,6 +11,7 @@ use App\Serializer\FormErrorSerializer;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Routing\ClassResourceInterface;
+use FOS\RestBundle\View\View;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -29,6 +30,8 @@ use Swagger\Annotations as SWG;
  *     name="User has"
  * )
  */use Nelmio\ApiDocBundle\Annotation\Model;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
+
 class HaveController extends AbstractFOSRestController implements ClassResourceInterface
 {
     /**
@@ -98,8 +101,8 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
      * )
      *
      * @param Request $request
-     * @return \FOS\RestBundle\View\View|JsonResponse
-     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
+     * @return View|JsonResponse
+     * @throws ExceptionInterface
      */
     public function postAction(Request $request)
     {
@@ -177,7 +180,7 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
      *
      * @param string $id
      * @param User $user
-     * @return \FOS\RestBundle\View\View
+     * @return View
      */
     public function getAction(string $id, User $user)
     {
@@ -214,7 +217,7 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
      * )
      *
      * @param Request $request
-     * @return \FOS\RestBundle\View\View
+     * @return View
      */
     public function cgetAction(Request $request)
     {
@@ -268,8 +271,8 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
      *
      * @param Request $request
      * @param string $id of the Category to update
-     * @return \FOS\RestBundle\View\View|JsonResponse
-     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
+     * @return View|JsonResponse
+     * @throws ExceptionInterface
      */
     public function putAction(Request $request, string $id)
     {
@@ -354,8 +357,8 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
      *
      * @param Request $request
      * @param string $id of the Have to update
-     * @return \FOS\RestBundle\View\View|JsonResponse
-     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
+     * @return View|JsonResponse
+     * @throws ExceptionInterface
      */
     public function patchAction(Request $request, string $id)
     {
@@ -421,7 +424,7 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
      * )
      * @param string $id
      * @param Request $request
-     * @return \FOS\RestBundle\View\View
+     * @return View|JsonResponse
      */
     public function deleteAction(Request $request, string $id)
     {
@@ -447,7 +450,7 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
      * @param string $id
      *
      * @return Have
-     * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+     * @throws NotFoundHttpException
      */
     private function findHaveById(string $id)
     {
@@ -477,7 +480,7 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
      * @param Request $request
      *
      * @return User
-     * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+     * @throws NotFoundHttpException
      */
     private function findUserByRequest(Request $request)
     {

@@ -9,7 +9,7 @@ use Doctrine\Common\Collections\Collection;
 use JMS\Serializer\Annotation\SerializedName;
 
 /**
- * @ORM\Entity(repositoryClass=BackpackRepository::class)
+ * @ORM\Entity(repositoryClass="App\Repository\BackpackRepository")
  * 
  * @SWG\Definition(
  *  description="A backpack is what the user bring with him for a hike.")

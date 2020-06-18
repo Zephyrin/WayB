@@ -9,7 +9,6 @@ use JMS\Serializer\Annotation\Exclude;
 use Symfony\Component\Validator\Constraints as Asset;
 use Swagger\Annotations as SWG;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
-use JMS\Serializer\Annotation\SerializedName;
 
 /**
  * @SWG\Definition(
@@ -50,6 +49,7 @@ class Brand extends Base
 
     public function __construct()
     {
+        parent::__construct();
         $this->equipments = new ArrayCollection();
     }
 

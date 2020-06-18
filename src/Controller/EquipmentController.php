@@ -14,17 +14,16 @@ use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Request\ParamFetcher;
 use FOS\RestBundle\Routing\ClassResourceInterface;
+use FOS\RestBundle\View\View;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
-use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Security\Core\Security;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use FOS\RestBundle\Controller\Annotations\QueryParam;
-use FOS\RestBundle\Controller\Annotations\RequestParam;
 
 /**
  * Class EquipmentController
@@ -100,8 +99,8 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
      * )
      *
      * @param Request $request
-     * @return \FOS\RestBundle\View\View|JsonResponse
-     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
+     * @return View|JsonResponse
+     * @throws ExceptionInterface
      * @TODO Add user check and user link.
      */
     public function postAction(Request $request)
@@ -140,7 +139,7 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
                     $equipment->setSubCategory($subCat);
                 }
             } else {
-                $json_resp = new JsonResponse(
+                return new JsonResponse(
                     [
                         'status' => 'error',
                         'message' => 'Validation error',
@@ -148,8 +147,6 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
                     ],
                     JsonResponse::HTTP_UNPROCESSABLE_ENTITY
                 );
-               // $json_resp['errors'][0]['children']['subCategory']['errors'] = "This value is required.";
-                return $json_resp;
             }
         }
         if($equipment->getBrand() == null
@@ -199,7 +196,7 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
      * )
      *
      * @var $id
-     * @return \FOS\RestBundle\View\View
+     * @return View
      */
     public function getAction(string $id)
     {
@@ -285,8 +282,8 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
      * , allowBlank=true
      * , requirements="\[\d+(,\d+)*\]"
      * , description="list of brand id that equipment belong to. Empty means all")
-     * @param Request $request
-     * @return \FOS\RestBundle\View\View
+     * @param ParamFetcher $paramFetcher
+     * @return View
      */
     public function cgetAction(ParamFetcher $paramFetcher)
     {
@@ -403,8 +400,8 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
      *
      * @param Request $request
      * @param string $id of the Equipment to update
-     * @return \FOS\RestBundle\View\View|JsonResponse
-     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
+     * @return View|JsonResponse
+     * @throws ExceptionInterface
      */
     public function putAction(Request $request, string $id)
     {
@@ -478,8 +475,8 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
      *
      * @param Request $request
      * @param string $id of the Equipment to update
-     * @return \FOS\RestBundle\View\View|JsonResponse
-     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
+     * @return View|JsonResponse
+     * @throws ExceptionInterface
      */
     public function patchAction(Request $request, string $id)
     {
@@ -553,7 +550,7 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
      * 
      * @param Request $request
      * @param string $id
-     * @return \FOS\RestBundle\View\View
+     * @return View|JsonResponse
      */
     public function deleteAction(Request $request, string $id)
     {
@@ -592,7 +589,7 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
      * @param string $id
      *
      * @return Equipment
-     * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+     * @throws NotFoundHttpException
      */
     private function findEquipmentById(string $id)
     {
@@ -607,7 +604,7 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
      * @param Request $request
      *
      * @return User
-     * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+     * @throws NotFoundHttpException
      */
     private function findUserByRequest(Request $request)
     {

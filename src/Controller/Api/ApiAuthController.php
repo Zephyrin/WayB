@@ -3,14 +3,12 @@ namespace App\Controller\Api;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use App\Serializer\FormErrorSerializer;
 use App\Entity\User;
 use App\Form\UserType;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Validator\Validation;
-use Symfony\Component\Validator\Constraints as Assert;
 use Swagger\Annotations as SWG;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
@@ -45,6 +43,7 @@ class ApiAuthController extends AbstractController
         $this->formErrorSerializer = $formErrorSerializer;
         $this->passwordEncoder = $passwordEncoder;
     }
+
     /**
      * Register an user to the DB.
      *
@@ -74,7 +73,9 @@ class ApiAuthController extends AbstractController
      * )
      *
      * @param Request $request
-     * @return JsonResponse|\Symfony\Component\HttpFoundation\RedirectResponse
+     * @return JsonResponse|RedirectResponse
+     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
+     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
      */
     public function register(Request $request)
     {

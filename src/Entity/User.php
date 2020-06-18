@@ -8,6 +8,7 @@ use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use InvalidArgumentException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use JMS\Serializer\Annotation\SerializedName;
 use Swagger\Annotations as SWG;
@@ -167,7 +168,7 @@ class User implements UserInterface
     public function setGender(string $gender): self
     {
         if (!in_array($gender, GenderEnum::getAvailableTypes())) {
-            throw new \InvalidArgumentException("Invalid type");
+            throw new InvalidArgumentException("Invalid type");
         }
         $this->gender = $gender;
 

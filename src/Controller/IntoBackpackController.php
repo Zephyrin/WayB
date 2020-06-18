@@ -3,12 +3,10 @@
 namespace App\Controller;
 
 use App\Entity\Backpack;
-use App\Entity\Category;
 use App\Entity\IntoBackpack;
 use App\Entity\User;
 use App\Form\IntoBackpackType;
 use App\Repository\BackpackRepository;
-use App\Repository\CategoryRepository;
 use App\Repository\HaveRepository;
 use App\Repository\IntoBackpackRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -16,13 +14,14 @@ use App\Serializer\FormErrorSerializer;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Routing\ClassResourceInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use FOS\RestBundle\View\View;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 /**
  * @Rest\RouteResource(
@@ -115,8 +114,8 @@ class IntoBackpackController extends AbstractFOSRestController implements ClassR
      *
      * )
      * @param Request $request
-     * @return \FOS\RestBundle\View\View|JsonResponse
-     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
+     * @return View|JsonResponse
+     * @throws ExceptionInterface
      */
     public function postAction(Request $request)
     {
@@ -213,8 +212,10 @@ class IntoBackpackController extends AbstractFOSRestController implements ClassR
      *     description="The ID used to find the IntoBackpack"
      * )
      *
-     * @var $id
-     * @return \FOS\RestBundle\View\View
+     *
+     * @param Request $request
+     * @param string $id
+     * @return View
      */
     public function getAction(Request $request, string $id)
     {
@@ -241,7 +242,7 @@ class IntoBackpackController extends AbstractFOSRestController implements ClassR
      *      @SWG\Items(ref=@Model(type=IntoBackpack::class))
      *     )
      * )
-     * 
+     *
      * @SWG\Parameter(
      *     name="userid",
      *     in="path",
@@ -260,7 +261,8 @@ class IntoBackpackController extends AbstractFOSRestController implements ClassR
      *     description="The Backpack based on BackpackId or the User based on UserId is not found"
      * )
      *
-     * @return \FOS\RestBundle\View\View
+     * @param Request $request
+     * @return View
      */
     public function cgetAction(Request $request)
     {
@@ -318,8 +320,7 @@ class IntoBackpackController extends AbstractFOSRestController implements ClassR
      * )
      * @param Request $request
      * @param string $id of the Category to update
-     * @return \FOS\RestBundle\View\View|JsonResponse
-     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
+     * @return void
      */
     public function putAction(Request $request, string $id)
     {
@@ -375,8 +376,7 @@ class IntoBackpackController extends AbstractFOSRestController implements ClassR
      * )
      * @param Request $request
      * @param string $id of the Category to update
-     * @return \FOS\RestBundle\View\View|JsonResponse
-     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
+     * @return void
      */
     public function patchAction(Request $request, string $id)
     {
@@ -415,6 +415,7 @@ class IntoBackpackController extends AbstractFOSRestController implements ClassR
 
         return $this->view(null, Response::HTTP_NO_CONTENT);
     }
+
     /**
      * Delete an IntoBackpack with the id.
      *
@@ -449,9 +450,10 @@ class IntoBackpackController extends AbstractFOSRestController implements ClassR
      *     type="string",
      *     description="The ID used to find the IntoBackpack"
      * )
-     * 
+     *
+     * @param Request $request
      * @param string $id
-     * @return \FOS\RestBundle\View\View
+     * @return View|JsonResponse
      */
     public function deleteAction(Request $request, string $id)
     {
@@ -479,7 +481,7 @@ class IntoBackpackController extends AbstractFOSRestController implements ClassR
      * @param Backpack $backpack
      *
      * @return IntoBackpack
-     * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+     * @throws NotFoundHttpException
      */
     private function findIntoBackpackById(string $id, Backpack $backpack)
     {
@@ -492,8 +494,8 @@ class IntoBackpackController extends AbstractFOSRestController implements ClassR
     /**
      * @param Request $request
      *
-     * @return Category
-     * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+     * @param User $user
+     * @return Backpack
      */
     private function findBackpackByRequest(Request $request, User $user): Backpack
     {
@@ -518,7 +520,7 @@ class IntoBackpackController extends AbstractFOSRestController implements ClassR
      * @param Request $request
      *
      * @return User
-     * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+     * @throws NotFoundHttpException
      */
     private function findUserByRequest(Request $request)
     {

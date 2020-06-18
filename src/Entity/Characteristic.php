@@ -78,6 +78,7 @@ class Characteristic extends Base
 
     public function __construct()
     {
+        parent::__construct();
         $this->haves = new ArrayCollection();
     }
 

@@ -5,10 +5,7 @@ Feature: Provide a consistent standard JSON API endpoint for USER
   I need to allow Create, Read, Update, and Delete functionality
 
   Background:
-    Given there are User with the following details:
-      | username | password | email     | gender | ROLE            |
-      | a        | a        | a.b@c.com | MALE   | ROLE_AMBASSADOR |
-      | b        | b        | b.b@c.com | MALE   | ROLE_USER       |
+    Given there are default users
 
     Scenario: Cannot register a new user with the same name
       Given the request body is:

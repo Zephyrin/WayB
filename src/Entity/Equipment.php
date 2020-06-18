@@ -7,7 +7,6 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Swagger\Annotations as SWG;
 use JMS\Serializer\Annotation\SerializedName;
-use phpDocumentor\Reflection\Types\Boolean;
 use Symfony\Component\Validator\Constraints as Asset;
 use JMS\Serializer\Annotation\Exclude;
 
@@ -69,6 +68,7 @@ class Equipment extends Base
 
     public function __construct()
     {
+        parent::__construct();
         $this->characteristics = new ArrayCollection();
         $this->haves = new ArrayCollection();
     }

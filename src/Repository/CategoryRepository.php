@@ -3,10 +3,8 @@
 namespace App\Repository;
 
 use App\Entity\Category;
-use App\Entity\SubCategory;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\Query\AST\Functions\LowerFunction;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 

@@ -4,7 +4,6 @@ namespace App\Entity;
 
 use App\Repository\IntoBackpackRepository;
 use Doctrine\ORM\Mapping as ORM;
-use Swagger\Annotations as SWG;
 use JMS\Serializer\Annotation\Exclude;
 
 /**

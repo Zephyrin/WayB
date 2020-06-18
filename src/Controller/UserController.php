@@ -7,19 +7,18 @@ use App\Form\UserType;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Serializer\FormErrorSerializer;
-use DateTime;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Routing\ClassResourceInterface;
+use FOS\RestBundle\View\View;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use FOS\RestBundle\Controller\Annotations\QueryParam;
 use FOS\RestBundle\Request\ParamFetcher;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 /**
  * @Rest\RouteResource(
@@ -97,8 +96,8 @@ class UserController extends AbstractFOSRestController implements ClassResourceI
    *
    * @param Request $request
    * @param string $id of the User to update
-   * @return \FOS\RestBundle\View\View|JsonResponse
-   * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
+   * @return View|JsonResponse
+   * @throws ExceptionInterface
    */
   public function patchAction(Request $request, string $id)
   {
@@ -149,7 +148,7 @@ class UserController extends AbstractFOSRestController implements ClassResourceI
    * @param string $id
    *
    * @return User
-   * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+   * @throws NotFoundHttpException
    */
   private function findUserById(string $id)
   {
@@ -170,7 +169,7 @@ class UserController extends AbstractFOSRestController implements ClassResourceI
    * @param string username
    * 
    * @return User
-   * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+   * @throws NotFoundHttpException
    */
   public function getAction(Request $request, string $username)
   {
@@ -185,44 +184,45 @@ class UserController extends AbstractFOSRestController implements ClassResourceI
     return $existingUser;
   }
 
-  /**
-   * Expose all Users
-   *
-   * @SWG\Get(
-   *     summary="Get all Users",
-   *     produces={"application/json"}
-   * )
-   * @SWG\Response(
-   *     response=200,
-   *     description="Return all the Users",
-   *     @SWG\Schema(
-   *      type="string"
-   *     )
-   * )
-   *
-   * @QueryParam(name="page"
-   * , requirements="\d+"
-   * , default="1"
-   * , description="Page of the overview.")
-   * @QueryParam(name="limit"
-   * , requirements="\d+"
-   * , default="10"
-   * , description="Item count limit")
-   * @QueryParam(name="sort"
-   * , requirements="(asc|desc)"
-   * , allowBlank=false
-   * , default="asc"
-   * , description="Sort direction")
-   * @QueryParam(name="sortBy"
-   * , requirements="(username|roles|gender|email|lastLogin)"
-   * , default="username"
-   * , description="Sort by name or uri")
-   * @QueryParam(name="search"
-   * , nullable=true
-   * , description="Search on name and uri")
-   * 
-   * @return \FOS\RestBundle\View\View
-   */
+    /**
+     * Expose all Users
+     *
+     * @SWG\Get(
+     *     summary="Get all Users",
+     *     produces={"application/json"}
+     * )
+     * @SWG\Response(
+     *     response=200,
+     *     description="Return all the Users",
+     *     @SWG\Schema(
+     *      type="string"
+     *     )
+     * )
+     *
+     * @QueryParam(name="page"
+     * , requirements="\d+"
+     * , default="1"
+     * , description="Page of the overview.")
+     * @QueryParam(name="limit"
+     * , requirements="\d+"
+     * , default="10"
+     * , description="Item count limit")
+     * @QueryParam(name="sort"
+     * , requirements="(asc|desc)"
+     * , allowBlank=false
+     * , default="asc"
+     * , description="Sort direction")
+     * @QueryParam(name="sortBy"
+     * , requirements="(username|roles|gender|email|lastLogin)"
+     * , default="username"
+     * , description="Sort by name or uri")
+     * @QueryParam(name="search"
+     * , nullable=true
+     * , description="Search on name and uri")
+     *
+     * @param ParamFetcher $paramFetcher
+     * @return View
+     */
   public function cgetAction(ParamFetcher $paramFetcher)
   {
     $page = $paramFetcher->get('page');

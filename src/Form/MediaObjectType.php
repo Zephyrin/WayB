@@ -41,7 +41,6 @@ class MediaObjectType extends AbstractType
                     ])
                 ],
             ]);
-            ;
     }
 
     public function configureOptions(OptionsResolver $resolver)

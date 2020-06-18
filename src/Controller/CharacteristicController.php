@@ -11,12 +11,14 @@ use App\Serializer\FormErrorSerializer;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Routing\ClassResourceInterface;
+use FOS\RestBundle\View\View;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 /**
  * Class CharacteristicController
@@ -95,8 +97,8 @@ class CharacteristicController extends AbstractFOSRestController implements Clas
      * )
      *
      * @param Request $request
-     * @return \FOS\RestBundle\View\View|JsonResponse
-     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
+     * @return View|JsonResponse
+     * @throws ExceptionInterface
      */
     public function postAction(Request $request)
     {
@@ -180,8 +182,10 @@ class CharacteristicController extends AbstractFOSRestController implements Clas
      *     description="The ID used to find the Characteristic"
      * )
      *
-     * @var $id
-     * @return \FOS\RestBundle\View\View
+     *
+     * @param Request $request
+     * @param string $id
+     * @return View
      */
     public function getAction(Request $request, string $id)
     {
@@ -221,7 +225,8 @@ class CharacteristicController extends AbstractFOSRestController implements Clas
      *     description="The Equipment based on EquipmentId is not found"
      * )
      *
-     * @return \FOS\RestBundle\View\View
+     * @param $request
+     * @return View
      */
     public function cgetAction($request)
     {
@@ -284,8 +289,8 @@ class CharacteristicController extends AbstractFOSRestController implements Clas
      *
      * @param Request $request
      * @param string $id of the Category to update
-     * @return \FOS\RestBundle\View\View|JsonResponse
-     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
+     * @return View|JsonResponse
+     * @throws ExceptionInterface
      */
     public function putAction(Request $request, string $id)
     {
@@ -369,8 +374,8 @@ class CharacteristicController extends AbstractFOSRestController implements Clas
      *
      * @param Request $request
      * @param string $id of the Characteristic to update
-     * @return \FOS\RestBundle\View\View|JsonResponse
-     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
+     * @return View|JsonResponse
+     * @throws ExceptionInterface
      */
     public function patchAction(Request $request, string $id)
     {
@@ -438,8 +443,9 @@ class CharacteristicController extends AbstractFOSRestController implements Clas
      *     type="string",
      *     description="The ID used to find the Characteristic"
      * )
+     * @param Request $request
      * @param string $id
-     * @return \FOS\RestBundle\View\View
+     * @return View|JsonResponse
      */
     public function deleteAction(Request $request, string $id)
     {
@@ -465,7 +471,7 @@ class CharacteristicController extends AbstractFOSRestController implements Clas
      * @param string $id
      *
      * @return Characteristic
-     * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+     * @throws NotFoundHttpException
      */
     private function findCharacteristicById(string $id)
     {
@@ -479,8 +485,8 @@ class CharacteristicController extends AbstractFOSRestController implements Clas
     /**
      * @param Request $request
      *
-     * @return User
-     * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+     * @return Equipment
+     * @throws NotFoundHttpException
      */
     private function findEquipmentByRequest(Request $request)
     {

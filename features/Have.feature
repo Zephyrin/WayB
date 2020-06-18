@@ -5,10 +5,7 @@ Feature: Provide a consistent standard JSON API endpoint
   I need to allow Create, Read, Update, and Delete functionality
 
   Background:
-    Given there are User with the following details:
-      | username | password | email     | gender | ROLE            |
-      | a        | a        | a.b@c.com | MALE   | ROLE_AMBASSADOR |
-      | b        | b        | b.b@c.com | MALE   | ROLE_USER       |
+    Given there are default users
     Given there are Categories with the following details:
       | name     |
       | Clothe    |
@@ -45,7 +42,7 @@ Feature: Provide a consistent standard JSON API endpoint
       | 2        | 1           | 0            | 3         | 5              |
 
   Scenario: Can get a single Have With User A - GET
-    Given I am Login As A
+    Given I am login as admin
     And I request "/api/user/1/have/1" using HTTP GET
     Then the response body contains JSON:
     """
@@ -80,7 +77,7 @@ Feature: Provide a consistent standard JSON API endpoint
     And the response code is 200
 
   Scenario: Can get a single  With User B belong to A - GET
-    Given I am Login As B
+    Given I am login as user
     And I request "/api/user/1/have/1" using HTTP GET
     Then the response body contains JSON:
     """
@@ -108,7 +105,7 @@ Feature: Provide a consistent standard JSON API endpoint
     And the response code is 200
 
   Scenario: Can get a collection of have from user A - GET
-    Given I am Login As A
+    Given I am login as admin
     Then I request "/api/user/1/have" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
@@ -184,7 +181,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can get a collection of have from user A as login B - GET
-    Given I am Login As B
+    Given I am login as user
     Then I request "/api/user/1/have" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
@@ -260,7 +257,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can link an existing equipment to the user A - POST:
-    Given I am Login As A
+    Given I am login as admin
     Then the request body is:
       """
       {
@@ -305,7 +302,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Cannot link an not full json to the user A - POST:
-    Given I am Login As A
+    Given I am login as admin
     Then the request body is:
       """
       {
@@ -326,7 +323,7 @@ Feature: Provide a consistent standard JSON API endpoint
     Then the response code is 422
   
    Scenario: Cannot link an existing equipment to the user A with user B:
-    Given I am Login As B
+    Given I am login as user
     Then the request body is:
       """
       {
@@ -339,7 +336,7 @@ Feature: Provide a consistent standard JSON API endpoint
     Then the response code is 403
 
    Scenario: Can update an existing Have - PUT
-    Given I am Login As A
+    Given I am login as admin
     Then the request body is:
       """
       {
@@ -377,7 +374,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Cannot update an existing Have from an another user - PUT
-    Given I am Login As B
+    Given I am login as user
     Then the request body is:
       """
       {
@@ -415,7 +412,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can update an existing Equipment - PATCH
-    Given I am Login As A
+    Given I am login as admin
     Then the request body is:
       """
       {
@@ -451,7 +448,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Canot update an existing Equipment of an another user - PATCH
-    Given I am Login As B
+    Given I am login as user
     Then the request body is:
       """
       {
@@ -487,7 +484,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can delete an have
-    Given I am Login As A
+    Given I am login as admin
     Then I request "/api/user/1/have/1" using HTTP GET
     Then the response code is 200
     When I request "/api/equipment/1" using HTTP GET
@@ -500,7 +497,7 @@ Feature: Provide a consistent standard JSON API endpoint
     Then the response code is 200
 
   Scenario: Cannot delete an have
-    Given I am Login As B
+    Given I am login as user
     Then I request "/api/user/1/have/1" using HTTP GET
     Then the response code is 200
     When I request "/api/user/1/have/1" using HTTP DELETE
@@ -511,7 +508,7 @@ Feature: Provide a consistent standard JSON API endpoint
     Then the response code is 200
 
   Scenario: Can delete an have and equipment if this one is not link and not validate
-    Given I am Login As A
+    Given I am login as admin
     Then I request "/api/user/1/have/2" using HTTP GET
     Then the response code is 200
     When I request "/api/equipment/2" using HTTP GET

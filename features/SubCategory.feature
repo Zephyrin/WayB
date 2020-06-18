@@ -5,10 +5,7 @@ Feature: Provide a consistent standard JSON API endpoint
   I need to allow Create, Read, Update, and Delete functionality
 
   Background:
-    Given there are User with the following details:
-      | username | password | email     | gender | ROLE            |
-      | a        | a        | a.b@c.com | MALE   | ROLE_AMBASSADOR |
-      | b        | b        | b.b@c.com | MALE   | ROLE_USER       |
+    Given there are default users
     Given there are Categories with the following details:
       | name     |
       | Clothe    |
@@ -23,7 +20,7 @@ Feature: Provide a consistent standard JSON API endpoint
       | Flash Light  | 3         |
 
   Scenario: Can get a single SubCategory
-    Given I am Login As B
+    Given I am login as user
     Then I request "/api/category/1/subcategory/1" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
@@ -35,7 +32,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can get a collection of SubCategories
-    Given I am Login As B
+    Given I am login as user
     Then I request "/api/category/1/subcategory" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
@@ -53,7 +50,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can get a collection of Categories and its Sub Categories
-    Given I am Login As B
+    Given I am login as user
     Then I request "/api/category" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
@@ -99,7 +96,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can add a new SubCategory
-    Given I am Login As A
+    Given I am login as admin
     And the request body is:
       """
       {
@@ -117,7 +114,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Cannot add a new SubCategory
-    Given I am Login As B
+    Given I am login as user
     Then the request body is:
       """
       {
@@ -128,7 +125,7 @@ Feature: Provide a consistent standard JSON API endpoint
     Then the response code is 403
 
   Scenario: Can update an existing SubCategory - PUT
-    Given I am Login As A
+    Given I am login as admin
     And the request body is:
       """
       {
@@ -148,7 +145,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Cannot update an existing SubCategory - PUT
-    Given I am Login As B
+    Given I am login as user
     And the request body is:
       """
       {
@@ -168,7 +165,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Cannot update an existing SubCategory with empty name - PUT
-    Given I am Login As A
+    Given I am login as admin
     And the request body is:
       """
       {
@@ -203,7 +200,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can update an existing SubCategory - PATCH
-    Given I am Login As A
+    Given I am login as admin
     And the request body is:
       """
       {
@@ -223,7 +220,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Cannot update an existing SubCategory - PATCH
-    Given I am Login As B
+    Given I am login as user
     And the request body is:
       """
       {
@@ -243,7 +240,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Cannot update an existing SubCategory with empty name - PATCH
-    Given I am Login As A
+    Given I am login as admin
     And the request body is:
       """
       {
@@ -278,7 +275,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can delete a Sub Category
-    Given I am Login As A 
+    Given I am login as admin 
     Then I request "/api/category/3/subcategory/5" using HTTP GET
     Then the response code is 200
     When I request "/api/category/3/subcategory/5" using HTTP DELETE
@@ -287,7 +284,7 @@ Feature: Provide a consistent standard JSON API endpoint
     Then the response code is 404
 
   Scenario: Cannot delete a Sub Category
-    Given I am Login As B
+    Given I am login as user
     Then I request "/api/category/3/subcategory/5" using HTTP GET
     Then the response code is 200
     When I request "/api/category/3/subcategory/5" using HTTP DELETE
@@ -296,7 +293,7 @@ Feature: Provide a consistent standard JSON API endpoint
     Then the response code is 200
 
   Scenario: Must have a non-blank name
-    Given I am Login As A
+    Given I am login as admin
     And the request body is:
       """
       {
@@ -322,14 +319,14 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can delete a Category and its Sub Category
-    Given I am Login As A
+    Given I am login as admin
     Then I request "/api/category/3" using HTTP DELETE
     Then the response code is 204
     When I request "/api/category/3/subcategory/5" using HTTP GET
     Then the response code is 404
 
   Scenario: Can update a Category without its Sub Categories - PUT
-    Given I am Login As A
+    Given I am login as admin
     Then the request body is:
       """
       {
@@ -350,7 +347,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can add a Category and all its SubCategories
-    Given I am Login As A
+    Given I am login as admin
     Then the request body is:
     """
     {
@@ -386,7 +383,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can update a Category and all its SubCategory using PUT
-    Given I am Login As A
+    Given I am login as admin
     Then the request body is:
     """
     {
@@ -432,7 +429,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can update a Category and one of its SubCategory using PATCH
-    Given I am Login As A
+    Given I am login as admin
     Then the request body is:
     """
     {
@@ -469,7 +466,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can update a Category without its SubCategory using PATCH
-    Given I am Login As A
+    Given I am login as admin
     Then the request body is:
     """
     {

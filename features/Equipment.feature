@@ -5,10 +5,7 @@ Feature: Provide a consistent standard JSON API endpoint
   I need to allow Create, Read, Update, and Delete functionality
 
   Background:
-    Given there are User with the following details:
-      | username | password | email     | gender | ROLE            |
-      | a        | a        | a.b@c.com | MALE   | ROLE_AMBASSADOR |
-      | b        | b        | b.b@c.com | MALE   | ROLE_USER       |
+    Given there are default users
     Given there are Categories with the following details:
       | name     |
       | Clothe    |
@@ -32,7 +29,7 @@ Feature: Provide a consistent standard JSON API endpoint
       | Men's Printed Cyclone Hoodie | Description 2 | 3     | 2           |
 
   Scenario: Can get a single Equipment
-    Given I am Login As A
+    Given I am login as admin
     Then I request "/api/equipment/1" using HTTP GET
     Then print last response
     Then the response body contains JSON:
@@ -55,7 +52,7 @@ Feature: Provide a consistent standard JSON API endpoint
     }
     """
     And the response code is 200
-    Then I am Login As B
+    Then I am login as user
     Then I request "/api/equipment/1" using HTTP GET
     Then the response body contains JSON:
     """
@@ -79,7 +76,7 @@ Feature: Provide a consistent standard JSON API endpoint
     And the response code is 200
 
   Scenario: Can get a collection of Equipment
-    Given I am Login As A
+    Given I am login as admin
     Then I request "/api/equipment" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
@@ -119,7 +116,7 @@ Feature: Provide a consistent standard JSON API endpoint
       }
     ]
     """
-    Then I am Login As B
+    Then I am login as user
     Then I request "/api/equipment" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
@@ -129,7 +126,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can add a new Equipment using Id for subCategory and brand
-    Given I am Login As A
+    Given I am login as admin
     Then the request body is:
       """
       {
@@ -205,7 +202,7 @@ Feature: Provide a consistent standard JSON API endpoint
       }
     ]
     """
-    Then I am Login As A
+    Then I am login as admin
     Then I request "/api/equipment" using HTTP GET
     Then the response code is 200
     And the response body contains JSON:
@@ -263,7 +260,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Cannot add a new Equipment using Entity for subCategory and brand
-    Given I am Login As A
+    Given I am login as admin
     Then the request body is:
       """
       {
@@ -308,7 +305,7 @@ Feature: Provide a consistent standard JSON API endpoint
     Then the response code is 404
 
   Scenario: Cannot update an existing Equipment if it is not mine - PUT
-    Given I am Login As B
+    Given I am login as user
     Then the request body is:
       """
       {
@@ -344,7 +341,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
     Scenario: Can update an existing Equipment - PUT
-    Given I am Login As A
+    Given I am login as admin
     Then the request body is:
       """
       {
@@ -380,7 +377,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can update an existing Equipment using Id for subCategory and brand as AMBASSADOR
-    Given I am Login As A
+    Given I am login as admin
     Then the request body is:
       """
       {
@@ -412,7 +409,7 @@ Feature: Provide a consistent standard JSON API endpoint
         }
       }
       """
-    Then I am Login As A
+    Then I am login as admin
     Then the request body is:
       """
       {
@@ -449,7 +446,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can update an existing Equipment with a new Brand - PUT
-    Given I am Login As A
+    Given I am login as admin
     Then the request body is:
       """
       {
@@ -486,7 +483,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Cannot update an existing Equipment with empty name - PUT
-    Given I am Login As A
+    Given I am login as admin
     Then the request body is:
       """
       {
@@ -521,7 +518,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can update an existing Equipment - PATCH
-    Given I am Login As A
+    Given I am login as admin
     Then the request body is:
       """
       {
@@ -553,7 +550,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Cannot update an existing Equipment that is not mine - PATCH
-    Given I am Login As B
+    Given I am login as user
     Then the request body is:
       """
       {
@@ -585,7 +582,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Cannot update an existing Equipment with empty name - PATCH
-    Given I am Login As A
+    Given I am login as admin
     Then the request body is:
       """
       {
@@ -632,7 +629,7 @@ Feature: Provide a consistent standard JSON API endpoint
     """
 
   Scenario: Can delete an Equipment
-    Given I am Login As A
+    Given I am login as admin
     Then I request "/api/equipment/1" using HTTP GET
     Then the response code is 200
     When I request "/api/equipment/1" using HTTP DELETE
@@ -641,7 +638,7 @@ Feature: Provide a consistent standard JSON API endpoint
     Then the response code is 404
 
   Scenario: Cannot delete an Equipment that don't belong to the user
-    Given I am Login As B
+    Given I am login as user
     Then I request "/api/equipment/1" using HTTP GET
     Then the response code is 200
     When I request "/api/equipment/1" using HTTP DELETE

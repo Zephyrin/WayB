@@ -100,7 +100,7 @@ class FeatureContext implements Context
     public function thereAreCategoriesWithTheFollowingDetails(TableNode $categories)
     {
         $i = 1;
-        $this->iAmLoginAsA();
+        $this->iAmLoginAsAdmin();
         foreach ($categories->getColumnsHash() as $category) {
             $this->apiContext->setRequestBody(
                 json_encode($category)
@@ -133,7 +133,7 @@ class FeatureContext implements Context
     public function thereAreSubcategoriesWithTheFollowingDetails(TableNode $table)
     {
         $i = 1;
-        $this->iAmLoginAsA();
+        $this->iAmLoginAsAdmin();
         foreach ($table->getColumnsHash() as $subCategory) {
 
             $catId = $subCategory['category'];
@@ -170,9 +170,10 @@ class FeatureContext implements Context
      */
     public function thereAreBrandsWithTheFollowingDetails(TableNode $brands)
     {
-        $this->iAmLoginAsA();
+        $this->iAmLoginAsAdmin();
         $i = 1;
         foreach ($brands->getColumnsHash() as $brand) {
+            $brand = $this->manageValidateAndAskValidate($brand);
             $this->apiContext->setRequestBody(
                 json_encode($brand)
             );
@@ -197,6 +198,13 @@ class FeatureContext implements Context
         $this->logout();
     }
 
+    private function manageValidateAndAskValidate($obj) {
+        if(array_key_exists("validate", $obj))
+                $obj['validate'] = $obj['validate'] == 'true';
+        if(array_key_exists("askValidate", $obj))
+                $obj['askValidate'] = $obj['askValidate'] == 'true';
+        return $obj;
+    }
     /**
      * @Given there are Equipments with the following details:
      * @param TableNode $equipments
@@ -204,7 +212,7 @@ class FeatureContext implements Context
     public function thereAreEquipmentsWithTheFollowingDetails(TableNode $equipments)
     {
         $i = 1;
-        $this->iAmLoginAsA();
+        $this->iAmLoginAsAdmin();
         foreach ($equipments->getColumnsHash() as $equipment) {
             if(array_key_exists("validate", $equipment))
                 $equipment['validate'] = $equipment['validate'] == 'true';
@@ -234,9 +242,9 @@ class FeatureContext implements Context
             $eqId = $characteristic["equipment"];
             unset($characteristic["equipment"]);
             if($eqId == "1")
-                $this->iAmLoginAsA();
+                $this->iAmLoginAsAdmin();
             else 
-                $this->iAmLoginAsB();
+                $this->iAmLoginAsUser();
             $price = $characteristic["price"];
             $characteristic["price"] = intval($price);
             $weight = $characteristic["weight"];
@@ -255,39 +263,56 @@ class FeatureContext implements Context
     }
 
     /**
-     * @Given /^there are User with the following details:$/
-     * @param TableNode $users
+     * @Then the response body has :nbField fields
      */
-    public function thereAreUserWithTheFollowingDetails(TableNode $users)
+    public function theResponseBodyHasFields($nbField)
     {
-        $i = 1;
+        $this->apiContext->theResponseBodyHasFields($nbField);
+    }
+
+    /**
+     * @Given /^there are default users$/
+     */
+    public function thereDefaultUsers()
+    {
+        /* Create default super admin user into the database then create other users. */
+        $this->login();
         $this->logout();
-        foreach ($users->getColumnsHash() as $user) {
-            $role = $user['ROLE'];
-            unset($user['ROLE']);
-            $this->apiContext->setRequestBody(
-                json_encode($user)
-            );
-            $this->apiContext->requestPath(
-                "/api/auth/register",
-                'POST'
-            );
-            $this->apiContext->getTokenFromLogin();
-            if($role !== 'ROLE_USER')
-            {
-                $this->logout();
-                $this->login();
-                $this->apiContext->setRequestBody(
-                    "{ \"roles\": [\"{$role}\"] }"
-                );
-                $this->apiContext->requestPath(
-                    "/api/user/{$i}",
+        $this->apiContext->setRequestBody("
+        {
+            \"username\": \"a\",
+            \"password\": \"a\",
+            \"email\": \"a.b@c.com\",
+            \"gender\": \"MALE\"
+        }
+        ");
+        $this->apiContext->requestPath(
+            "/api/auth/register", 
+            'POST'
+        );
+        $this->apiContext->getTokenFromLogin();
+        $this->logout();
+        $this->login();
+        $this->apiContext->setRequestBody(
+            "{\"roles\": [\"ROLE_AMBASSADOR\"]}"
+        );
+         $this->apiContext->requestPath(
+                    "/api/user/2",
                     'PATCH'
                 );
-            }
-            $i ++;
-            $this->logout();
-        }
+        $this->logout();
+        $this->apiContext->setRequestBody('{
+            "username": "b",
+            "password": "b",
+            "email": "b.b@c.com",
+            "gender": "MALE"
+        }');
+        $this->apiContext->requestPath(
+            "/api/auth/register", 
+            'POST'
+        );
+        $this->apiContext->getTokenFromLogin();
+        $this->logout();
     }
 
     /**
@@ -300,9 +325,9 @@ class FeatureContext implements Context
             $eqId = $have["user"];
             unset($have["user"]);
             if($eqId == "1")
-                $this->iAmLoginAsA();
+                $this->iAmLoginAsAdmin();
             else 
-                $this->iAmLoginAsB();
+                $this->iAmLoginAsUser();
             $this->apiContext->setRequestBody(
                 json_encode($have)
             );
@@ -320,7 +345,7 @@ class FeatureContext implements Context
      */
     public function thereAreMediaObjectWithTheFollowingDetails(TableNode $mediaObjects) 
     {
-        $this->iAmLoginAsA();
+        $this->iAmLoginAsAdmin();
         foreach($mediaObjects->getColumnsHash() as $media) {
             $this->apiContext->setRequestBody(
                 json_encode($media)
@@ -334,9 +359,9 @@ class FeatureContext implements Context
     }
 
     /**
-     * @Given /^I am Login As A$/
+     * @Given /^I am login as admin$/
      */
-    public function iAmLoginAsA()
+    public function iAmLoginAsAdmin()
     {
         $this->apiContext->Logout();
         $this->apiContext->setRequestBody(
@@ -354,9 +379,9 @@ class FeatureContext implements Context
     }
 
     /**
-     * @Given /^I am Login As B$/
+     * @Given /^I am login as user$/
      */
-    public function iAmLoginAsB()
+    public function iAmLoginAsUser()
     {
         $this->apiContext->Logout();
         $this->apiContext->setRequestBody(

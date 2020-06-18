@@ -48,6 +48,7 @@ class SubCategory extends Base
 
     public function __construct()
     {
+        parent::__construct();
         $this->equipments = new ArrayCollection();
     }
 

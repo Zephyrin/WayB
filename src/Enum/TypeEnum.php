@@ -3,6 +3,7 @@
 namespace App\Enum;
 
 use ReflectionClass;
+use UnexpectedValueException;
 
 abstract class TypeEnum
 {
@@ -17,7 +18,7 @@ abstract class TypeEnum
         if (isset($availableConstList[$typeShortName]))
             return $availableConstList[$typeShortName];
         else {
-            throw new \UnexpectedValueException('Unknown constant name');
+            throw new UnexpectedValueException('Unknown constant name');
         }
     }
 

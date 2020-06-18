@@ -90,7 +90,9 @@
         "behat/mink": "~1.7@dev",
         "behatch/contexts": "^3.2",
         "doctrine/doctrine-fixtures-bundle": "^3.3",
+        "phpunit/phpunit": "^9.2",
         "symfony/maker-bundle": "^1.17",
+        "symfony/phpunit-bridge": "^5.1",
         "symfony/profiler-pack": "^1.0",
         "symfony/web-server-bundle": "4.4.*"
     }

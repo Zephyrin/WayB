@@ -3,22 +3,23 @@
 namespace App\Controller;
 
 use App\Entity\MediaObject;
-use App\Entity\User;
 use App\Repository\MediaObjectRepository;
 use App\Form\MediaObjectType;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Serializer\FormErrorSerializer;
+use Exception;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Routing\ClassResourceInterface;
+use FOS\RestBundle\View\View;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Swagger\Annotations as SWG;
 use Nelmio\ApiDocBundle\Annotation\Model;
-use phpDocumentor\Reflection\Types\Mixed_;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 /**
  * Class MediaObjectController
@@ -92,8 +93,8 @@ class MediaObjectController extends AbstractFOSRestController implements ClassRe
      * )
      *
      * @param Request $request
-     * @return \FOS\RestBundle\View\View|JsonResponse
-     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
+     * @return View|JsonResponse
+     * @throws ExceptionInterface
      */
     public function postAction(Request $request)
     {
@@ -157,7 +158,7 @@ class MediaObjectController extends AbstractFOSRestController implements ClassRe
      *
      *
      * @param string $id
-     * @return \FOS\RestBundle\View\View
+     * @return View
      */
     public function getAction(string $id)
     {
@@ -183,7 +184,7 @@ class MediaObjectController extends AbstractFOSRestController implements ClassRe
      * )
      *
      * @param Request $request
-     * @return \FOS\RestBundle\View\View
+     * @return View
      */
     public function cgetAction(Request $request)
     {
@@ -230,8 +231,8 @@ class MediaObjectController extends AbstractFOSRestController implements ClassRe
      *
      * @param Request $request
      * @param string $id of the MediaObject to update
-     * @return \FOS\RestBundle\View\View|JsonResponse
-     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
+     * @return View|JsonResponse
+     * @throws ExceptionInterface
      */
     public function putAction(Request $request, string $id)
     {
@@ -280,8 +281,8 @@ class MediaObjectController extends AbstractFOSRestController implements ClassRe
      *
      * @param Request $request
      * @param string $id of the MediaObject to update
-     * @return \FOS\RestBundle\View\View|JsonResponse
-     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
+     * @return View|JsonResponse
+     * @throws ExceptionInterface
      */
     public function patchAction(Request $request, string $id)
     {
@@ -312,7 +313,7 @@ class MediaObjectController extends AbstractFOSRestController implements ClassRe
      * )
      * @param string $id
      * @param Request $request
-     * @return \FOS\RestBundle\View\View
+     * @return View
      */
     public function deleteAction(Request $request, string $id)
     {
@@ -328,7 +329,7 @@ class MediaObjectController extends AbstractFOSRestController implements ClassRe
      * @param string $id
      *
      * @return MediaObject
-     * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+     * @throws NotFoundHttpException
      */
     private function findMediaObjectById(string $id)
     {
@@ -339,6 +340,13 @@ class MediaObjectController extends AbstractFOSRestController implements ClassRe
         return $existingMediaObject;
     }
 
+    /**
+     * @param Request $request
+     * @param string $id
+     * @param bool $clearMissing
+     * @return View|JsonResponse
+     * @throws ExceptionInterface
+     */
     private function putOrPatch(Request $request, string $id, bool $clearMissing)
     {
         $existingMediaObjectField = $this->findMediaObjectById($id);
@@ -363,6 +371,11 @@ class MediaObjectController extends AbstractFOSRestController implements ClassRe
         return $this->view(null, Response::HTTP_NO_CONTENT);
     }
 
+    /**
+     * @param MediaObject $mediaObject
+     * @param $data
+     * @throws Exception
+     */
     private function manageImage(MediaObject $mediaObject, $data)
     {
         if (!(isset($data['image']) || isset($data['img']))) { return; }
@@ -375,16 +388,16 @@ class MediaObjectController extends AbstractFOSRestController implements ClassRe
                 $type = strtolower($type[1]); // jpg, png, gif
 
                 if (!in_array($type, ['jpg', 'jpeg', 'gif', 'png', 'svg'])) {
-                    throw new \Exception('invalid image type');
+                    throw new Exception('invalid image type');
                 }
 
                 $img = base64_decode($img64);
 
                 if ($img === false) {
-                    throw new \Exception('base64_decode failed');
+                    throw new Exception('base64_decode failed');
                 }
             } else {
-                throw new \Exception('did not match data URI with image data');
+                throw new Exception('did not match data URI with image data');
             }
             $filename = $mediaObject->getFilePath();
             $oldfilename = null;
@@ -407,7 +420,7 @@ class MediaObjectController extends AbstractFOSRestController implements ClassRe
                     $img
                 );
             } catch (FileException $e) {
-                throw new \Exception('cannot save image data to file');
+                throw new Exception('cannot save image data to file');
             }
 
             $mediaObject->setFilePath($filename);
