@@ -47,7 +47,5 @@ class AuthenticationSuccessListener
             $this->entityManager->persist($existingUser);
             $this->entityManager->flush();
         }
-
-        
     }
 }

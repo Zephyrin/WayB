@@ -5,6 +5,7 @@ use Behat\Gherkin\Node\TableNode;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Tools\SchemaTool;
+
 /**
  * This context class contains the definitions of the steps used by the demo 
  * feature file. Learn how to get started with Behat and BDD on Behat's website.
@@ -27,20 +28,17 @@ class FeatureContext implements Context
     /** @BeforeScenario
      * @param BeforeScenarioScope $scope
      */
-    public function gatherContexts(
-        BeforeScenarioScope $scope
-    )
+    public function gatherContexts(BeforeScenarioScope $scope)
     {
         $env = $scope
             ->getEnvironment();
         $this->apiContext = $env->getContext(
-                ApiContextAuth::class
-            )
-        ;
+            ApiContextAuth::class
+        );
         $files = glob("public/media/*"); // get all file names
-        foreach($files as $file){ // iterate files
-        if(is_file($file))
-            unlink($file); // delete file
+        foreach ($files as $file) { // iterate files
+            if (is_file($file))
+                unlink($file); // delete file
         }
     }
 
@@ -84,7 +82,8 @@ class FeatureContext implements Context
      * @AfterScenario
      * @logout
      */
-    public function logout() {
+    public function logout()
+    {
         /* $this->apiContext->requestPath(
             '/api/auth/logout',
             'POST'
@@ -110,17 +109,15 @@ class FeatureContext implements Context
                 'POST'
             );
             $expectedResult = [
-                "{"
-                , "\"id\": {$i},"
-                , "\"name\": \"{$category['name']}\""
-                , "}"
+                "{", "\"id\": {$i},", "\"name\": \"{$category['name']}\"", "}"
             ];
             $this->apiContext->assertResponseBodyContainsJson(
                 new \Behat\Gherkin\Node\PyStringNode(
-                    $expectedResult
-                    , 0
-                ));
-            $i ++;
+                    $expectedResult,
+                    0
+                )
+            );
+            $i++;
         }
         $this->logout();
     }
@@ -148,17 +145,15 @@ class FeatureContext implements Context
             );
 
             $expectedResult = [
-                "{"
-                , "\"id\": {$i},"
-                , "\"name\": \"{$subCategory['name']}\""
-                , "}"
+                "{", "\"id\": {$i},", "\"name\": \"{$subCategory['name']}\"", "}"
             ];
             $this->apiContext->assertResponseBodyContainsJson(
                 new \Behat\Gherkin\Node\PyStringNode(
-                    $expectedResult
-                    , 0
-                ));
-            $i ++;
+                    $expectedResult,
+                    0
+                )
+            );
+            $i++;
         }
         $this->logout();
     }
@@ -182,27 +177,25 @@ class FeatureContext implements Context
                 'POST'
             );
             $expectedResult = [
-                "{"
-                , "\"id\": {$i},"
-                , "\"name\": \"{$brand['name']}\","
-                , "\"uri\": \"{$brand['uri']}\""
-                , "}"
+                "{", "\"id\": {$i},", "\"name\": \"{$brand['name']}\",", "\"uri\": \"{$brand['uri']}\"", "}"
             ];
             $this->apiContext->assertResponseBodyContainsJson(
                 new \Behat\Gherkin\Node\PyStringNode(
-                    $expectedResult
-                    , 0
-                ));
-            $i ++;
+                    $expectedResult,
+                    0
+                )
+            );
+            $i++;
         }
         $this->logout();
     }
 
-    private function manageValidateAndAskValidate($obj) {
-        if(array_key_exists("validate", $obj))
-                $obj['validate'] = $obj['validate'] == 'true';
-        if(array_key_exists("askValidate", $obj))
-                $obj['askValidate'] = $obj['askValidate'] == 'true';
+    private function manageValidateAndAskValidate($obj)
+    {
+        if (array_key_exists("validate", $obj))
+            $obj['validate'] = $obj['validate'] == 'true';
+        if (array_key_exists("askValidate", $obj))
+            $obj['askValidate'] = $obj['askValidate'] == 'true';
         return $obj;
     }
     /**
@@ -214,11 +207,11 @@ class FeatureContext implements Context
         $i = 1;
         $this->iAmLoginAsAdmin();
         foreach ($equipments->getColumnsHash() as $equipment) {
-            if(array_key_exists("validate", $equipment))
+            if (array_key_exists("validate", $equipment))
                 $equipment['validate'] = $equipment['validate'] == 'true';
-            if(array_key_exists("brand", $equipment) && !is_int($equipment['brand']))
+            if (array_key_exists("brand", $equipment) && !is_int($equipment['brand']))
                 $equipment['brand'] = intval($equipment['brand']);
-            if(array_key_exists("subCategory", $equipment) && !is_int($equipment['subCategory']))
+            if (array_key_exists("subCategory", $equipment) && !is_int($equipment['subCategory']))
                 $equipment['subCategory'] = intval($equipment['subCategory']);
             $this->apiContext->setRequestBody(
                 json_encode($equipment)
@@ -227,7 +220,7 @@ class FeatureContext implements Context
                 '/api/equipment',
                 'POST'
             );
-            $i ++;
+            $i++;
         }
         $this->logout();
     }
@@ -241,9 +234,9 @@ class FeatureContext implements Context
         foreach ($characteristics->getColumnsHash() as $characteristic) {
             $eqId = $characteristic["equipment"];
             unset($characteristic["equipment"]);
-            if($eqId == "1")
+            if ($eqId == "1")
                 $this->iAmLoginAsAdmin();
-            else 
+            else
                 $this->iAmLoginAsUser();
             $price = $characteristic["price"];
             $characteristic["price"] = intval($price);
@@ -259,7 +252,6 @@ class FeatureContext implements Context
             );
             $this->logout();
         }
-        
     }
 
     /**
@@ -287,7 +279,7 @@ class FeatureContext implements Context
         }
         ");
         $this->apiContext->requestPath(
-            "/api/auth/register", 
+            "/api/auth/register",
             'POST'
         );
         $this->apiContext->getTokenFromLogin();
@@ -296,10 +288,10 @@ class FeatureContext implements Context
         $this->apiContext->setRequestBody(
             "{\"roles\": [\"ROLE_AMBASSADOR\"]}"
         );
-         $this->apiContext->requestPath(
-                    "/api/user/2",
-                    'PATCH'
-                );
+        $this->apiContext->requestPath(
+            "/api/user/2",
+            'PATCH'
+        );
         $this->logout();
         $this->apiContext->setRequestBody('{
             "username": "b",
@@ -308,7 +300,7 @@ class FeatureContext implements Context
             "gender": "MALE"
         }');
         $this->apiContext->requestPath(
-            "/api/auth/register", 
+            "/api/auth/register",
             'POST'
         );
         $this->apiContext->getTokenFromLogin();
@@ -324,9 +316,9 @@ class FeatureContext implements Context
         foreach ($haves->getColumnsHash() as $have) {
             $eqId = $have["user"];
             unset($have["user"]);
-            if($eqId == "1")
+            if ($eqId == "1")
                 $this->iAmLoginAsAdmin();
-            else 
+            else
                 $this->iAmLoginAsUser();
             $this->apiContext->setRequestBody(
                 json_encode($have)
@@ -343,10 +335,10 @@ class FeatureContext implements Context
      * @Given /^there are MediaObject with the following details:$/
      * @param TableNode $mediaObjects
      */
-    public function thereAreMediaObjectWithTheFollowingDetails(TableNode $mediaObjects) 
+    public function thereAreMediaObjectWithTheFollowingDetails(TableNode $mediaObjects)
     {
         $this->iAmLoginAsAdmin();
-        foreach($mediaObjects->getColumnsHash() as $media) {
+        foreach ($mediaObjects->getColumnsHash() as $media) {
             $this->apiContext->setRequestBody(
                 json_encode($media)
             );
@@ -403,19 +395,18 @@ class FeatureContext implements Context
      */
     public function printLastResponse()
     {
-
     }
-    
+
     /**
-    * @When a demo scenario sends a request to :arg1
-    */
+     * @When a demo scenario sends a request to :arg1
+     */
     public function aDemoScenarioSendsARequestTo($arg1)
     {
     }
 
     /**
-    * @Then the response should be received
-    */
+     * @Then the response should be received
+     */
     public function theResponseShouldBeReceived()
     {
     }
