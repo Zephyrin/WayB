@@ -7,8 +7,6 @@
         "ext-iconv": "*",
         "ext-json": "*",
         "ext-pdo": "*",
-        "behat/behat": "^3.5",
-        "behat/symfony2-extension": "^2.1",
         "friendsofsymfony/rest-bundle": "^2.5",
         "imbo/behat-api-extension": "^2.1",
         "jms/serializer-bundle": "^3.4",
@@ -36,6 +34,18 @@
         "symfony/validator": "4.4.*",
         "symfony/yaml": "4.4.*",
         "zircote/swagger-php": "^2.0"
+    },
+        "require-dev": {
+        "behat/mink": "~1.7@dev",
+        "behatch/contexts": "^3.2",
+        "behat/behat": "^3.5",
+        "behat/symfony2-extension": "^2.1",
+        "doctrine/doctrine-fixtures-bundle": "^3.3",
+        "phpunit/phpunit": "^9.2",
+        "symfony/maker-bundle": "^1.17",
+        "symfony/phpunit-bridge": "^5.1",
+        "symfony/profiler-pack": "^1.0",
+        "symfony/web-server-bundle": "4.4.*"
     },
     "config": {
         "preferred-install": {
@@ -85,15 +95,5 @@
             "allow-contrib": false,
             "require": "4.4.*"
         }
-    },
-    "require-dev": {
-        "behat/mink": "~1.7@dev",
-        "behatch/contexts": "^3.2",
-        "doctrine/doctrine-fixtures-bundle": "^3.3",
-        "phpunit/phpunit": "^9.2",
-        "symfony/maker-bundle": "^1.17",
-        "symfony/phpunit-bridge": "^5.1",
-        "symfony/profiler-pack": "^1.0",
-        "symfony/web-server-bundle": "4.4.*"
     }
 }
