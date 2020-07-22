@@ -1,8 +1,8 @@
 nelmio_api_doc:
     documentation:
         info:
-            title: W.a.y. B
-            description: What About Your Backpack!
+            title: En Équilibre
+            description: En Équilibre is a Web Site for Claudia Poirot jeweller.
             version: 1.0.0
         securityDefinitions:
             Bearer:

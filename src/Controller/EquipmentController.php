@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Controller\Helpers\HelperController;
 use App\Entity\Brand;
 use App\Entity\Equipment;
 use App\Entity\SubCategory;
@@ -10,10 +11,8 @@ use App\Form\EquipmentType;
 use App\Repository\EquipmentRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Serializer\FormErrorSerializer;
-use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Request\ParamFetcher;
-use FOS\RestBundle\Routing\ClassResourceInterface;
 use FOS\RestBundle\View\View;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -24,22 +23,20 @@ use Swagger\Annotations as SWG;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Security\Core\Security;
 use FOS\RestBundle\Controller\Annotations\QueryParam;
+use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * Class EquipmentController
  * @package App\Controller
  *
- * @Rest\RouteResource(
- *     "api/Equipment",
- *     pluralize=false
- * )
+ * @Route("api/Equipment")
  * @SWG\Tag(
  *     name="Equipment"
  * )
  */
-class EquipmentController extends AbstractFOSRestController implements ClassResourceInterface
+class EquipmentController extends AbstractFOSRestController
 {
-    use AbstractController;
+    use HelperController;
     /**
      * @var EntityManagerInterface
      */
@@ -114,17 +111,18 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
         $data = $this->manageObjectToId($data);
         $form = $this->createForm(
             EquipmentType::class,
-            new Equipment());
+            new Equipment()
+        );
         $form->submit(
             $data
         );
         $validation = $this->validationError($form, $this);
-        if($validation instanceof JsonResponse)
+        if ($validation instanceof JsonResponse)
             return $validation;
 
         $equipment = $form->getData();
         $equipment->setCreatedBy($connectUser);
-        if($equipment->getSubCategory() == null) {
+        if ($equipment->getSubCategory() == null) {
             if (isset($data['subCategory'])) {
                 if (is_int(intval($data['subCategory']))) {
                     $subCat = $this->entityManager
@@ -143,17 +141,21 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
                 );
             }
         }
-        if($equipment->getBrand() == null
-            && isset($data['brand'])) {
-            if(is_int(intval($data['brand']))) {
+        if (
+            $equipment->getBrand() == null
+            && isset($data['brand'])
+        ) {
+            if (is_int(intval($data['brand']))) {
                 $brand = $this->entityManager
                     ->getRepository(Brand::class)
                     ->find($data['brand']);
                 $equipment->setBrand($brand);
             }
         }
-        if(!$this->isGranted("ROLE_AMBASSADOR")
-            || $equipment->getValidate() === null)
+        if (
+            !$this->isGranted("ROLE_AMBASSADOR")
+            || $equipment->getValidate() === null
+        )
             $equipment->setValidate(false);
 
         $this->entityManager->persist($equipment);
@@ -161,7 +163,8 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
 
         return  $this->view(
             $equipment,
-            Response::HTTP_CREATED);
+            Response::HTTP_CREATED
+        );
     }
 
     /**
@@ -296,44 +299,45 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
         $belongToSubCategories = $paramFetcher->get('belongToSubCategories');
         $belongToBrands = $paramFetcher->get('belongToBrands');
         $equipments = null;
-        if($this->isGranted("ROLE_AMBASSADOR"))
+        if ($this->isGranted("ROLE_AMBASSADOR"))
             $equipments = $this->equipmentRepository->findForAmbassador(
-                $page
-                , $limit
-                , $sort
-                , $sortBy
-                , $search
-                , $validate
-                , $askValidate
-                , $weight
-                , $price
-                , $owned
-                , $wishes
-                , $others
-                , $belongToSubCategories
-                , $belongToBrands
+                $page,
+                $limit,
+                $sort,
+                $sortBy,
+                $search,
+                $validate,
+                $askValidate,
+                $weight,
+                $price,
+                $owned,
+                $wishes,
+                $others,
+                $belongToSubCategories,
+                $belongToBrands
             );
         else {
             $user = $this->getUser();
-            $equipments = $this->equipmentRepository->findByUserOrValidate($user
-                , $page
-                , $limit
-                , $sort
-                , $sortBy
-                , $search
-                , $validate
-                , $askValidate
-                , $weight
-                , $price
-                , $owned
-                , $wishes
-                , $others
-                , $belongToSubCategories
-                , $belongToBrands    
+            $equipments = $this->equipmentRepository->findByUserOrValidate(
+                $user,
+                $page,
+                $limit,
+                $sort,
+                $sortBy,
+                $search,
+                $validate,
+                $askValidate,
+                $weight,
+                $price,
+                $owned,
+                $wishes,
+                $others,
+                $belongToSubCategories,
+                $belongToBrands
             );
-            foreach($equipments as $eq) {
+            foreach ($equipments as $eq) {
                 $cha = $eq->getCharacteristics();
-                for($i = count($cha) - 1; $i >= 0; $i--) {
+                for ($i = count($cha) - 1; $i >= 0; $i--) {
                     if (!($cha[$i]->getValidate() || $cha[$i]->getCreatedBy() == $user)) {
                         $cha->removeCharacteristic($cha);
                     }
@@ -392,7 +396,7 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
     {
         $connectUser = $this->getUser();
         $existingEquipment = $this->findEquipmentById($id);
-        if($existingEquipment->getCreatedBy() !== $connectUser)
+        if ($existingEquipment->getCreatedBy() !== $connectUser)
             $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
 
         $form = $this->createForm(EquipmentType::class, $existingEquipment);
@@ -401,9 +405,9 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
         $validate = $existingEquipment->getValidate();
         $form->submit($data);
         $validation = $this->validationError($form, $this);
-        if($validation instanceof JsonResponse)
+        if ($validation instanceof JsonResponse)
             return $validation;
-        if($existingEquipment->getValidate() !== $validate) {
+        if ($existingEquipment->getValidate() !== $validate) {
             $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
         }
         $this->entityManager->flush();
@@ -460,25 +464,29 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
     {
         $connectUser = $this->getUser();
         $existingEquipment = $this->findEquipmentById($id);
-        if($existingEquipment->getCreatedBy() !== $connectUser)
-             $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
+        if ($existingEquipment->getCreatedBy() !== $connectUser)
+            $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
 
-        $form = $this->createForm(EquipmentType::class
-            , $existingEquipment);
+        $form = $this->createForm(
+            EquipmentType::class,
+            $existingEquipment
+        );
         $validate = $existingEquipment->getValidate();
 
         $data = $this->manageObjectToId($request->request->all());
         $form->submit($data, false);
         $validation = $this->validationError($form, $this);
-        if($validation instanceof JsonResponse)
+        if ($validation instanceof JsonResponse)
             return $validation;
-        if($existingEquipment->getValidate() !== $validate) {
+        if ($existingEquipment->getValidate() !== $validate) {
             $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
         }
         $this->entityManager->flush();
 
-        return $this->view(null
-            , Response::HTTP_NO_CONTENT);
+        return $this->view(
+            null,
+            Response::HTTP_NO_CONTENT
+        );
     }
 
     /**
@@ -526,29 +534,35 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
     public function deleteAction(Request $request, string $id)
     {
         $equipment = $this->findEquipmentById($id);
-        if($equipment->getCreatedBy() !== $this->getUser()) 
-            $this->denyAccessUnlessGranted("ROLE_ADMIN"
-                , null
-                , "This equipment don't belong to you and your are not an admin.");
-        if(!$equipment->getValidate() 
-            || count($equipment->getHaves()) < 1) {
+        if ($equipment->getCreatedBy() !== $this->getUser())
+            $this->denyAccessUnlessGranted(
+                "ROLE_ADMIN",
+                null,
+                "This equipment don't belong to you and your are not an admin."
+            );
+        if (
+            !$equipment->getValidate()
+            || count($equipment->getHaves()) < 1
+        ) {
             $this->entityManager->remove($equipment);
             $this->entityManager->flush();
 
-            return $this->view(null
-                , Response::HTTP_NO_CONTENT);
+            return $this->view(
+                null,
+                Response::HTTP_NO_CONTENT
+            );
         }
         if (count($equipment->getHaves()) > 1) {
             return new JsonResponse(
-                [ 
+                [
                     'status' => 'error',
                     'errors' => 'Too many other users use this equipment.'
                 ],
                 JsonResponse::HTTP_PRECONDITION_FAILED
-            );            
+            );
         }
         return new JsonResponse(
-            [ 
+            [
                 'status' => 'error',
                 'errors' => 'This equipment don\'t belong to you'
             ],
@@ -581,24 +595,26 @@ class EquipmentController extends AbstractFOSRestController implements ClassReso
     {
         $user = $this->entityManager->find(
             User::class,
-            $request->attributes->get('userid'));
-        if($user == null)
+            $request->attributes->get('userid')
+        );
+        if ($user == null)
             throw new NotFoundHttpException();
         return $user;
     }
 
-    private function manageObjectToId($data) {
-        if(isset($data['brand'])) {
-            if(isset($data['brand']['id'])) {
+    private function manageObjectToId($data)
+    {
+        if (isset($data['brand'])) {
+            if (isset($data['brand']['id'])) {
                 $data['brand'] = $data['brand']['id'];
             } else if (!is_int($data['brand'])) {
                 unset($data['brand']);
             }
         }
-        if(isset($data['subCategory'])) {
-            if(isset($data['subCategory']['id'])) {
+        if (isset($data['subCategory'])) {
+            if (isset($data['subCategory']['id'])) {
                 $data['subCategory'] = $data['subCategory']['id'];
-            } else if(!is_int($data['subCategory'])) {
+            } else if (!is_int($data['subCategory'])) {
                 unset($data['subCategory']);
             }
         }

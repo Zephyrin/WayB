@@ -2,14 +2,13 @@
 
 namespace App\Controller;
 
+use App\Controller\Helpers\HelperController;
 use App\Entity\Brand;
 use App\Form\BrandType;
 use App\Repository\BrandRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Serializer\FormErrorSerializer;
-use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
-use FOS\RestBundle\Routing\ClassResourceInterface;
 use FOS\RestBundle\View\View;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,23 +19,21 @@ use Nelmio\ApiDocBundle\Annotation\Model;
 use FOS\RestBundle\Request\ParamFetcher;
 use FOS\RestBundle\Controller\Annotations\QueryParam;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
+use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * Class BrandController
  * @package App\Controller
  *
- * @Rest\RouteResource(
- *     "api/brand",
- *     pluralize=false
- * )
+ * @Route("api/brand")
  * @SWG\Tag(
  *     name="Brand"
  * )
  * 
  */
-class BrandController extends AbstractFOSRestController implements ClassResourceInterface
+class BrandController extends AbstractFOSRestController
 {
-    use AbstractController;
+    use HelperController;
     /**
      * @var EntityManagerInterface
      */
@@ -108,13 +105,15 @@ class BrandController extends AbstractFOSRestController implements ClassResource
         $form = $this->createForm(BrandType::class, new Brand());
         $form->submit($data);
         $validation = $this->validationError($form, $this);
-        if($validation instanceof JsonResponse)
+        if ($validation instanceof JsonResponse)
             return $validation;
 
         $insertData = $form->getData();
         $insertData->setCreatedBy($connectUser);
-        if (!$this->isGranted("ROLE_AMBASSADOR")
-            || $insertData->getValidate() === null)
+        if (
+            !$this->isGranted("ROLE_AMBASSADOR")
+            || $insertData->getValidate() === null
+        )
             $insertData->setValidate(false);
 
         $this->entityManager->persist($insertData);
@@ -227,29 +226,32 @@ class BrandController extends AbstractFOSRestController implements ClassResource
         $noPagination = $paramFetcher->get('noPagination');
         $brandsAndCount = [];
         if ($this->isGranted("ROLE_AMBASSADOR")) {
-            $brandsAndCount = 
+            $brandsAndCount =
                 $this->brandRepository->findForAmbassador(
-                    $page
-                    , $limit
-                    , $sort
-                    , $sortBy
-                    , $search
-                    , $validate
-                    , $askValidate
-                    , $noPagination == 'true');
+                    $page,
+                    $limit,
+                    $sort,
+                    $sortBy,
+                    $search,
+                    $validate,
+                    $askValidate,
+                    $noPagination == 'true'
+                );
         } else {
             $user = $this->getUser();
-            $brandsAndCount = $this->brandRepository->findByUserOrValidate($user
-            , $page
-            , $limit
-            , $sort
-            , $sortBy
-            , $search
-            , $validate
-            , $askValidate
-            , $noPagination == 'true');
+            $brandsAndCount = $this->brandRepository->findByUserOrValidate(
+                $user,
+                $page,
+                $limit,
+                $sort,
+                $sortBy,
+                $search,
+                $validate,
+                $askValidate,
+                $noPagination == 'true'
+            );
         }
-        if(!$noPagination)
+        if (!$noPagination)
             return $this->setPaginateToView($brandsAndCount, $this);
         $view = $this->view(
             $brandsAndCount[0]
@@ -258,7 +260,7 @@ class BrandController extends AbstractFOSRestController implements ClassResource
         $view->setHeader(
             'Access-Control-Expose-Headers',
             'X-Total-Count'
-        );   
+        );
         return $view;
     }
 
@@ -354,7 +356,8 @@ class BrandController extends AbstractFOSRestController implements ClassResource
         return $this->putOrPatch($request, $id, false);
     }
 
-    private function putOrPatch(Request $request, string $id, bool $clearData) {
+    private function putOrPatch(Request $request, string $id, bool $clearData)
+    {
         $connectUser = $this->getUser();
         $existingBrand = $this->findBrandById($id);
         if ($existingBrand->getCreatedBy() !== $connectUser)
@@ -367,7 +370,7 @@ class BrandController extends AbstractFOSRestController implements ClassResource
         $form->submit($data, $clearData);
 
         $validation = $this->validationError($form, $this);
-        if($validation instanceof JsonResponse)
+        if ($validation instanceof JsonResponse)
             return $validation;
         if ($existingBrand->getValidate() !== $validate) {
             $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
@@ -419,7 +422,7 @@ class BrandController extends AbstractFOSRestController implements ClassResource
             );
         if (count($brand->getEquipments()) < 1) {
             $logo = $brand->getLogo();
-            if($logo != null) {
+            if ($logo != null) {
                 unlink($this->getParameter('media_object') . "/" . $logo->getFilePath());
                 $this->entityManager->remove($logo);
             }
@@ -457,9 +460,10 @@ class BrandController extends AbstractFOSRestController implements ClassResource
         return $existingBrand;
     }
 
-    private function manageObjectToId($data) {
-        if(isset($data['logo'])) {
-            if(isset($data['logo']['id'])) {
+    private function manageObjectToId($data)
+    {
+        if (isset($data['logo'])) {
+            if (isset($data['logo']['id'])) {
                 $data['logo'] = $data['logo']['id'];
             } else if (!is_int($data['logo'])) {
                 $data['logo'] = null;

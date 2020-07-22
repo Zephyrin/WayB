@@ -2,15 +2,14 @@
 
 namespace App\Controller;
 
+use App\Controller\Helpers\HelperController;
 use App\Entity\Equipment;
 use App\Entity\Characteristic;
 use App\Form\CharacteristicType;
 use App\Repository\CharacteristicRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Serializer\FormErrorSerializer;
-use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
-use FOS\RestBundle\Routing\ClassResourceInterface;
 use FOS\RestBundle\View\View;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,22 +18,20 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
+use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * Class CharacteristicController
  * @package App\Controller
  *
- * @Rest\RouteResource(
- *     "api/equipment/{equipmentId}/characteristic",
- *     pluralize=false
- * )
+ * @Route("api/equipment/{equipmentId}/characteristic")
  * @SWG\Tag(
  *     name="Characteristic"
  * )
  */
-class CharacteristicController extends AbstractFOSRestController implements ClassResourceInterface
+class CharacteristicController extends AbstractFOSRestController
 {
-    use AbstractController;
+    use HelperController;
     /**
      * @var EntityManagerInterface
      */
@@ -52,7 +49,7 @@ class CharacteristicController extends AbstractFOSRestController implements Clas
         EntityManagerInterface $entityManager,
         CharacteristicRepository $characteristicRepository,
         FormErrorSerializer $formErrorSerializer
-    )     {
+    ) {
         $this->entityManager = $entityManager;
         $this->characteristicRepository = $characteristicRepository;
         $this->formErrorSerializer = $formErrorSerializer;
@@ -113,11 +110,12 @@ class CharacteristicController extends AbstractFOSRestController implements Clas
         $equipment = $this->findEquipmentByRequest($request);
         $form = $this->createForm(
             CharacteristicType::class,
-            new Characteristic());
+            new Characteristic()
+        );
         $form->submit(
             $data
         );
-        if(isset($data['equipment']) && $data['equipment'] != $equipment->getId()) {
+        if (isset($data['equipment']) && $data['equipment'] != $equipment->getId()) {
             return new JsonResponse(
                 [
                     'status' => 'error',
@@ -128,12 +126,14 @@ class CharacteristicController extends AbstractFOSRestController implements Clas
             );
         }
         $validation = $this->validationError($form, $this);
-        if($validation instanceof JsonResponse)
+        if ($validation instanceof JsonResponse)
             return $validation;
 
         $characteristic = $form->getData();
-        if(!$this->isGranted("ROLE_AMBASSADOR")
-            || $characteristic->getValidate() === null)
+        if (
+            !$this->isGranted("ROLE_AMBASSADOR")
+            || $characteristic->getValidate() === null
+        )
             $characteristic->setValidate(false);
         $characteristic->setCreatedBy($connectUser);
         $characteristic->setEquipment($equipment);
@@ -142,7 +142,8 @@ class CharacteristicController extends AbstractFOSRestController implements Clas
 
         return  $this->view(
             $characteristic,
-            Response::HTTP_CREATED);
+            Response::HTTP_CREATED
+        );
     }
 
     /**
@@ -185,7 +186,7 @@ class CharacteristicController extends AbstractFOSRestController implements Clas
     {
         $equipment = $this->findEquipmentByRequest($request);
         $characteristic = $this->findCharacteristicById($id);
-        if($characteristic->getEquipment()->getId() != $equipment->getId())
+        if ($characteristic->getEquipment()->getId() != $equipment->getId())
             throw new NotFoundHttpException();
         return $this->view(
             $characteristic
@@ -225,14 +226,14 @@ class CharacteristicController extends AbstractFOSRestController implements Clas
     public function cgetAction($request)
     {
         $equipment = $this->findEquipmentByRequest($request);
-        if($this->isGranted("ROLE_AMBASSADOR"))
+        if ($this->isGranted("ROLE_AMBASSADOR"))
             return $this->view(
                 $equipment->getCharacteristics()
             );
         $user = $this->getUser();
         $chas = $equipment->getCharacteristics();
-        for($i = count($chas) - 1; $i >= 0; $i--) {
-            if(!($chas[$i]->getValidate() || $chas[$i]->getCreatedBy() == $user)) {
+        for ($i = count($chas) - 1; $i >= 0; $i--) {
+            if (!($chas[$i]->getValidate() || $chas[$i]->getCreatedBy() == $user)) {
                 $chas[$i]->removeCharacteristic($chas[$i]);
             }
         }
@@ -294,8 +295,7 @@ class CharacteristicController extends AbstractFOSRestController implements Clas
         $data = json_decode($request->getContent(), true);
         $data = $this->manageObjectToId($data);
         $validate = $existingCharacteristic->getValidate();
-        if($equipment->getId() != $request->attributes->get('equipmentid'))
-        {
+        if ($equipment->getId() != $request->attributes->get('equipmentid')) {
             return new JsonResponse(
                 [
                     'status' => 'error',
@@ -307,9 +307,9 @@ class CharacteristicController extends AbstractFOSRestController implements Clas
         }
         $form->submit($data);
         $validation = $this->validationError($form, $this);
-        if($validation instanceof JsonResponse)
+        if ($validation instanceof JsonResponse)
             return $validation;
-        if($existingCharacteristic->getValidate() !== $validate) {
+        if ($existingCharacteristic->getValidate() !== $validate) {
             $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
         }
         $this->entityManager->flush();
@@ -372,8 +372,7 @@ class CharacteristicController extends AbstractFOSRestController implements Clas
         $form = $this->createForm(CharacteristicType::class, $existingCharacteristic);
         $data = $request->request->all();
         $data = $this->manageObjectToId($data);
-        if($equipment->getId() != $request->attributes->get('equipmentid'))
-        {
+        if ($equipment->getId() != $request->attributes->get('equipmentid')) {
             return new JsonResponse(
                 [
                     'status' => 'error',
@@ -394,7 +393,7 @@ class CharacteristicController extends AbstractFOSRestController implements Clas
                 JsonResponse::HTTP_UNPROCESSABLE_ENTITY
             );
         }
-        if($existingCharacteristic->getValidate() !== $validate) {
+        if ($existingCharacteristic->getValidate() !== $validate) {
             $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
         }
         $this->entityManager->flush();
@@ -439,7 +438,7 @@ class CharacteristicController extends AbstractFOSRestController implements Clas
         $equipment = $this->findEquipmentByRequest($request);
 
         $characteristic = $this->findCharacteristicById($id);
-        if(count($characteristic->getHaves()) > 1) {
+        if (count($characteristic->getHaves()) > 1) {
             return new JsonResponse(
                 [
                     'status' => 'error',
@@ -479,15 +478,17 @@ class CharacteristicController extends AbstractFOSRestController implements Clas
     {
         $equipment = $this->entityManager->find(
             Equipment::class,
-            $request->attributes->get('equipmentid'));
-        if($equipment == null)
+            $request->attributes->get('equipmentid')
+        );
+        if ($equipment == null)
             throw new NotFoundHttpException();
         return $equipment;
     }
 
-    private function manageObjectToId($data) {
-        if(isset($data['equipment'])) {
-            if(isset($data['equipment']['id'])) {
+    private function manageObjectToId($data)
+    {
+        if (isset($data['equipment'])) {
+            if (isset($data['equipment']['id'])) {
                 $data['equipment'] = $data['equipment']['id'];
             } else if (!is_int($data['equipment'])) {
                 unset($data['equipment']);

@@ -81,6 +81,15 @@ class User implements UserInterface
      */
     private $lastLogin;
 
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     * @SerializedName("created")
+     * @SWG\Property(
+     *  description="The date when the user was created")
+     * @var DateTime
+     */
+    private $created;
+
     public function __construct()
     {
         $this->haves = new ArrayCollection();
@@ -226,6 +235,17 @@ class User implements UserInterface
     public function setLastLogin(DateTime $lastLogin): self
     {
         $this->lastLogin = $lastLogin;
+        return $this;
+    }
+
+    public function getCreated(): DateTime
+    {
+        return $this->created;
+    }
+
+    public function setCreated(DateTime $created): self
+    {
+        $this->created = $created;
         return $this;
     }
 }

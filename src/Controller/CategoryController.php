@@ -2,14 +2,13 @@
 
 namespace App\Controller;
 
+use App\Controller\Helpers\HelperController;
 use App\Entity\Category;
 use App\Form\CategoryType;
 use App\Repository\CategoryRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Serializer\FormErrorSerializer;
-use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
-use FOS\RestBundle\Routing\ClassResourceInterface;
 use FOS\RestBundle\View\View;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,19 +19,17 @@ use Swagger\Annotations as SWG;
 use FOS\RestBundle\Request\ParamFetcher;
 use FOS\RestBundle\Controller\Annotations\QueryParam;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
+use Symfony\Component\Routing\Annotation\Route;
 
 /**
- * @Rest\RouteResource(
- *     "api/Category",
- *     pluralize=false
- * )
+ * @Route("api/Category")
  * @SWG\Tag(
  *     name="Category"
  * )
  */
-class CategoryController extends AbstractFOSRestController implements ClassResourceInterface
+class CategoryController extends AbstractFOSRestController
 {
-    use AbstractController;
+    use HelperController;
     /**
      * @var EntityManagerInterface
      */
@@ -103,7 +100,7 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
 
         $form->submit($data);
         $validation = $this->validationError($form, $this);
-        if($validation instanceof JsonResponse)
+        if ($validation instanceof JsonResponse)
             return $validation;
         $insertData = $this->setCreatedByAndValidateToFalse($form);
 
@@ -269,7 +266,7 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
             $view->setHeader(
                 'Access-Control-Expose-Headers',
                 'X-Total-Count'
-            );   
+            );
         }
         return $view;
     }
@@ -330,7 +327,7 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
         $form->submit($data);
 
         $validation = $this->validationError($form, $this);
-        if($validation instanceof JsonResponse)
+        if ($validation instanceof JsonResponse)
             return $validation;
         if ($existingCategory->getValidate() !== $validate) {
             $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
@@ -402,7 +399,7 @@ class CategoryController extends AbstractFOSRestController implements ClassResou
         $form->submit($data, false);
 
         $validation = $this->validationError($form, $this);
-        if($validation instanceof JsonResponse)
+        if ($validation instanceof JsonResponse)
             return $validation;
         if ($existingCategory->getValidate() !== $validate) {
             $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");

@@ -2,15 +2,14 @@
 
 namespace App\Controller;
 
+use App\Controller\Helpers\HelperController;
 use App\Entity\Backpack;
 use App\Entity\User;
 use App\Form\BackpackType;
 use App\Repository\BackpackRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Serializer\FormErrorSerializer;
-use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
-use FOS\RestBundle\Routing\ClassResourceInterface;
 use FOS\RestBundle\View\View;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,22 +20,20 @@ use Nelmio\ApiDocBundle\Annotation\Model;
 use FOS\RestBundle\Request\ParamFetcher;
 use FOS\RestBundle\Controller\Annotations\QueryParam;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
+use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * Class BackpackController
  * @package App\Controller
  *
- * @Rest\RouteResource(
- *     "api/user/{userId}/backpack",
- *     pluralize=false
- * )
+ * @Route("api/user/{userId}/backpack")
  * @SWG\Tag(
  *     name="Backpack"
  * )
  */
-class BackpackController extends AbstractFOSRestController implements ClassResourceInterface
+class BackpackController extends AbstractFOSRestController
 {
-    use AbstractController;
+    use HelperController;
     /**
      * @var EntityManagerInterface
      */
@@ -54,8 +51,7 @@ class BackpackController extends AbstractFOSRestController implements ClassResou
         EntityManagerInterface $entityManager,
         BackpackRepository $backpackRepository,
         FormErrorSerializer $formErrorSerializer
-    )
-    {
+    ) {
         $this->entityManager = $entityManager;
         $this->backpackRepository = $backpackRepository;
         $this->formErrorSerializer = $formErrorSerializer;
@@ -111,19 +107,22 @@ class BackpackController extends AbstractFOSRestController implements ClassResou
     {
         $user = $this->findUserByRequest($request);
         $login_user = $this->getUser();
-        if($user !== $login_user) {
-            $this->denyAccessUnlessGranted("ROLE_ADMIN"
-                , null
-                , "You cannot link an equipment for other user");
+        if ($user !== $login_user) {
+            $this->denyAccessUnlessGranted(
+                "ROLE_ADMIN",
+                null,
+                "You cannot link an equipment for other user"
+            );
         }
         $data = json_decode($request->getContent(), true);
         //$data = $this->manageObjectToId($data);
         $form = $this->createForm(
             BackpackType::class,
-            new Backpack());
+            new Backpack()
+        );
         $form->submit($data);
         $validation = $this->validationError($form, $this);
-        if($validation instanceof JsonResponse)
+        if ($validation instanceof JsonResponse)
             return $validation;
 
         $backpack = $form->getData();
@@ -133,7 +132,8 @@ class BackpackController extends AbstractFOSRestController implements ClassResou
 
         return  $this->view(
             $backpack,
-            Response::HTTP_CREATED);
+            Response::HTTP_CREATED
+        );
     }
 
     /**
@@ -241,12 +241,14 @@ class BackpackController extends AbstractFOSRestController implements ClassResou
         $sortBy = $paramFetcher->get('sortBy');
         $search = $paramFetcher->get('search');
         $user = $this->findUserByRequest($request);
-        $count = $this->backpackRepository->findByUser($user
-        , $page
-        , $limit
-        , $sort
-        , $sortBy
-        , $search);
+        $count = $this->backpackRepository->findByUser(
+            $user,
+            $page,
+            $limit,
+            $sort,
+            $sortBy,
+            $search
+        );
         return $this->setPaginateToView($count, $this);
     }
 
@@ -366,10 +368,11 @@ class BackpackController extends AbstractFOSRestController implements ClassResou
      * @param bool $isPut
      * @return View|JsonResponse
      */
-    private function putOrPatch(Request $request, string $id, bool $isPut) {
+    private function putOrPatch(Request $request, string $id, bool $isPut)
+    {
         $user = $this->findUserByRequest($request);
         $login_user = $this->getUser();
-        if($user !== $login_user) {
+        if ($user !== $login_user) {
             return new JsonResponse(
                 [
                     'status' => 'error',
@@ -384,7 +387,7 @@ class BackpackController extends AbstractFOSRestController implements ClassResou
         $data = $this->manageObjectToId($data);
         $form->submit($data, $isPut);
         $validation = $this->validationError($form, $this);
-        if($validation instanceof JsonResponse)
+        if ($validation instanceof JsonResponse)
             return $validation;
 
         $this->entityManager->flush();
@@ -427,7 +430,7 @@ class BackpackController extends AbstractFOSRestController implements ClassResou
     {
         $user = $this->findUserByRequest($request);
         $login_user = $this->getUser();
-        if($user !== $login_user) {
+        if ($user !== $login_user) {
             return new JsonResponse(
                 [
                     'status' => 'error',
@@ -459,16 +462,17 @@ class BackpackController extends AbstractFOSRestController implements ClassResou
         return $existingBackpack;
     }
 
-    private function manageObjectToId($data) {
-        if(isset($data['characteristic'])) {
-            if(isset($data['characteristic']['id'])) {
+    private function manageObjectToId($data)
+    {
+        if (isset($data['characteristic'])) {
+            if (isset($data['characteristic']['id'])) {
                 $data['characteristic'] = $data['characteristic']['id'];
             } else if (!is_int($data['characteristic'])) {
                 unset($data['characteristic']);
             }
         }
-        if(isset($data['equipment'])) {
-            if(isset($data['equipment']['id'])) {
+        if (isset($data['equipment'])) {
+            if (isset($data['equipment']['id'])) {
                 $data['equipment'] = $data['equipment']['id'];
             }
         }
@@ -484,8 +488,9 @@ class BackpackController extends AbstractFOSRestController implements ClassResou
     {
         $user = $this->entityManager->find(
             User::class,
-            $request->attributes->get('userid'));
-        if($user == null)
+            $request->attributes->get('userid')
+        );
+        if ($user == null)
             throw new NotFoundHttpException();
         return $user;
     }

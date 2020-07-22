@@ -1,52 +1,9 @@
-#index:
-#    path: /
-#    controller: App\Controller\DefaultController::index
-categories:
-     type:     rest
-     resource: App\Controller\CategoryController
-subcategories:
-     type:     rest
-     resource: App\Controller\SubCategoryController
-brands:
-     type:     rest
-     resource: App\Controller\BrandController
-equipment:
-     type:     rest
-     resource: App\Controller\EquipmentController
-extrafield:
-     type:     rest
-     resource: App\Controller\CharacteristicController
-have:
-     type:     rest
-     resource: App\Controller\HaveController
-#Login user
-#api_auth_login:
-#     path: /api/auth/login
-#     methods: [POST]
-login_check:
-    path:     /api/auth/login
-    methods:  [POST]
-user:
-     type:     rest
-     resource: App\Controller\UserController
-backpack:
-     type:     rest
-     resource: App\Controller\BackpackController
+api_login_check:
+  path: /api/{_locale}/auth/login_check
+  methods: [POST]
+  requirements:
+    _locale: en|fr
+
 mediaobject:
-     type:     rest
+     type:     annotation
      resource: App\Controller\MediaObjectController
-intoBackpack:
-     type:     rest
-     resource: App\Controller\IntoBackpackController
-#api:
-#     prefix: /api
-#     resource: '../src/Controller/Api'
-#Documentation
-#app.swagger_ui:
-#     path: /api/doc
-#     methods: GET
-#     defaults: { _controller: nelmio_api_doc.controller.swagger_ui }
-#app.swagger:
-#     path: /api/doc.json
-#     methods: GET
-#     defaults: { _controller: nelmio_api_doc.controller.swagger }

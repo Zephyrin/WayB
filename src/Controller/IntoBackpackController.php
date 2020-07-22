@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Controller\Helpers\HelperController;
 use App\Entity\Backpack;
 use App\Entity\IntoBackpack;
 use App\Entity\User;
@@ -11,9 +12,7 @@ use App\Repository\HaveRepository;
 use App\Repository\IntoBackpackRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Serializer\FormErrorSerializer;
-use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
-use FOS\RestBundle\Routing\ClassResourceInterface;
 use FOS\RestBundle\View\View;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,20 +21,18 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
+use Symfony\Component\Routing\Annotation\Route;
 
 /**
- * @Rest\RouteResource(
- *     "api/user/{userId}/backpack/{backpackId}/intoBackpack",
- *     pluralize=false
- * )
+ * @Route("api/user/{userId}/backpack/{backpackId}/intoBackpack")
  *
  * @SWG\Tag(
  *     name="Into-backpack"
  * )
  */
-class IntoBackpackController extends AbstractFOSRestController implements ClassResourceInterface
+class IntoBackpackController extends AbstractFOSRestController
 {
-    use AbstractController;
+    use HelperController;
     /**
      * @var EntityManagerInterface
      */
@@ -65,8 +62,7 @@ class IntoBackpackController extends AbstractFOSRestController implements ClassR
         HaveRepository $haveRepository,
         BackpackRepository $backpackRepository,
         FormErrorSerializer $formErrorSerializer
-    )
-    {
+    ) {
         $this->entityManager = $entityManager;
         $this->intoBackpackRepository = $intoBackpackRepository;
         $this->haveRepository = $haveRepository;
@@ -121,7 +117,7 @@ class IntoBackpackController extends AbstractFOSRestController implements ClassR
     public function postAction(Request $request)
     {
         $connectUser = $this->getUser();
-        if($connectUser->getId() != $request->attributes->get('userid')) {
+        if ($connectUser->getId() != $request->attributes->get('userid')) {
             return new JsonResponse(
                 [
                     'status' => 'error',
@@ -137,15 +133,16 @@ class IntoBackpackController extends AbstractFOSRestController implements ClassR
         );
         $data = $this->manageObjectToId($data);
         $this->findHaveById($data);
-        
+
         $form = $this->createForm(
             IntoBackpackType::class,
-            new IntoBackpack());
+            new IntoBackpack()
+        );
         $form->submit(
             $data
         );
 
-        if(isset($data['backpack']) && $data['backpack'] != $backpack->getId()) {
+        if (isset($data['backpack']) && $data['backpack'] != $backpack->getId()) {
             return new JsonResponse(
                 [
                     'status' => 'error',
@@ -173,7 +170,8 @@ class IntoBackpackController extends AbstractFOSRestController implements ClassR
 
         return  $this->view(
             $into,
-            Response::HTTP_CREATED);
+            Response::HTTP_CREATED
+        );
     }
 
     /**
@@ -223,7 +221,7 @@ class IntoBackpackController extends AbstractFOSRestController implements ClassR
         $user = $this->findUserByRequest($request);
         $backpack = $this->findBackpackByRequest($request, $user);
         $intoBackpack = $this->findIntoBackpackById($id, $backpack);
-        if($intoBackpack->getBackpack()->getId() == $backpack->getId())
+        if ($intoBackpack->getBackpack()->getId() == $backpack->getId())
             throw new NotFoundHttpException();
         return $this->view($intoBackpack);
     }
@@ -384,9 +382,10 @@ class IntoBackpackController extends AbstractFOSRestController implements ClassR
         $this->managePutOrPatch($request, $id, false);
     }
 
-    private function managePutOrPatch(Request $request, string $id, bool $clearMissing) {
+    private function managePutOrPatch(Request $request, string $id, bool $clearMissing)
+    {
         $user = $this->findUserByRequest($request);
-        if($user->getId() != $this->getUser()->getId()) {
+        if ($user->getId() != $this->getUser()->getId()) {
             return new JsonResponse(
                 [
                     'status' => 'error',
@@ -403,7 +402,7 @@ class IntoBackpackController extends AbstractFOSRestController implements ClassR
 
         $form->submit($data, $clearMissing);
         $validation = $this->validationError($form, $this);
-        if($validation instanceof JsonResponse)
+        if ($validation instanceof JsonResponse)
             return $validation;
         $this->entityManager->flush();
 
@@ -452,7 +451,7 @@ class IntoBackpackController extends AbstractFOSRestController implements ClassR
     public function deleteAction(Request $request, string $id)
     {
         $user = $this->findUserByRequest($request);
-        if($user->getId() != $this->getUser()->getId()) {
+        if ($user->getId() != $this->getUser()->getId()) {
             return new JsonResponse(
                 [
                     'status' => 'error',
@@ -463,7 +462,7 @@ class IntoBackpackController extends AbstractFOSRestController implements ClassR
         }
         $backpack = $this->findBackpackByRequest($request, $user);
         $intoBackpack = $this->findIntoBackpackById($id, $backpack);
-        
+
         $this->entityManager->remove($intoBackpack);
         $this->entityManager->flush();
 
@@ -479,8 +478,8 @@ class IntoBackpackController extends AbstractFOSRestController implements ClassR
      */
     private function findIntoBackpackById(string $id, Backpack $backpack)
     {
-        foreach($backpack->getIntoBackpacks() as $into) {
-            if($into->getId() == $id) return $into;
+        foreach ($backpack->getIntoBackpacks() as $into) {
+            if ($into->getId() == $id) return $into;
         }
         throw new NotFoundHttpException();
     }
@@ -494,19 +493,22 @@ class IntoBackpackController extends AbstractFOSRestController implements ClassR
     private function findBackpackByRequest(Request $request, User $user): Backpack
     {
         $backpack = $this->backpackRepository->findByIdAndCreatedBy(
-            $request->attributes->get('backpackid'), $user);
-        if($backpack == null)
+            $request->attributes->get('backpackid'),
+            $user
+        );
+        if ($backpack == null)
             throw new NotFoundHttpException();
         return $backpack;
     }
 
-    private function findHaveById($data) {
+    private function findHaveById($data)
+    {
         $have = null;
         if (isset($data['equipment'])) {
             $have = $this->haveRepository->findById($data['equipment']);
         }
-        
-        if($have == null) throw new NotFoundHttpException("Equipment not found.");
+
+        if ($have == null) throw new NotFoundHttpException("Equipment not found.");
         return $have;
     }
 
@@ -520,22 +522,24 @@ class IntoBackpackController extends AbstractFOSRestController implements ClassR
     {
         $user = $this->entityManager->find(
             User::class,
-            $request->attributes->get('userid'));
-        if($user == null)
+            $request->attributes->get('userid')
+        );
+        if ($user == null)
             throw new NotFoundHttpException();
         return $user;
     }
 
-    private function manageObjectToId($data) {
-        if(isset($data['backpack'])) {
-            if(isset($data['backpack']['id'])) {
+    private function manageObjectToId($data)
+    {
+        if (isset($data['backpack'])) {
+            if (isset($data['backpack']['id'])) {
                 $data['backpack'] = $data['backpack']['id'];
             } else if (!is_int($data['backpack'])) {
                 unset($data['backpack']);
             }
         }
-        if(isset($data['equipment'])) {
-            if(isset($data['equipment']['id'])) {
+        if (isset($data['equipment'])) {
+            if (isset($data['equipment']['id'])) {
                 $data['equipment'] = $data['equipment']['id'];
             } else if (!is_int($data['equipment'])) {
                 unset($data['equipment']);

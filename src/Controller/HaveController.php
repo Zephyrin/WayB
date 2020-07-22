@@ -2,39 +2,38 @@
 
 namespace App\Controller;
 
+use App\Controller\Helpers\HelperController;
 use App\Entity\Have;
 use App\Entity\User;
 use App\Form\HaveType;
 use App\Repository\HaveRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Serializer\FormErrorSerializer;
-use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
-use FOS\RestBundle\Routing\ClassResourceInterface;
 use FOS\RestBundle\View\View;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Swagger\Annotations as SWG;
+use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * Class HaveController
  * @package App\Controller
  *
- * @Rest\RouteResource(
- *     "api/user/{userId}/have",
- *     pluralize=false
- * )
+ * @Route("api/user/{userId}/have")
  * @SWG\Tag(
  *     name="User has"
  * )
- */use Nelmio\ApiDocBundle\Annotation\Model;
+ */
+
+use Nelmio\ApiDocBundle\Annotation\Model;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
-class HaveController extends AbstractFOSRestController implements ClassResourceInterface
+class HaveController extends AbstractFOSRestController
 {
-    use AbstractController;
+    use HelperController;
     /**
      * @var EntityManagerInterface
      */
@@ -52,8 +51,7 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
         EntityManagerInterface $entityManager,
         HaveRepository $haveRepository,
         FormErrorSerializer $formErrorSerializer
-    )
-    {
+    ) {
         $this->entityManager = $entityManager;
         $this->haveRepository = $haveRepository;
         $this->formErrorSerializer = $formErrorSerializer;
@@ -108,10 +106,12 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
     {
         $user = $this->findUserByRequest($request);
         $login_user = $this->getUser();
-        if($user !== $login_user) {
-            $this->denyAccessUnlessGranted("ROLE_ADMIN"
-                , null
-                , "You cannot link an equipment for other user");
+        if ($user !== $login_user) {
+            $this->denyAccessUnlessGranted(
+                "ROLE_ADMIN",
+                null,
+                "You cannot link an equipment for other user"
+            );
         }
         $data = json_decode(
             $request->getContent(),
@@ -120,12 +120,13 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
         $data = $this->manageObjectToId($data);
         $form = $this->createForm(
             HaveType::class,
-            new Have());
+            new Have()
+        );
         $form->submit(
             $data
         );
         $validation = $this->validationError($form, $this);
-        if($validation instanceof JsonResponse)
+        if ($validation instanceof JsonResponse)
             return $validation;
 
         $have = $form->getData();
@@ -135,7 +136,8 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
 
         return  $this->view(
             $have,
-            Response::HTTP_CREATED);
+            Response::HTTP_CREATED
+        );
     }
 
     /**
@@ -270,7 +272,7 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
     {
         $user = $this->findUserByRequest($request);
         $login_user = $this->getUser();
-        if($user !== $login_user) {
+        if ($user !== $login_user) {
             return new JsonResponse(
                 [
                     'status' => 'error',
@@ -286,7 +288,7 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
         $data['user'] = $request->attributes->get('userid');
         $form->submit($data);
         $validation = $this->validationError($form, $this);
-        if($validation instanceof JsonResponse)
+        if ($validation instanceof JsonResponse)
             return $validation;
 
         $this->entityManager->flush();
@@ -348,7 +350,7 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
     {
         $user = $this->findUserByRequest($request);
         $login_user = $this->getUser();
-        if($user !== $login_user) {
+        if ($user !== $login_user) {
             return new JsonResponse(
                 [
                     'status' => 'error',
@@ -364,7 +366,7 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
         $data = $this->manageObjectToId($data);
         $form->submit($data, false);
         $validation = $this->validationError($form, $this);
-        if($validation instanceof JsonResponse)
+        if ($validation instanceof JsonResponse)
             return $validation;
 
         $this->entityManager->flush();
@@ -408,7 +410,7 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
     {
         $user = $this->findUserByRequest($request);
         $login_user = $this->getUser();
-        if($user !== $login_user) {
+        if ($user !== $login_user) {
             return new JsonResponse(
                 [
                     'status' => 'error',
@@ -439,16 +441,17 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
         return $existingHave;
     }
 
-    private function manageObjectToId($data) {
-        if(isset($data['characteristic'])) {
-            if(isset($data['characteristic']['id'])) {
+    private function manageObjectToId($data)
+    {
+        if (isset($data['characteristic'])) {
+            if (isset($data['characteristic']['id'])) {
                 $data['characteristic'] = $data['characteristic']['id'];
             } else if (!is_int($data['characteristic'])) {
                 unset($data['characteristic']);
             }
         }
-        if(isset($data['equipment'])) {
-            if(isset($data['equipment']['id'])) {
+        if (isset($data['equipment'])) {
+            if (isset($data['equipment']['id'])) {
                 $data['equipment'] = $data['equipment']['id'];
             }
         }
@@ -464,8 +467,9 @@ class HaveController extends AbstractFOSRestController implements ClassResourceI
     {
         $user = $this->entityManager->find(
             User::class,
-            $request->attributes->get('userid'));
-        if($user == null)
+            $request->attributes->get('userid')
+        );
+        if ($user == null)
             throw new NotFoundHttpException();
         return $user;
     }

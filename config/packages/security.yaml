@@ -1,16 +1,14 @@
-#config/packages/security.yaml
 security:
     encoders:
         Symfony\Component\Security\Core\User\User: 'auto'
         App\Entity\User:
             algorithm: auto
 
-
     role_hierarchy:
-        ROLE_AMBASSADOR:    ROLE_USER
-        ROLE_ADMIN:         ROLE_AMBASSADOR
-        ROLE_SUPER_ADMIN:   ROLE_ADMIN
-
+        ROLE_AMBASSADOR: ROLE_USER
+        ROLE_ADMIN: ROLE_AMBASSADOR
+        ROLE_SUPER_ADMIN: ROLE_ADMIN
+    # https://symfony.com/doc/current/security.html#where-do-users-come-from-user-providers
     providers:
         chain_provider:
             chain:
@@ -26,32 +24,22 @@ security:
             entity:
                 class: App\Entity\User
                 property: username
-        # used to reload user from session & other features (e.g. switch_user)
-
-    access_control:
-        - { path: ^/resetting, role: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: ^/admin/, role: ROLE_ADMIN }
-        - { path: ^/api/doc, roles: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: ^/api/auth/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: ^/api/auth/register, roles: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
-
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         api_login:
-            pattern:  ^/api/auth/login
+            pattern:  ^/api/(en|fr)/auth/login
             stateless: true
             anonymous: true
             json_login:
                 provider: chain_provider
-                check_path:               /api/auth/login
+                check_path:               api_login_check
                 success_handler:          lexik_jwt_authentication.handler.authentication_success
                 failure_handler:          lexik_jwt_authentication.handler.authentication_failure
             provider: chain_provider
         api_register:
-            pattern:  ^/api/auth/register
+            pattern:  ^/api/(en|fr)/auth/register
             stateless: true
             anonymous: true
         api_doc:
@@ -59,16 +47,32 @@ security:
             stateless: true
             anonymous: true
         api:
-            pattern: ^/api
+            pattern:   ^/api
             stateless: true
-            anonymous: false
+            anonymous: true
             provider: chain_provider
             guard:
                 authenticators:
                     - lexik_jwt_authentication.jwt_token_authenticator
         main:
             pattern: ^/
-            anonymous:    true
+            anonymous: true
+            lazy: true
             logout:
-                path:   app_logout
+                path: app_logout
                 target: api_login
+            access_denied_handler: App\Security\AccessDeniedHandler
+
+
+    # Easy way to control access for large sections of your site
+    # Note: Only the *first* access control that matches will be used
+    access_control:
+        - { path: ^/api/(fr|en)/auth/login_check, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/doc, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/(fr|en)/auth/register, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/(fr|en)/mediaobjects?, roles: IS_AUTHENTICATED_ANONYMOUSLY, methods: [ GET ] }
+        - { path: ^/api/(fr|en)/viewtranslates?, roles: IS_AUTHENTICATED_ANONYMOUSLY, methods: [ GET ] }
+        - { path: ^/api,       roles: IS_AUTHENTICATED_FULLY }
+
+        # - { path: ^/admin, roles: ROLE_ADMIN }
+        # - { path: ^/profile, roles: ROLE_USER }
