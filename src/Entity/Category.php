@@ -9,6 +9,8 @@ use Symfony\Component\Validator\Constraints as Asset;
 use JMS\Serializer\Annotation\SerializedName;
 use Swagger\Annotations as SWG;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Gedmo\Mapping\Annotation as Gedmo;
+use Gedmo\Translatable\Translatable;
 
 /**
  * @SWG\Definition(
@@ -18,13 +20,14 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
  * @ORM\Entity(repositoryClass="App\Repository\CategoryRepository")
  * @UniqueEntity(fields="name", message="This category name is already in use.")
  */
-class Category extends Base
+class Category extends Base implements Translatable
 {
     /**
-     * @Asset\NotBlank()
-     * @ORM\Column(type="string", length=255, unique=true)
+     * @var string|null
+     * @Gedmo\Translatable
+     * @ORM\Column(type="string", length=255)
      * @SerializedName("name")
-     * @var string
+     * @Asset\Length(max=255, allowEmptyString=true)
      * @SWG\Property(description="The name of the Category.")
      */
     private $name;
@@ -39,6 +42,12 @@ class Category extends Base
      * @SWG\Property(description="The list of all SubCategory link to this Category")
      */
     private $subCategories;
+
+    /**
+     * @var array|null
+     */
+    private $translations;
+
 
     public function __construct()
     {
@@ -86,6 +95,17 @@ class Category extends Base
             }
         }
 
+        return $this;
+    }
+
+    public function getTranslations(): ?array
+    {
+        return $this->translations;
+    }
+
+    public function setTranslations(?array $translations): self
+    {
+        $this->translations = $translations;
         return $this;
     }
 }

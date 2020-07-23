@@ -129,6 +129,7 @@ final class FeatureContext implements Context
      */
     public function thereAreDefaultUsers()
     {
+        //TODO Test if user already exists in database.
         /* Create default super admin user into the database then create other users. */
         $this->iAmLoginAs('superadmin');
         $this->iLogout();

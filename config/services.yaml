@@ -5,7 +5,6 @@
 # https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
 parameters:
     app.admin_email: 'florian.bernard.fb@gmail.com'
-    app.claudia_email: 'poirotclaudia@gmail.com'
     app.supported_locales: ['en', 'fr']
     media_object: '%kernel.project_dir%/public/media'
 services:

@@ -2,6 +2,8 @@
 
 namespace App\Controller\Helpers;
 
+use App\Entity\Base;
+use App\Entity\User;
 use Behat\Behat\Definition\Translator\Translator;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use Symfony\Component\Form\FormInterface;
@@ -38,6 +40,28 @@ trait HelperController
             'X-Total-Count, X-Pagination-Count, X-Pagination-Page, X-Pagination-Limit'
         );
         return $view;
+    }
+
+    /**
+     * For Base object only. It set the user who creates the object and test if the 
+     * user can set validate to true. Only if the user grants the role ambassador.
+     *
+     * @param FormInterface $form
+     * @param User $connectUser
+     * @return Base
+     */
+    public function setCreatedByAndValidateToFalse(FormInterface $form, User $connectUser = null)
+    {
+        $insertData = $form->getData();
+        if ($connectUser == null)
+            $connectUser = $this->getUser();
+        $insertData->setCreatedBy($connectUser);
+        if (
+            !$this->isGranted("ROLE_AMBASSADOR")
+            || $insertData->getValidate() === null
+        )
+            $insertData->setValidate(false);
+        return $insertData;
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Controller\Helpers\HelperController;
+use App\Controller\Helpers\TranslatableHelperController;
 use App\Entity\Category;
 use App\Form\CategoryType;
 use App\Repository\CategoryRepository;
@@ -20,15 +21,17 @@ use FOS\RestBundle\Request\ParamFetcher;
 use FOS\RestBundle\Controller\Annotations\QueryParam;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
- * @Route("api/Category")
- * @SWG\Tag(
- *     name="Category"
- * )
+ * @Route("api/{_locale}",
+ *        requirements={ "_locale": "en|fr" })
+ * @SWG\Tag(name="Category")
  */
 class CategoryController extends AbstractFOSRestController
 {
+    use TranslatableHelperController;
+
     use HelperController;
     /**
      * @var EntityManagerInterface
@@ -38,33 +41,43 @@ class CategoryController extends AbstractFOSRestController
      * @var CategoryRepository
      */
     private $categoryRepository;
-
     /**
      * @var FormErrorSerializer
      */
     private $formErrorSerializer;
 
+    /**
+     * @var TranslatorInterface
+     */
+    private $translator;
+
+    private string $name = "name";
+
     public function __construct(
         EntityManagerInterface $entityManager,
         CategoryRepository $categoryRepository,
-        FormErrorSerializer $formErrorSerializer
+        FormErrorSerializer $formErrorSerializer,
+        TranslatorInterface $translator
     ) {
         $this->entityManager = $entityManager;
         $this->categoryRepository = $categoryRepository;
         $this->formErrorSerializer = $formErrorSerializer;
+        $this->translator = $translator;
     }
 
     /**
      * Create a new Category.
      *
      * The SubCategories can be created during the POST.
-     *
+     * @Route("/category", 
+     *        name="api_category_post",
+     *        methods={"POST"})
      * @SWG\Post(
      *     consumes={"application/json"},
      *     produces={"application/json"},
      *     @SWG\Response(
      *      response=201,
-     *      description="Successful operation with the new value insert",
+     *      description="Successful operation with the new value insert.",
      *      @SWG\Schema(
      *       ref=@Model(type=Category::class)
      *     )
@@ -72,10 +85,10 @@ class CategoryController extends AbstractFOSRestController
      *    @SWG\Response(
      *     response=422,
      *     description="The form is not correct<BR/>
-     * See the corresponding JSON error to see which field is not correct"
+     * See the corresponding JSON error to see which field is not correct."
      *    ),
      *    @SWG\Parameter(
-     *     name="The JSON Category",
+     *     name="The JSON Category.",
      *     in="body",
      *     required=true,
      *     @SWG\Schema(
@@ -89,20 +102,22 @@ class CategoryController extends AbstractFOSRestController
      * @param Request $request
      * @return View|JsonResponse
      * @throws ExceptionInterface
+     * @throws Exception
      */
     public function postAction(Request $request)
     {
-        $data = json_decode(
-            $request->getContent(),
-            true
-        );
+        $data = $this->getDataFromJson($request, true, $this->translator);
+        if ($data instanceof JsonResponse) return $data;
         $form = $this->createForm(CategoryType::class, new Category());
+        if (is_array($data)) $this->setLang($data, $this->name);
+        else return $this->createError($form, $this, $this->translator, "invalid.json");
 
         $form->submit($data);
-        $validation = $this->validationError($form, $this);
+        $validation = $this->validationError($form, $this, $this->translator);
         if ($validation instanceof JsonResponse)
             return $validation;
         $insertData = $this->setCreatedByAndValidateToFalse($form);
+        $this->translate($insertData, $this->name, $this->entityManager);
 
         $this->entityManager->persist($insertData);
 
@@ -112,20 +127,24 @@ class CategoryController extends AbstractFOSRestController
 
     /**
      * Expose the Category with the id
-     *
+     * @Route("/category/{id}",
+     *        name="api_category_get",
+     *        methods={"GET"},
+     *        requirements={ "id": "\d+" })
+     * 
      * @SWG\Get(
-     *     summary="Get the Category based on ID",
+     *     summary="Get the Category based on ID.",
      *     produces={"application/json"}
      * )
      * @SWG\Response(
      *     response=200,
-     *     description="Return the Category based on ID",
+     *     description="Return the Category based on ID.",
      *     @SWG\Schema(ref=@Model(type=Category::class))
      * )
      *
      * @SWG\Response(
      *     response=404,
-     *     description="The Category based on ID is not found"
+     *     description="The Category based on ID does not exists."
      * )
      *
      * @SWG\Parameter(
@@ -148,13 +167,17 @@ class CategoryController extends AbstractFOSRestController
     /**
      * Expose all Categories
      *
+     * @Route("/categories", 
+     *        name="api_category_gets",
+     *        methods={"GET"}
+     * )
      * @SWG\Get(
-     *     summary="Get all Categories",
+     *     summary="Get all Categories.",
      *     produces={"application/json"}
      * )
      * @SWG\Response(
      *     response=200,
-     *     description="Return all the Categories",
+     *     description="Return all Categories.",
      *     @SWG\Schema(
      *      type="array",
      *      @SWG\Items(ref=@Model(type=Category::class))
@@ -205,43 +228,13 @@ class CategoryController extends AbstractFOSRestController
      */
     public function cgetAction(ParamFetcher $paramFetcher)
     {
-        $page = $paramFetcher->get('page');
-        $limit = $paramFetcher->get('limit');
-        $noPagination = $paramFetcher->get('noPagination');
-        $sort = $paramFetcher->get('sort');
-        $sortBy = $paramFetcher->get('sortBy');
-        $search = $paramFetcher->get('search');
-        $validate = $paramFetcher->get('validate');
-        $askValidate = $paramFetcher->get('askValidate');
-        $subCategoryCount = $paramFetcher->get('subCategoryCount');
-        $categoryAndCount = [];
-        if ($this->isGranted("ROLE_AMBASSADOR")) {
-            $categoryAndCount = $this->categoryRepository->findForAmbassador(
-                $page,
-                $limit,
-                $noPagination == 'true',
-                $sort,
-                $sortBy,
-                $search,
-                $validate,
-                $askValidate,
-                $subCategoryCount
-            );
-        } else {
-            $user = $this->getUser();
-            $categoryAndCount = $this->categoryRepository->findByUserOrValidate(
-                $user,
-                $page,
-                $noPagination == 'true',
-                $limit,
-                $sort,
-                $sortBy,
-                $search,
-                $validate,
-                $askValidate,
-                $subCategoryCount
-            );
-            foreach ($categoryAndCount[0] as $cat) {
+        $categories = $this->categoryRepository->findPagination(
+            $paramFetcher,
+            $this->isGranted("ROLE_AMBASSADOR"),
+            $this->getUser()
+        );
+        if (!$this->isGranted("ROLE_AMBASSADOR")) {
+            foreach ($categories[0] as $cat) {
                 $subs = $cat->getSubCategories();
                 for ($i = count($subs) - 1; $i >= 0; $i--) {
                     if (!($subs[$i]->getValidate() || $subs[$i]->getCreatedBy() == $user)) {
@@ -250,25 +243,16 @@ class CategoryController extends AbstractFOSRestController
                 }
             }
         }
-        $view = $this->view(
-            $categoryAndCount[0]
-        );
-        $view->setHeader('X-Total-Count', $categoryAndCount[1]);
-        if (!$noPagination) {
-            $view->setHeader('X-Pagination-Count', $categoryAndCount[2]);
-            $view->setHeader('X-Pagination-Page',  $categoryAndCount[3]);
-            $view->setHeader('X-Pagination-Limit', $categoryAndCount[4]);
-            $view->setHeader(
-                'Access-Control-Expose-Headers',
-                'X-Total-Count, X-Pagination-Count, X-Pagination-Page, X-Pagination-Limit'
+        $repository = $this->entityManager->getRepository('Gedmo\Translatable\Entity\Translation');
+        foreach ($categories[0] as $category) {
+            $array = $this->createTranslatableArray();
+            $this->addTranslatableVar(
+                $array,
+                $repository->findTranslations($category)
             );
-        } else {
-            $view->setHeader(
-                'Access-Control-Expose-Headers',
-                'X-Total-Count'
-            );
+            $category->setTranslations($array);
         }
-        return $view;
+        return $this->setPaginateToView($categories, $this);
     }
 
     /**

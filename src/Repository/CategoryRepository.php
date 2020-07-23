@@ -7,6 +7,7 @@ use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
+use FOS\RestBundle\Request\ParamFetcher;
 
 /**
  * @method Category|null find($id, $lockMode = null, $lockVersion = null)
@@ -23,6 +24,46 @@ class CategoryRepository extends ServiceEntityRepository
         parent::__construct($registry, Category::class);
     }
 
+    public function findPagination(
+        ParamFetcher $paramFetcher,
+        bool $isAmbassador,
+        User $user = null
+    ) {
+        $page = $paramFetcher->get('page');
+        $limit = $paramFetcher->get('limit');
+        $noPagination = $paramFetcher->get('noPagination');
+        $sort = $paramFetcher->get('sort');
+        $sortBy = $paramFetcher->get('sortBy');
+        $search = $paramFetcher->get('search');
+        $validate = $paramFetcher->get('validate');
+        $askValidate = $paramFetcher->get('askValidate');
+        $subCategoryCount = $paramFetcher->get('subCategoryCount');
+        if ($isAmbassador)
+            return $this->findForAmbassador(
+                $page,
+                $noPagination == 'true',
+                $limit,
+                $sort,
+                $sortBy,
+                $search,
+                $validate,
+                $askValidate,
+                $subCategoryCount
+            );
+        return $this->findByUserOrValidate(
+            $user,
+            $page,
+            $noPagination == 'true',
+            $limit,
+            $sort,
+            $sortBy,
+            $search,
+            $validate,
+            $askValidate,
+            $subCategoryCount
+        );
+    }
+
     public function findForAmbassador(
         int $page,
         int $limit,
@@ -36,7 +77,7 @@ class CategoryRepository extends ServiceEntityRepository
     ) {
         $query = $this->createQueryBuilder('e');
         $query = $this->search($query, $search);
-        if($sortBy == 'subCategoryCount') {
+        if ($sortBy == 'subCategoryCount') {
             $sortBy = 'COUNT(subs)';
             $query = $query->leftJoin('e.subCategories', 'subs');
         }
@@ -72,7 +113,7 @@ class CategoryRepository extends ServiceEntityRepository
             ->Where('(e.validate = true OR e.createdBy = :val)')
             ->setParameter('val', $user->getId());
         $query = $this->search($query, $search);
-        if($sortBy == 'subCategoryCount') {
+        if ($sortBy == 'subCategoryCount') {
             $sortBy = 'COUNT(subs)';
             $query = $query->leftJoin('e.subCategories', 'subs');
         }
