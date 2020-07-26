@@ -127,8 +127,6 @@ class MediaObjectController extends AbstractFOSRestController
     public function postAction(Request $request)
     {
         $data = $this->getDataFromJson($request, true, $this->translator);
-        if ($data instanceof JsonResponse)
-            return $data;
         return $this->post($data);
     }
 
@@ -145,9 +143,7 @@ class MediaObjectController extends AbstractFOSRestController
         }
 
         $form = $form->submit($data, false);
-        $validation = $this->validationError($form, $this, $this->translator);
-        if ($validation instanceof JsonResponse)
-            return $validation;
+        $this->validationError($form, $this, $this->translator);
 
         $mediaObject = $form->getData();
         $mediaObject->setCreatedBy($this->getUser());
@@ -204,20 +200,27 @@ class MediaObjectController extends AbstractFOSRestController
      */
     public function getAction(string $id)
     {
-        return $this->view(
-            $this->findMediaObjectById($id)
+        $media = $this->findMediaObjectById($id);
+        $repository = $this->entityManager->getRepository('Gedmo\Translatable\Entity\Translation');
+        $array = $this->createTranslatableArray();
+        $this->addTranslatableVar(
+            $array,
+            $repository->findTranslations($media)
         );
+        $media->setTranslations($array);
+        return $this->view($media);
     }
 
     /**
      * Expose all MediaObjects and their informations.
      * 
      * @Route("/{_locale}/mediaobjects",
-     *  name="api_mediaobject_gets",
-     *  methods={"GET"},
-     *  requirements={
-     *      "_locale": "en|fr"
-     * })
+     *      name="api_mediaobject_gets_language",
+     *      methods={"GET"},
+     *      requirements={
+     *          "_locale": "en|fr"
+     *      }
+     * )
      * 
      * @SWG\Get(
      *     summary="Get all MediaObjects",
@@ -249,6 +252,10 @@ class MediaObjectController extends AbstractFOSRestController
      * , requirements="(id|description|filePath)"
      * , default="id"
      * , description="Sort by name or uri")
+     * @QueryParam(name="pagination"
+     * , requirements="(true|false)"
+     * , default="true"
+     * , description="Is there pagination")
      * @QueryParam(name="search"
      * , nullable=true
      * , description="Search on name or description or sub-category name or category name or brand name or brand description")
@@ -257,57 +264,6 @@ class MediaObjectController extends AbstractFOSRestController
      * @return View
      */
     public function cgetAction(ParamFetcher $paramFetcher)
-    {
-        $mediaObjects = $this->mediaObjectRepository->findAllPagination($paramFetcher);
-        return $this->setPaginateToView($mediaObjects, $this);
-    }
-
-    /**
-     * Expose all MediaObjects and their informations.
-     * 
-     * @Route("/mediaobjects",
-     *  name="api_mediaobject_gets",
-     *  methods={"GET"},
-     * )
-     * 
-     * @SWG\Get(
-     *     summary="Get all MediaObjects",
-     *     produces={"application/json"}
-     * )
-     * @SWG\Response(
-     *     response=200,
-     *     description="Return all MediaObjects and their user information.",
-     *     @SWG\Schema(
-     *      type="array",
-     *      @SWG\Items(ref=@Model(type=MediaObject::class))
-     *     )
-     * )
-     * 
-     * @QueryParam(name="page"
-     * , requirements="\d+"
-     * , default="1"
-     * , description="Page of the overview.")
-     * @QueryParam(name="limit"
-     * , requirements="\d+"
-     * , default="10"
-     * , description="Item count limit")
-     * @QueryParam(name="sort"
-     * , requirements="(asc|desc)"
-     * , allowBlank=false
-     * , default="asc"
-     * , description="Sort direction")
-     * @QueryParam(name="sortBy"
-     * , requirements="(id|description|filePath)"
-     * , default="id"
-     * , description="Sort by name or uri")
-     * @QueryParam(name="search"
-     * , nullable=true
-     * , description="Search on name or description or sub-category name or category name or brand name or brand description")
-     *
-     * @param ParamFetcher $paramFetcher
-     * @return View
-     */
-    public function cgetActionambassador(ParamFetcher $paramFetcher)
     {
         $mediaObjects = $this->mediaObjectRepository->findAllPagination($paramFetcher);
         $repository = $this->entityManager->getRepository('Gedmo\Translatable\Entity\Translation');
@@ -516,13 +472,10 @@ class MediaObjectController extends AbstractFOSRestController
     {
         $existingMediaObjectField = $this->findMediaObjectById($id);
         $form = $this->createForm(MediaObjectType::class, $existingMediaObjectField);
-        if ($data instanceof JsonResponse)
-            return $data;
         $this->setLang($data, $this->description);
         $form->submit($data, $clearMissing);
-        $validation = $this->validationError($form, $this, $this->translator);
-        if ($validation instanceof JsonResponse)
-            return $validation;
+        $this->validationError($form, $this, $this->translator);
+
         $mediaObject = $form->getData();
         $this->translate($mediaObject, $this->description, $this->entityManager, $clearMissing);
         try {

@@ -1,4 +1,4 @@
-Feature: Test POST Category with english result.
+Feature: Test POST Category with french result.
 
     Scenario:
         Given there are default users
@@ -9,7 +9,7 @@ Feature: Test POST Category with english result.
 
     Scenario: Can get a single category if I am connected as user - GET
         Given I am login as user
-        Then I request "/api/en/category/1" using HTTP GET
+        Then I request "/api/fr/category/1" using HTTP GET
         Then the response code is 200
         And the response body contains JSON:
         """
@@ -24,14 +24,14 @@ Feature: Test POST Category with english result.
         Then the request body is:
         """
         """
-        Then I request "/api/en/category" using HTTP POST
+        Then I request "/api/fr/category" using HTTP POST
         Then the response code is 422
         And the response body contains JSON:
         """
         {
-            "status": "Error.",
-            "message": "Validation error.",
-            "errors": "The body of the request does not contain a valid JSon."
+            "status": "Erreur.",
+            "message": "Erreur de validation.",
+            "errors": "Le body de la requête ne contient pas de JSon valide."
         }
         """
     
@@ -42,22 +42,22 @@ Feature: Test POST Category with english result.
         """
         { "invalid" : "invalid" }
         """
-        Then I request "/api/en/category" using HTTP POST
+        Then I request "/api/fr/category" using HTTP POST
         Then the response code is 422
         And the response body contains JSON:
         """
         {                                                                                                                                                      
-            "status": "Error.",                                                                                                                                   
-            "message": "Validation error.",                                                                                                                       
+            "status": "Erreur.",                                                                                                                                   
+            "message": "Erreur de validation.",                                                                                                                       
             "errors": [
                 {
                 "errors": [
-                    "This form should not contain extra fields."
+                    "Ce formulaire ne doit pas contenir des champs supplémentaires."
                 ],
                 "children": {
                         "name": {
                             "errors": [
-                                "This value should not be null."
+                                "Cette valeur ne doit pas être nulle."
                             ]
                         },
                         "subCategories": [],

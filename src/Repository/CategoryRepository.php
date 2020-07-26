@@ -31,7 +31,7 @@ class CategoryRepository extends ServiceEntityRepository
     ) {
         $page = $paramFetcher->get('page');
         $limit = $paramFetcher->get('limit');
-        $noPagination = $paramFetcher->get('noPagination');
+        $pagination = $paramFetcher->get('pagination');
         $sort = $paramFetcher->get('sort');
         $sortBy = $paramFetcher->get('sortBy');
         $search = $paramFetcher->get('search');
@@ -41,7 +41,7 @@ class CategoryRepository extends ServiceEntityRepository
         if ($isAmbassador)
             return $this->findForAmbassador(
                 $page,
-                $noPagination == 'true',
+                !($pagination == 'true'),
                 $limit,
                 $sort,
                 $sortBy,
@@ -53,7 +53,7 @@ class CategoryRepository extends ServiceEntityRepository
         return $this->findByUserOrValidate(
             $user,
             $page,
-            $noPagination == 'true',
+            !($pagination == 'true'),
             $limit,
             $sort,
             $sortBy,

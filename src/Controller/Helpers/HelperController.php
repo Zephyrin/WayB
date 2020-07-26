@@ -65,11 +65,13 @@ trait HelperController
     }
 
     /**
+     * Test if the form is valid, throw a JsonResponse that will be catch by 
+     * Kernel listener.
+     * 
      * @param FormInterface $form
      * @param AbstractFOSRestController $controller
      * @param TranslatorInterface $translator.
-     * @return bool|JsonResponse
-     * @throws ExceptionInterface
+     * @throws ExceptionInterface|JsonResponse
      */
     public function validationError(
         FormInterface $form,
@@ -77,7 +79,7 @@ trait HelperController
         TranslatorInterface $translator
     ) {
         if (false === $form->isValid()) {
-            return new JsonResponse(
+            $json = new JsonResponse(
                 [
                     'status' => $translator->trans('error'),
                     'message' => $translator->trans('validation.error'),
@@ -85,16 +87,18 @@ trait HelperController
                 ],
                 JsonResponse::HTTP_UNPROCESSABLE_ENTITY
             );
+            throw new JsonException($json);
         }
-        return true;
     }
 
     /**
-     * Return the data of the JSON or a validation error.
+     * Return the data of the JSON or throw a JsonResponse that will be catch by
+     * Kernel listener.
      *
      * @param Request $request
      * @param boolean $assoc
-     * @return mixed|JsonResponse
+     * @return mixed
+     * @throws JsonResponse
      */
     public function getDataFromJson(
         Request $request,
@@ -103,7 +107,7 @@ trait HelperController
     ) {
         $data = json_decode($request->getContent(), $assoc);
         if ($data === null || count($data) === 0) {
-            return new JsonResponse(
+            $json = new JsonResponse(
                 [
                     'status' => $translator->trans('error'),
                     'message' => $translator->trans('validation.error'),
@@ -111,6 +115,7 @@ trait HelperController
                 ],
                 JsonResponse::HTTP_UNPROCESSABLE_ENTITY
             );
+            throw new JsonException($json);
         }
         return $data;
     }

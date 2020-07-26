@@ -19,7 +19,7 @@ Feature: Authorization test MediaObject with french result
         When I request "/api/fr/mediaobject" using HTTP POST
         Then the response code is 201
         When I logout
-        When I am login as merchant
+        When I am login as ambassador
         Then I request "/api/fr/mediaobject/3" using HTTP DELETE
         Then the response code is 204
 

@@ -15,6 +15,8 @@ use FOS\RestBundle\Request\ParamFetcher;
  */
 class MediaObjectRepository extends ServiceEntityRepository
 {
+    use AbstractRepository;
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, MediaObject::class);
@@ -27,11 +29,19 @@ class MediaObjectRepository extends ServiceEntityRepository
         $sort = $paramFetcher->get('sort');
         $sortBy = $paramFetcher->get('sortBy');
         $search = $paramFetcher->get('search');
+        $pagination = $paramFetcher->get('pagination');
         $query = $this->createQueryBuilder('e');
         if ($search != null)
             $query = $query->andWhere('LOWER(e.filePath) LIKE :search')
                 ->setParameter('search', "%" . addcslashes(strtolower($search), '%_') . '%');
-        return $this->resultCount($query, $page, $limit, false, $sort, $sortBy);
+        return $this->resultCount(
+            $query,
+            $page,
+            $limit,
+            !($pagination === 'true'),
+            $sort,
+            $sortBy
+        );
     }
 
     // /**

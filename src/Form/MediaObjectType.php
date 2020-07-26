@@ -11,9 +11,10 @@ use Symfony\Component\Validator\Constraints\File;
 
 class MediaObjectType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder,
-                              array $options)
-    {
+    public function buildForm(
+        FormBuilderInterface $builder,
+        array $options
+    ) {
         $builder
             ->add('description')
             ->add('image', FileType::class, [
@@ -48,7 +49,7 @@ class MediaObjectType extends AbstractType
         $resolver->setDefaults(
             [
                 'data_class'         => MediaObject::class,
-                'allow_extra_fields' => true,
+                'allow_extra_fields' => false,
                 'csrf_protection'    => false,
             ]
         );

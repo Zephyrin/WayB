@@ -452,11 +452,9 @@ class BrandController extends AbstractFOSRestController
     private function findBrandById(string $id)
     {
         $existingBrand = $this->brandRepository->find($id);
-
         if (null === $existingBrand) {
             throw new NotFoundHttpException();
         }
-
         return $existingBrand;
     }
 

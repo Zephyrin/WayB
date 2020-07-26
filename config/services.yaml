@@ -25,6 +25,11 @@ services:
         resource: '../src/Controller'
         tags: ['controller.service_arguments']
 
+
+    App\Controller\Helpers\:
+        resource: '../src/Controller/Helpers/'
+        exclude: '../src/Controller/Helpers/{JsonResponse.php}'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
     wayb_api.event.authentication_success_listener:
@@ -43,3 +48,8 @@ services:
         class: App\EventListener\JWTNotFoundListener
         tags:
             - { name: kernel.event_listener, event: lexik_jwt_authentication.on_jwt_not_found, method: onJWTNotFound }
+
+    error.exception_listener:
+        class: App\EventListener\ExceptionListener
+        tags:
+            - { name: kernel.event_listener, event: kernel.exception, method: onKernelException }

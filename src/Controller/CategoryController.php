@@ -107,15 +107,14 @@ class CategoryController extends AbstractFOSRestController
     public function postAction(Request $request)
     {
         $data = $this->getDataFromJson($request, true, $this->translator);
-        if ($data instanceof JsonResponse) return $data;
+        /* if ($data instanceof JsonResponse) return $data; */
         $form = $this->createForm(CategoryType::class, new Category());
         if (is_array($data)) $this->setLang($data, $this->name);
         else return $this->createError($form, $this, $this->translator, "invalid.json");
 
         $form->submit($data);
-        $validation = $this->validationError($form, $this, $this->translator);
-        if ($validation instanceof JsonResponse)
-            return $validation;
+        $this->validationError($form, $this, $this->translator);
+
         $insertData = $this->setCreatedByAndValidateToFalse($form);
         $this->translate($insertData, $this->name, $this->entityManager);
 
@@ -159,6 +158,14 @@ class CategoryController extends AbstractFOSRestController
      */
     public function getAction(string $id)
     {
+        $val = $this->findCategoryById($id);
+        $repository = $this->entityManager->getRepository('Gedmo\Translatable\Entity\Translation');
+        $array = $this->createTranslatableArray();
+        $this->addTranslatableVar(
+            $array,
+            $repository->findTranslations($val)
+        );
+        $val->setTranslations($array);
         return $this->view(
             $this->findCategoryById($id)
         );
@@ -192,7 +199,7 @@ class CategoryController extends AbstractFOSRestController
      * , requirements="\d+"
      * , default="10"
      * , description="Item count limit")
-     * @QueryParam(name="noPagination"
+     * @QueryParam(name="pagination"
      * , requirements="(true|false)"
      * , default=false
      * , description="Don't care about pagination")
@@ -261,6 +268,13 @@ class CategoryController extends AbstractFOSRestController
      * Be careful, a missing subCategory in the array subCategories will be delete.
      * You can also update a part of a subCategory.
      *
+     * @Route("/category/{id}",
+     *  name="api_category_put",
+     *  methods={"put"},
+     *  requirements={
+     *      "id": "\d+"
+     * })
+     * 
      * @SWG\Put(
      *     consumes={"application/json"},
      *     produces={"application/json"},
@@ -301,24 +315,7 @@ class CategoryController extends AbstractFOSRestController
      */
     public function putAction(Request $request, string $id)
     {
-        $connectUser = $this->getUser();
-        $existingCategory = $this->findCategoryById($id);
-        if ($existingCategory->getCreatedBy() !== $connectUser)
-            $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
-        $form = $this->createForm(CategoryType::class, $existingCategory);
-        $data = $request->request->all();
-        $validate = $existingCategory->getValidate();
-        $form->submit($data);
-
-        $validation = $this->validationError($form, $this);
-        if ($validation instanceof JsonResponse)
-            return $validation;
-        if ($existingCategory->getValidate() !== $validate) {
-            $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
-        }
-        $this->entityManager->flush();
-
-        return $this->view(null, Response::HTTP_NO_CONTENT);
+        $this->putOrPatch($request, $id, true);
     }
 
     /**
@@ -329,6 +326,13 @@ class CategoryController extends AbstractFOSRestController
      * If you want update one SubCategory during this process, you need to add all other SubCategory in the correct order otherwise they will be delete.
      *
      * Be careful, when updating SubCategories, you need to range it in correct order.
+     * 
+     * @Route("/category/{id}",
+     *  name="api_category_patch",
+     *  methods={"PATCH"},
+     *  requirements={
+     *      "id": "\d+"
+     * })
      *
      * @SWG\Patch(
      *     consumes={"application/json"},
@@ -370,25 +374,30 @@ class CategoryController extends AbstractFOSRestController
      */
     public function patchAction(Request $request, string $id)
     {
+        $this->putOrPatch($request, $id, false);
+    }
+
+    private function putOrPatch(Request $request, string $id, bool $clearMissing)
+    {
         $connectUser = $this->getUser();
-        $existingCategory = $this->findCategoryById($id);
-        if ($existingCategory->getCreatedBy() !== $connectUser)
-            $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
-
-        $validate = $existingCategory->getValidate();
-
-        $form = $this->createForm(CategoryType::class, $existingCategory);
-        $data = $request->request->all();
-
-        $form->submit($data, false);
-
-        $validation = $this->validationError($form, $this);
-        if ($validation instanceof JsonResponse)
-            return $validation;
-        if ($existingCategory->getValidate() !== $validate) {
+        $existing = $this->findCategoryById($id);
+        if ($existing->getCreatedBy() !== $connectUser) {
             $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
         }
+        $form = $this->createForm(CategoryType::class, $existing);
+        $data = $this->getDataFromJson($request, true, $this->translator);
+        $this->setLang($data, $this->name);
+        $validate = $existing->getValidate();
 
+        $form->submit($data, $clearMissing);
+
+        $this->validationError($form, $this, $this->translator);
+        $formData = $form->getData();
+        $this->translate($formData, $this->name, $this->entityManager, $clearMissing);
+
+        if ($existing->getValidate() !== $validate) {
+            $this->denyAccessUnlessGranted("ROLE_AMBASSADOR");
+        }
         $this->entityManager->flush();
 
         return $this->view(null, Response::HTTP_NO_CONTENT);

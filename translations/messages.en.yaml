@@ -1,0 +1,39 @@
+access:
+  denied: Not authorized.
+
+contact:
+  already:
+    exists: There is already a contact page.
+
+home:
+  already:
+    exists: There is already an home page.
+
+conflict:
+  error: Conflict error.
+
+error: Error.
+
+image:
+  failed:
+    base64:
+      decode:
+        failed: Base64 decode failed.
+      uri: This is not an image in base64.
+    type: This image type is not support. Only gif, jpg, jpeg, png or svg are support. 
+    save: Cannot save image data to file.
+
+
+invalid:
+  credentials: Invalid credentials.
+
+json:
+  empty:
+    error: The body of the request does not contain a valid JSon.
+
+token:
+  expired: Your token is expired.
+  missing: You are not connected.
+
+validation:
+  error: Validation error.

@@ -26,10 +26,14 @@ Feature: Test MediaObject with french result.
             "email": "@regExp(/.*@.*/)",
             "lastLogin": "@regExp(/[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.*/)",
             "created": "@regExp(/[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.*/)"
-        }
+        },
+      "translations": {
+        "en": { "description": "Katadyn's Logo" },
+        "fr": { "description": "Logo Katadyn" }
+      }
     }
     """
-    And the response body has 4 fields
+    And the response body has 5 fields
 
   Scenario: Cannot get a single MediaObject if I am not connected - GET
     Given I request "/api/fr/mediaobject/1" using HTTP GET
@@ -175,10 +179,14 @@ Feature: Test MediaObject with french result.
             "email": "@regExp(/.*@.*/)",
             "lastLogin": "@regExp(/[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.*/)",
             "created": "@regExp(/[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.*/)"
-        }
+        },
+      "translations": {
+        "en": { },
+        "fr": { "description": "Logo de Katadyn" }
+      }
     }
     """
-    And the response body has 3 fields
+    And the response body has 4 fields
 
   
   Scenario: Can delete an MediaObject
